@@ -41,7 +41,7 @@ export class DashboardController {
   @Get('top-products')
   async getTopProducts() {
     const results = await this.orderRepo.manager.query(`
-      SELECT p.name, p.sku, COALESCE(SUM(oi.quantity), 0) as total_sold
+      SELECT p.name, p.sku, COALESCE(SUM(oi.quantity_base), 0) as total_sold
       FROM products p
       LEFT JOIN order_items oi ON oi.product_id = p.id
       GROUP BY p.id, p.name, p.sku

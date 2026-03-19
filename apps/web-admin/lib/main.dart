@@ -460,7 +460,7 @@ class _OrdersPageState extends State<_OrdersPage> {
               DataColumn(label: Text('Trạng thái')),
             ],
             rows: _orders.map((o) => DataRow(cells: [
-              DataCell(Text((o['id'] ?? '').toString().substring(0, 8))),
+              DataCell(Text(_shortId(o['id']))),
               DataCell(Text(o['createdAt'] ?? '')),
               DataCell(Text('${o['totalAmount'] ?? 0}đ')),
               DataCell(Text(o['paymentMethod'] ?? '')),
@@ -470,6 +470,11 @@ class _OrdersPageState extends State<_OrdersPage> {
         ))),
       ]),
     );
+  }
+
+  String _shortId(dynamic id) {
+    final s = (id ?? '').toString();
+    return s.length >= 8 ? s.substring(0, 8) : s;
   }
 }
 

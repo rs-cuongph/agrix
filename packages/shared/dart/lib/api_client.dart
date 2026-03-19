@@ -86,7 +86,10 @@ class AgrixApiClient {
     _checkStatus(res);
     final decoded = jsonDecode(res.body);
     if (decoded is List) return decoded;
-    if (decoded is Map && decoded.containsKey('items')) return decoded['items'] as List;
+    if (decoded is Map) {
+      if (decoded.containsKey('data')) return decoded['data'] as List;
+      if (decoded.containsKey('items')) return decoded['items'] as List;
+    }
     return [decoded];
   }
 
