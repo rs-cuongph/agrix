@@ -15,17 +15,17 @@
 
 **Purpose**: Monorepo initialization and project scaffolding
 
-- [ ] T001 Create monorepo root structure with `apps/`, `packages/`, `docker/`, `specs/` directories
-- [ ] T002 [P] Initialize Flutter project in `apps/mobile/` with dependencies: `drift`, `dio`, `connectivity_plus`, `provider`, `mobile_scanner`, `flutter_blue_plus`, `qr_flutter`
-- [ ] T003 [P] Initialize NestJS project in `apps/backend/` with dependencies: `@nestjs/typeorm`, `typeorm`, `@nestjs/jwt`, `@nestjs/passport`, `pg`, `minio`, `langchain`
-- [ ] T004 [P] Initialize Next.js 14+ project in `apps/web-base/` with App Router
-- [ ] T005 [P] Initialize Flutter Web project in `apps/web-admin/` (shared packages with mobile)
-- [ ] T006 [P] Create shared Dart package in `packages/shared/dart/` for DTOs, enums, constants
-- [ ] T007 [P] Create shared TypeScript package in `packages/shared/typescript/` for API types
-- [ ] T008 [P] Create Docker Compose config in `docker/docker-compose.yml` (PostgreSQL 15, MinIO, NestJS, Next.js)
-- [ ] T009 [P] Create `docker/.env.example` with all required environment variables (DATABASE_URL, MINIO keys, JWT_SECRET, OPENAI_API_KEY)
-- [ ] T010 [P] Setup Melos for Flutter monorepo management with `melos.yaml` at project root
-- [ ] T011 [P] Setup npm workspaces in root `package.json` for `apps/backend` and `apps/web-base`
+- [x] T001 Create monorepo root structure with `apps/`, `packages/`, `docker/`, `specs/` directories
+- [x] T002 [P] Initialize Flutter project in `apps/mobile/` with dependencies: `drift`, `dio`, `connectivity_plus`, `provider`, `mobile_scanner`, `flutter_blue_plus`, `qr_flutter`
+- [x] T003 [P] Initialize NestJS project in `apps/backend/` with dependencies: `@nestjs/typeorm`, `typeorm`, `@nestjs/jwt`, `@nestjs/passport`, `pg`, `minio`, `langchain`
+- [x] T004 [P] Initialize Next.js 14+ project in `apps/web-base/` with App Router
+- [x] T005 [P] Initialize Flutter Web project in `apps/web-admin/` (shared packages with mobile)
+- [x] T006 [P] Create shared Dart package in `packages/shared/dart/` for DTOs, enums, constants
+- [x] T007 [P] Create shared TypeScript package in `packages/shared/typescript/` for API types
+- [x] T008 [P] Create Docker Compose config in `docker/docker-compose.yml` (PostgreSQL 15, MinIO, NestJS, Next.js)
+- [x] T009 [P] Create `docker/.env.example` with all required environment variables (DATABASE_URL, MINIO keys, JWT_SECRET, OPENAI_API_KEY)
+- [x] T010 [P] Setup Melos for Flutter monorepo management with `melos.yaml` at project root
+- [x] T011 [P] Setup npm workspaces in root `package.json` for `apps/backend` and `apps/web-base`
 
 ---
 
@@ -35,22 +35,22 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T012 Create PostgreSQL database schema and TypeORM migration framework in `apps/backend/src/database/`
-- [ ] T013 [P] Create User entity with RBAC (ADMIN, CASHIER, INVENTORY) in `apps/backend/src/auth/entities/user.entity.ts`
-- [ ] T014 [P] Create Category entity with self-referencing parent in `apps/backend/src/inventory/entities/category.entity.ts`
-- [ ] T015 [P] Create Product entity with all fields (SKU, base_unit, prices, stock, expiry, barcode) in `apps/backend/src/inventory/entities/product.entity.ts`
-- [ ] T016 [P] Create ProductUnitConversion entity in `apps/backend/src/inventory/entities/product-unit-conversion.entity.ts`
-- [ ] T017 [P] Create Customer entity in `apps/backend/src/customers/entities/customer.entity.ts`
-- [ ] T018 [P] Create StockEntry ledger entity in `apps/backend/src/inventory/entities/stock-entry.entity.ts`
-- [ ] T019 Implement AuthModule with JWT strategy, login endpoint, and RBAC guards in `apps/backend/src/auth/`
-- [ ] T020 [P] Configure MinIO StorageModule for image uploads in `apps/backend/src/storage/storage.module.ts`
-- [ ] T021 [P] Setup global error handling interceptor in `apps/backend/src/common/interceptors/`
-- [ ] T022 [P] Setup logging infrastructure in `apps/backend/src/common/logger/`
-- [ ] T023 [P] Create Drift (SQLite) database schema in `apps/mobile/lib/data/local/database.dart` mirroring core server entities (Product, Order, Customer, StockEntry)
-- [ ] T024 [P] Implement DI and routing setup in `apps/mobile/lib/core/` (theme with Emerald Green palette, Material Design 3)
-- [ ] T025 [P] Implement API client with Dio + JWT interceptor in `apps/mobile/lib/data/remote/api_client.dart`
-- [ ] T026 [P] Implement connectivity monitoring service in `apps/mobile/lib/services/connectivity_service.dart`
-- [ ] T027 Run initial TypeORM migration to create all tables in `apps/backend/`
+- [x] T012 Create PostgreSQL database schema and TypeORM migration framework in `apps/backend/src/database/`
+- [x] T013 [P] Create User entity with RBAC (ADMIN, CASHIER, INVENTORY) in `apps/backend/src/auth/entities/user.entity.ts`
+- [x] T014 [P] Create Category entity with self-referencing parent in `apps/backend/src/inventory/entities/category.entity.ts`
+- [x] T015 [P] Create Product entity with all fields (SKU, base_unit, prices, stock, expiry, barcode) in `apps/backend/src/inventory/entities/product.entity.ts`
+- [x] T016 [P] Create ProductUnitConversion entity in `apps/backend/src/inventory/entities/product-unit-conversion.entity.ts`
+- [x] T017 [P] Create Customer entity in `apps/backend/src/customers/entities/customer.entity.ts`
+- [x] T018 [P] Create StockEntry ledger entity in `apps/backend/src/inventory/entities/stock-entry.entity.ts`
+- [x] T019 Implement AuthModule with JWT strategy, login endpoint, and RBAC guards in `apps/backend/src/auth/`
+- [x] T020 [P] Configure MinIO StorageModule for image uploads in `apps/backend/src/storage/storage.module.ts`
+- [x] T021 [P] Setup global error handling interceptor in `apps/backend/src/common/interceptors/`
+- [x] T022 [P] Setup logging infrastructure in `apps/backend/src/common/logger/`
+- [x] T023 [P] Create Drift (SQLite) database schema in `apps/mobile/lib/data/local/database.dart` mirroring core server entities (Product, Order, Customer, StockEntry)
+- [x] T024 [P] Implement DI and routing setup in `apps/mobile/lib/core/` (theme with Emerald Green palette, Material Design 3)
+- [x] T025 [P] Implement API client with Dio + JWT interceptor in `apps/mobile/lib/data/remote/api_client.dart`
+- [x] T026 [P] Implement connectivity monitoring service in `apps/mobile/lib/services/connectivity_service.dart`
+- [x] T027 Run initial TypeORM migration to create all tables in `apps/backend/`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -64,27 +64,27 @@
 
 ### Backend Implementation
 
-- [ ] T028 [P] [US1] Create Order entity with idempotencyKey and syncStatus in `apps/backend/src/orders/entities/order.entity.ts`
-- [ ] T029 [P] [US1] Create OrderItem entity in `apps/backend/src/orders/entities/order-item.entity.ts`
-- [ ] T030 [US1] Implement InventoryService (product lookup by barcode/QR/name, stock deduction with base-unit arithmetic) in `apps/backend/src/inventory/inventory.service.ts`
-- [ ] T031 [US1] Implement OrderService (create order, validate stock, generate ledger entries) in `apps/backend/src/orders/orders.service.ts`
-- [ ] T032 [US1] Implement SyncController with idempotent `POST /sync/orders` endpoint in `apps/backend/src/orders/sync.controller.ts`
-- [ ] T033 [P] [US1] Implement ProductsController (GET /products, GET /products/:id, GET /products/lookup) in `apps/backend/src/inventory/products.controller.ts`
-- [ ] T034 [P] [US1] Implement OrdersController (POST /orders, GET /orders) in `apps/backend/src/orders/orders.controller.ts`
+- [x] T028 [P] [US1] Create Order entity with idempotencyKey and syncStatus in `apps/backend/src/orders/entities/order.entity.ts`
+- [x] T029 [P] [US1] Create OrderItem entity in `apps/backend/src/orders/entities/order-item.entity.ts`
+- [x] T030 [US1] Implement InventoryService (product lookup by barcode/QR/name, stock deduction with base-unit arithmetic) in `apps/backend/src/inventory/inventory.service.ts`
+- [x] T031 [US1] Implement OrderService (create order, validate stock, generate ledger entries) in `apps/backend/src/orders/orders.service.ts`
+- [x] T032 [US1] Implement SyncController with idempotent `POST /sync/orders` endpoint in `apps/backend/src/orders/sync.controller.ts`
+- [x] T033 [P] [US1] Implement ProductsController (GET /products, GET /products/:id, GET /products/lookup) in `apps/backend/src/inventory/products.controller.ts`
+- [x] T034 [P] [US1] Implement OrdersController (POST /orders, GET /orders) in `apps/backend/src/orders/orders.controller.ts`
 
 ### Mobile App Implementation
 
-- [ ] T035 [P] [US1] Implement Product repository (local Drift + remote API fallback) in `apps/mobile/lib/data/repositories/product_repository.dart`
-- [ ] T036 [P] [US1] Implement Order repository (local-first, queue for sync) in `apps/mobile/lib/data/repositories/order_repository.dart`
-- [ ] T037 [US1] Implement SyncEngine service (background sync with idempotency keys, retry, conflict resolution) in `apps/mobile/lib/services/sync_engine.dart`
-- [ ] T038 [US1] Implement barcode/QR scanner service using `mobile_scanner` in `apps/mobile/lib/services/scanner_service.dart`
-- [ ] T039 [US1] Implement ESC/POS thermal printer service (Bluetooth + Wi-Fi/TCP) in `apps/mobile/lib/services/printer_service.dart`
-- [ ] T040 [US1] Implement VietQR generator service (EMV QR Code) in `apps/mobile/lib/services/vietqr_service.dart`
-- [ ] T041 [US1] Build POS main screen (product search bar, barcode scan button, product grid) in `apps/mobile/lib/presentation/screens/pos_screen.dart`
-- [ ] T042 [US1] Build Cart/Checkout widget (item list, unit selector, total, payment method toggle) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
-- [ ] T043 [US1] Build Payment dialog (cash input, VietQR display, print bill button) in `apps/mobile/lib/presentation/widgets/payment_dialog.dart`
-- [ ] T044 [US1] Build offline status indicator (sync icon ☁️) in `apps/mobile/lib/presentation/widgets/sync_status_indicator.dart`
-- [ ] T045 [US1] Build order history screen in `apps/mobile/lib/presentation/screens/order_history_screen.dart`
+- [x] T035 [P] [US1] Implement Product repository (local Drift + remote API fallback) in `apps/mobile/lib/data/repositories/product_repository.dart`
+- [x] T036 [P] [US1] Implement Order repository (local-first, queue for sync) in `apps/mobile/lib/data/repositories/order_repository.dart`
+- [x] T037 [US1] Implement SyncEngine service (background sync with idempotency keys, retry, conflict resolution) in `apps/mobile/lib/services/sync_engine.dart`
+- [x] T038 [US1] Implement barcode/QR scanner service using `mobile_scanner` in `apps/mobile/lib/services/scanner_service.dart`
+- [x] T039 [US1] Implement ESC/POS thermal printer service (Bluetooth + Wi-Fi/TCP) in `apps/mobile/lib/services/printer_service.dart`
+- [x] T040 [US1] Implement VietQR generator service (EMV QR Code) in `apps/mobile/lib/services/vietqr_service.dart`
+- [x] T041 [US1] Build POS main screen (product search bar, barcode scan button, product grid) in `apps/mobile/lib/presentation/screens/pos_screen.dart`
+- [x] T042 [US1] Build Cart/Checkout widget (item list, unit selector, total, payment method toggle) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
+- [x] T043 [US1] Build Payment dialog (cash input, VietQR display, print bill button) in `apps/mobile/lib/presentation/widgets/payment_dialog.dart`
+- [x] T044 [US1] Build offline status indicator (sync icon ☁️) in `apps/mobile/lib/presentation/widgets/sync_status_indicator.dart`
+- [x] T045 [US1] Build order history screen in `apps/mobile/lib/presentation/screens/order_history_screen.dart`
 
 **Checkpoint**: At this point, the core POS flow (search → cart → pay → print → offline sync) should be fully functional
 

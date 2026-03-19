@@ -4,6 +4,8 @@ import { Category } from './entities/category.entity';
 import { Product } from './entities/product.entity';
 import { ProductUnitConversion } from './entities/product-unit-conversion.entity';
 import { StockEntry } from './entities/stock-entry.entity';
+import { InventoryService } from './inventory.service';
+import { ProductsController } from './products.controller';
 
 @Module({
   imports: [
@@ -14,8 +16,8 @@ import { StockEntry } from './entities/stock-entry.entity';
       StockEntry,
     ]),
   ],
-  controllers: [],
-  providers: [],
-  exports: [TypeOrmModule],
+  controllers: [ProductsController],
+  providers: [InventoryService],
+  exports: [TypeOrmModule, InventoryService],
 })
 export class InventoryModule {}

@@ -4,6 +4,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
 import { StorageModule } from './storage/storage.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -17,6 +18,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     DatabaseModule,
     AuthModule,
     InventoryModule,
+    OrdersModule,
     CustomersModule,
     StorageModule,
   ],
