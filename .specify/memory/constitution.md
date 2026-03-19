@@ -1,50 +1,56 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+Version change: 0.0.0 → 1.0.0
+Modified principles: None (Initial Ratification)
+Added sections: 
+- I. Mobile-First & Offline-First
+- II. Monorepo Architecture
+- III. Scalable Core
+- IV. Traceability & Financial Accuracy
+- V. Simple & Intuitive UI
+- Technical Constraints
+- Development Workflow
+Removed sections: None
+Templates requiring updates: 
+- ⚠ .specify/templates/plan-template.md
+- ⚠ .specify/templates/spec-template.md
+- ⚠ .specify/templates/tasks-template.md
+Follow-up TODOs: Implement automated testing requirements.
+-->
+
+# Agrix Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Mobile-First & Offline-First
+The application must function reliably without an internet connection using local SQLite storage. All offline actions must gracefully queue and perform seamless background synchronization (Idempotency) once the network is restored, guaranteeing zero data loss.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Monorepo Architecture
+All source code (Flutter Mobile App, Next.js/Flutter Web, and NestJS Backend) must reside in a single repository. This ensures maximum code reusability (especially shared DTOs or logic) and provides a unified CI/CD context for the entire platform.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Scalable Core (Modular Monolith)
+The backend starts as a modular monolith in NestJS to minimize initial operational overhead. However, domain boundaries (Inventory, Auth, Orders) MUST remain strictly decoupled so they can easily be split into microservices in the future if scaling is required.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Traceability & Financial Accuracy
+All inventory modifications and financial transactions must be precisely traceable. The system must enforce robust mechanisms for unit conversions (e.g., dynamically converting 'Boxes' to 'Bottles' accurately) and strict Role-Based Access Control (RBAC) to ensure security.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Simple & Intuitive UI
+The user interface must prioritize operational speed and clarity. It must adhere to Clean & Minimalist Material Design 3 principles, relying on ample negative space, unambiguous color coding (Emerald Green for primary actions), and support for hardware (EAN-13 Barcode scanners, thermal Bluetooth printers).
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Technical & Infrastructure Constraints
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **Backend**: NestJS (Node.js) with PostgreSQL as the primary RDBMS.
+- **Frontend**: Flutter for Mobile (Android/iOS) and Web Admin; Next.js for the Web Base (Landing/SEO).
+- **Storage & Deployment**: MinIO for self-hosted S3-compatible object storage. Everything must be fully containerized using Docker and orchestrated via Docker Compose.
+- **AI Integration**: Chatbot and analytical features must leverage OpenAI (GPT-4) or Gemini APIs, anchored securely with local Retrieval-Augmented Generation (RAG) context.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow & Code Quality
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- **Testing**: All Pull Requests addressing offline synchronization or financial transactions MUST pass automated unit and integration tests prior to merging.
+- **Code Reviews**: Business logic altering inventory arithmetic or user permissions requires at least one peer review.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+The strict architectural guidelines regarding the offline-first sync mechanism and the monorepo structure supersede generic coding practices.
+Any amendments to these core rules (e.g., splitting the monorepo, changing the primary datastore) require formal documentation, impact analysis on the background sync worker, and approval from the lead engineer.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-03-19 | **Last Amended**: 2026-03-19

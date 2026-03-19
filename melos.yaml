@@ -1,0 +1,40 @@
+name: agrix
+repository:
+  type: local
+  rootPath: .
+
+packages:
+  - apps/mobile
+  - apps/web-admin
+  - packages/shared/dart
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
+
+scripts:
+  analyze:
+    run: fvm flutter analyze
+    exec:
+      concurrency: 3
+    packageFilters:
+      flutter: true
+
+  test:
+    run: fvm flutter test
+    exec:
+      concurrency: 3
+    packageFilters:
+      dirExists: test
+
+  clean:
+    run: fvm flutter clean
+    exec:
+      concurrency: 3
+    packageFilters:
+      flutter: true
+
+  build:android:
+    run: fvm flutter build apk --release
+    packageFilters:
+      scope: agrix_mobile
