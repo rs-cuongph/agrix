@@ -63,6 +63,9 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **FR-007**: System MUST alert users when inventory falls below minimum thresholds or approaches expiration dates.
 - **FR-008**: System MUST integrate an AI Chatbot capable of answering questions based on admin-provided documents.
 - **FR-009**: System MUST interface with thermal printers using standard ESC/POS (POS58/POS80) protocols over both Bluetooth and Wi-Fi/LAN connections.
+- **FR-010**: Web Admin and Mobile MUST share a common API client package (`packages/shared/dart/`) for consistent REST API consumption across Flutter apps.
+- **FR-011**: Backend MUST enable CORS (allow `*` in dev, whitelist specific origins in production) to support Web Admin browser requests.
+- **FR-012**: Backend MUST expose separate dashboard endpoints (`/dashboard/revenue`, `/dashboard/top-products`, `/dashboard/alerts`) for flexible, independently-cacheable metric loading.
 
 ### Key Entities
 
@@ -79,3 +82,12 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **SC-002**: The POS interface can parse and add a scanned EAN-13 barcode to the cart in under 500ms.
 - **SC-003**: Inventory deductions involving unit conversions maintain absolute precision with zero arithmetic errors.
 - **SC-004**: The AI Chatbot returns contextually accurate advice based exclusively on provided documents in under 3 seconds per query.
+
+## Clarifications
+
+### Session 2026-03-20
+
+- Q: Web Admin ↔ Backend API: Mức độ tích hợp cần thiết là gì? → A: Dùng shared API client package (`packages/shared/dart/`) để reuse code giữa mobile và web-admin. Full REST API integration.
+- Q: Web Admin cần CORS hay proxy để gọi backend từ browser? → A: Bật CORS trên NestJS backend (cho phép `*` trong dev, whitelist origins trong production).
+- Q: Web Admin phạm vi tính năng? → A: Admin-only — Dashboard, Products CRUD, Orders history (read-only), Customers + Debt, Blog management, Settings. Không có POS.
+- Q: Dashboard metrics API design? → A: Nhiều endpoint riêng biệt (`/dashboard/revenue`, `/dashboard/top-products`, `/dashboard/alerts`) — flexible và có thể cache/load independently.

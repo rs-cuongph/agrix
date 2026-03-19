@@ -9,6 +9,7 @@ import { CustomersModule } from './customers/customers.module';
 import { StorageModule } from './storage/storage.module';
 import { AIModule } from './ai/ai.module';
 import { BlogModule } from './blog/blog.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
@@ -25,6 +26,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     StorageModule,
     AIModule,
     BlogModule,
+    DashboardModule,
   ],
   providers: [
     {
