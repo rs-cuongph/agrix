@@ -5,7 +5,11 @@ import { Product } from './entities/product.entity';
 import { ProductUnitConversion } from './entities/product-unit-conversion.entity';
 import { StockEntry } from './entities/stock-entry.entity';
 import { InventoryService } from './inventory.service';
+import { UnitConversionService } from './unit-conversion.service';
+import { StockImportService } from './stock-import.service';
 import { ProductsController } from './products.controller';
+import { CategoriesController } from './categories.controller';
+import { StockController } from './stock.controller';
 
 @Module({
   imports: [
@@ -16,8 +20,8 @@ import { ProductsController } from './products.controller';
       StockEntry,
     ]),
   ],
-  controllers: [ProductsController],
-  providers: [InventoryService],
-  exports: [TypeOrmModule, InventoryService],
+  controllers: [ProductsController, CategoriesController, StockController],
+  providers: [InventoryService, UnitConversionService, StockImportService],
+  exports: [TypeOrmModule, InventoryService, UnitConversionService, StockImportService],
 })
 export class InventoryModule {}

@@ -7,6 +7,8 @@ import { InventoryModule } from './inventory/inventory.module';
 import { OrdersModule } from './orders/orders.module';
 import { CustomersModule } from './customers/customers.module';
 import { StorageModule } from './storage/storage.module';
+import { AIModule } from './ai/ai.module';
+import { BlogModule } from './blog/blog.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
@@ -21,6 +23,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     OrdersModule,
     CustomersModule,
     StorageModule,
+    AIModule,
+    BlogModule,
   ],
   providers: [
     {

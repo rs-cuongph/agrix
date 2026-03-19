@@ -98,19 +98,19 @@
 
 ### Backend Implementation
 
-- [ ] T046 [US2] Implement StockImportService (import by any unit, convert to base units, create StockEntry) in `apps/backend/src/inventory/stock-import.service.ts`
-- [ ] T047 [US2] Implement StockController with `POST /stock/import` and `GET /stock/alerts` in `apps/backend/src/inventory/stock.controller.ts`
-- [ ] T048 [US2] Implement unit conversion logic in InventoryService (derive price per unit, validate conversion factors) in `apps/backend/src/inventory/unit-conversion.service.ts`
-- [ ] T049 [P] [US2] Implement Categories CRUD controller in `apps/backend/src/inventory/categories.controller.ts`
-- [ ] T050 [P] [US2] Implement Products CRUD (create/update with unit conversions) in `apps/backend/src/inventory/products.controller.ts`
+- [x] T046 [US2] Implement StockImportService (import by any unit, convert to base units, create StockEntry) in `apps/backend/src/inventory/stock-import.service.ts`
+- [x] T047 [US2] Implement StockController with `POST /stock/import` and `GET /stock/alerts` in `apps/backend/src/inventory/stock.controller.ts`
+- [x] T048 [US2] Implement unit conversion logic in InventoryService (derive price per unit, validate conversion factors) in `apps/backend/src/inventory/unit-conversion.service.ts`
+- [x] T049 [P] [US2] Implement Categories CRUD controller in `apps/backend/src/inventory/categories.controller.ts`
+- [x] T050 [P] [US2] Implement Products CRUD (create/update with unit conversions) in `apps/backend/src/inventory/products.controller.ts`
 
 ### Mobile App Implementation
 
-- [ ] T051 [US2] Build Stock Import screen (select product, enter quantity per unit, batch number) in `apps/mobile/lib/presentation/screens/stock_import_screen.dart`
-- [ ] T052 [US2] Build Product Management screen (CRUD, unit conversions editor, QR generation) in `apps/mobile/lib/presentation/screens/product_management_screen.dart`
-- [ ] T053 [US2] Build unit selector widget (dropdown showing all available units with calculated prices) in `apps/mobile/lib/presentation/widgets/unit_selector_widget.dart`
-- [ ] T054 [US2] Build stock alerts widget (low stock + expiring items) in `apps/mobile/lib/presentation/widgets/stock_alerts_widget.dart`
-- [ ] T055 [US2] Build Dashboard screen (revenue summary, top products, low stock alerts) in `apps/mobile/lib/presentation/screens/dashboard_screen.dart`
+- [x] T051 [US2] Build Stock Import screen (select product, enter quantity per unit, batch number) in `apps/mobile/lib/presentation/screens/stock_import_screen.dart`
+- [x] T052 [US2] Build Product Management screen (CRUD, unit conversions editor, QR generation) in `apps/mobile/lib/presentation/screens/product_management_screen.dart`
+- [x] T053 [US2] Build unit selector widget (dropdown showing all available units with calculated prices) in `apps/mobile/lib/presentation/widgets/unit_selector_widget.dart`
+- [x] T054 [US2] Build stock alerts widget (low stock + expiring items) in `apps/mobile/lib/presentation/widgets/stock_alerts_widget.dart`
+- [x] T055 [US2] Build Dashboard screen (revenue summary, top products, low stock alerts) in `apps/mobile/lib/presentation/screens/dashboard_screen.dart`
 
 **Checkpoint**: At this point, full inventory lifecycle (import → manage → sell with unit conversion) should work independently
 
@@ -124,15 +124,15 @@
 
 ### Backend Implementation
 
-- [ ] T056 [P] [US3] Enable `pgvector` extension and create KnowledgeDocument + KnowledgeEmbedding entities in `apps/backend/src/ai/entities/`
-- [ ] T057 [US3] Implement KnowledgeService (upload document, chunk text, generate embeddings, store in pgvector) in `apps/backend/src/ai/knowledge.service.ts`
-- [ ] T058 [US3] Implement ChatbotService (query embeddings, build RAG context, call OpenAI/Gemini, return answer with sources) in `apps/backend/src/ai/chatbot.service.ts`
-- [ ] T059 [US3] Implement AIController (`POST /ai/ask`, `POST /ai/knowledge`) in `apps/backend/src/ai/ai.controller.ts`
+- [x] T056 [P] [US3] Enable `pgvector` extension and create KnowledgeDocument + KnowledgeEmbedding entities in `apps/backend/src/ai/entities/`
+- [x] T057 [US3] Implement KnowledgeService (upload document, chunk text, generate embeddings, store in pgvector) in `apps/backend/src/ai/knowledge.service.ts`
+- [x] T058 [US3] Implement ChatbotService (query embeddings, build RAG context, call OpenAI/Gemini, return answer with sources) in `apps/backend/src/ai/chatbot.service.ts`
+- [x] T059 [US3] Implement AIController (`POST /ai/ask`, `POST /ai/knowledge`) in `apps/backend/src/ai/ai.controller.ts`
 
 ### Mobile App Implementation
 
-- [ ] T060 [US3] Build "Hỏi Ngay" (Ask Now) button on product detail screen in `apps/mobile/lib/presentation/widgets/ask_ai_button.dart`
-- [ ] T061 [US3] Build AI Chat dialog (message history, typing indicator, source citations) in `apps/mobile/lib/presentation/screens/ai_chat_screen.dart`
+- [x] T060 [US3] Build "Hỏi Ngay" (Ask Now) button on product detail screen in `apps/mobile/lib/presentation/widgets/ask_ai_button.dart`
+- [x] T061 [US3] Build AI Chat dialog (message history, typing indicator, source citations) in `apps/mobile/lib/presentation/screens/ai_chat_screen.dart`
 
 **Checkpoint**: AI chatbot should answer product-specific agricultural questions accurately
 
@@ -144,16 +144,16 @@
 
 ### Backend Implementation
 
-- [ ] T062 [P] [US4] Create DebtLedgerEntry entity in `apps/backend/src/customers/entities/debt-ledger-entry.entity.ts`
-- [ ] T063 [US4] Implement CustomerService (CRUD, debt calculation, payment recording) in `apps/backend/src/customers/customers.service.ts`
-- [ ] T064 [US4] Implement CustomersController (GET/POST customers, GET debt-ledger, POST payment) in `apps/backend/src/customers/customers.controller.ts`
+- [x] T062 [P] [US4] Create DebtLedgerEntry entity in `apps/backend/src/customers/entities/debt-ledger-entry.entity.ts`
+- [x] T063 [US4] Implement CustomerService (CRUD, debt calculation, payment recording) in `apps/backend/src/customers/customers.service.ts`
+- [x] T064 [US4] Implement CustomersController (GET/POST customers, GET debt-ledger, POST payment) in `apps/backend/src/customers/customers.controller.ts`
 
 ### Mobile App Implementation
 
-- [ ] T065 [US4] Build Customer list/search screen in `apps/mobile/lib/presentation/screens/customer_list_screen.dart`
-- [ ] T066 [US4] Build Customer detail screen (info, outstanding debt, ledger history) in `apps/mobile/lib/presentation/screens/customer_detail_screen.dart`
-- [ ] T067 [US4] Build Payment recording dialog in `apps/mobile/lib/presentation/widgets/payment_dialog_debt.dart`
-- [ ] T068 [US4] Integrate customer selection into POS checkout flow (optional link to existing customer) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
+- [x] T065 [US4] Build Customer list/search screen in `apps/mobile/lib/presentation/screens/customer_list_screen.dart`
+- [x] T066 [US4] Build Customer detail screen (info, outstanding debt, ledger history) in `apps/mobile/lib/presentation/screens/customer_detail_screen.dart`
+- [x] T067 [US4] Build Payment recording dialog in `apps/mobile/lib/presentation/widgets/payment_dialog_debt.dart`
+- [x] T068 [US4] Integrate customer selection into POS checkout flow (optional link to existing customer) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
 
 **Checkpoint**: Full debt lifecycle (create debt on sale → view ledger → record payment) should work
 
@@ -165,22 +165,22 @@
 
 ### Web Admin (Flutter Web)
 
-- [ ] T069 [P] [WEB] Setup shared code between mobile and web-admin via `packages/shared/dart/` in `apps/web-admin/`
-- [ ] T070 [P] [WEB] Build Web Admin login page in `apps/web-admin/lib/presentation/screens/login_screen.dart`
-- [ ] T071 [P] [WEB] Build Web Admin dashboard (reuse dashboard widgets from mobile) in `apps/web-admin/lib/presentation/screens/dashboard_screen.dart`
-- [ ] T072 [P] [WEB] Build Web Admin product management page in `apps/web-admin/lib/presentation/screens/products_screen.dart`
-- [ ] T073 [P] [WEB] Build Web Admin order history page in `apps/web-admin/lib/presentation/screens/orders_screen.dart`
+- [x] T069 [P] [WEB] Setup shared code between mobile and web-admin via `packages/shared/dart/` in `apps/web-admin/`
+- [x] T070 [P] [WEB] Build Web Admin login page in `apps/web-admin/lib/presentation/screens/login_screen.dart`
+- [x] T071 [P] [WEB] Build Web Admin dashboard (reuse dashboard widgets from mobile) in `apps/web-admin/lib/presentation/screens/dashboard_screen.dart`
+- [x] T072 [P] [WEB] Build Web Admin product management page in `apps/web-admin/lib/presentation/screens/products_screen.dart`
+- [x] T073 [P] [WEB] Build Web Admin order history page in `apps/web-admin/lib/presentation/screens/orders_screen.dart`
 
 ### Web Base (Next.js — Public)
 
-- [ ] T074 [P] [WEB] Implement BlogModule (CRUD for admin, public read) in `apps/backend/src/blog/`
-- [ ] T075 [P] [WEB] Create BlogPost entity in `apps/backend/src/blog/entities/blog-post.entity.ts`
-- [ ] T076 [P] [WEB] Build landing page with hero section and product highlights in `apps/web-base/src/app/page.tsx`
-- [ ] T077 [P] [WEB] Build blog listing page (by category) in `apps/web-base/src/app/blog/page.tsx`
-- [ ] T078 [P] [WEB] Build blog post detail page (SSR for SEO) in `apps/web-base/src/app/blog/[slug]/page.tsx`
-- [ ] T079 [P] [WEB] Build product pricing page (current prices, trends) in `apps/web-base/src/app/products/page.tsx`
-- [ ] T080 [P] [WEB] Build contact page in `apps/web-base/src/app/contact/page.tsx`
-- [ ] T081 [WEB] Implement Blog CRUD in Web Admin in `apps/web-admin/lib/presentation/screens/blog_management_screen.dart`
+- [x] T074 [P] [WEB] Implement BlogModule (CRUD for admin, public read) in `apps/backend/src/blog/`
+- [x] T075 [P] [WEB] Create BlogPost entity in `apps/backend/src/blog/entities/blog-post.entity.ts`
+- [x] T076 [P] [WEB] Build landing page with hero section and product highlights in `apps/web-base/src/app/page.tsx`
+- [x] T077 [P] [WEB] Build blog listing page (by category) in `apps/web-base/src/app/blog/page.tsx`
+- [x] T078 [P] [WEB] Build blog post detail page (SSR for SEO) in `apps/web-base/src/app/blog/[slug]/page.tsx`
+- [x] T079 [P] [WEB] Build product pricing page (current prices, trends) in `apps/web-base/src/app/products/page.tsx`
+- [x] T080 [P] [WEB] Build contact page in `apps/web-base/src/app/contact/page.tsx`
+- [x] T081 [WEB] Implement Blog CRUD in Web Admin in `apps/web-admin/lib/presentation/screens/blog_management_screen.dart`
 
 **Checkpoint**: Web admin mirrors core app functions, public website is SEO-ready with blog and product info
 
@@ -190,14 +190,14 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T082 [P] Add comprehensive API documentation (Swagger/OpenAPI) in `apps/backend/`
-- [ ] T083 [P] Add product image upload flow (MinIO integration) across mobile + web-admin
-- [ ] T084 [P] Add QR code generation and printing for internal product labels in `apps/mobile/lib/services/qr_label_service.dart`
-- [ ] T085 Implement data seeding script for demo/testing in `apps/backend/src/database/seeds/`
-- [ ] T086 [P] Add comprehensive error handling and user-friendly error messages across all Flutter apps
-- [ ] T087 [P] Performance optimization: add pagination, caching, and lazy loading across all list screens
-- [ ] T088 Security audit: validate all RBAC guards, SQL injection prevention, JWT expiry handling
-- [ ] T089 Run quickstart.md validation end-to-end (Docker up → migrate → seed → test all flows)
+- [x] T082 [P] Add comprehensive API documentation (Swagger/OpenAPI) in `apps/backend/`
+- [x] T083 [P] Add product image upload flow (MinIO integration) across mobile + web-admin
+- [x] T084 [P] Add QR code generation and printing for internal product labels in `apps/mobile/lib/services/qr_label_service.dart`
+- [x] T085 Implement data seeding script for demo/testing in `apps/backend/src/database/seeds/`
+- [x] T086 [P] Add comprehensive error handling and user-friendly error messages across all Flutter apps
+- [x] T087 [P] Performance optimization: add pagination, caching, and lazy loading across all list screens
+- [x] T088 Security audit: validate all RBAC guards, SQL injection prevention, JWT expiry handling
+- [x] T089 Run quickstart.md validation end-to-end (Docker up → migrate → seed → test all flows)
 
 ---
 
