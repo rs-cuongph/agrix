@@ -108,6 +108,40 @@ async function seed() {
   }
   console.log('✅ Customers seeded');
 
+  // 7. Seed role permissions (ACL)
+  const modules = ['products', 'orders', 'customers', 'blog', 'settings', 'units'];
+  const permissionMatrix: Record<string, Record<string, [boolean, boolean, boolean, boolean]>> = {
+    ADMIN: Object.fromEntries(modules.map(m => [m, [true, true, true, true]])),
+    CASHIER: {
+      products: [true, false, false, false],
+      orders: [true, true, false, false],
+      customers: [true, true, false, false],
+      blog: [false, false, false, false],
+      settings: [false, false, false, false],
+      units: [true, false, false, false],
+    },
+    INVENTORY: {
+      products: [true, true, true, false],
+      orders: [true, false, false, false],
+      customers: [false, false, false, false],
+      blog: [false, false, false, false],
+      settings: [false, false, false, false],
+      units: [true, true, true, false],
+    },
+  };
+
+  for (const [role, perms] of Object.entries(permissionMatrix)) {
+    for (const [mod, [canRead, canCreate, canEdit, canDelete]] of Object.entries(perms)) {
+      await ds.query(
+        `INSERT INTO role_permissions (id, role, module, can_read, can_create, can_edit, can_delete)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)
+         ON CONFLICT (role, module) DO UPDATE SET can_read=$3, can_create=$4, can_edit=$5, can_delete=$6`,
+        [role, mod, canRead, canCreate, canEdit, canDelete],
+      );
+    }
+  }
+  console.log('✅ Role permissions seeded');
+
   console.log('\n🎉 Seed complete! You can login with:');
   console.log('   Admin: admin / admin123');
   console.log('   Cashier: thungan / cashier123');

@@ -12,6 +12,7 @@
     "backend:test": "npm test --workspace=apps/backend",
     "web:dev": "npm run dev --workspace=apps/web-base",
     "web:test": "npm test --workspace=apps/web-base",
+    "db:seed": "cd apps/backend && npx ts-node src/database/seeds/seed.ts",
     "docker:up": "cd docker && docker compose up -d",
     "docker:down": "cd docker && docker compose down"
   }

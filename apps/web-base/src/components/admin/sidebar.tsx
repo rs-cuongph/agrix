@@ -10,6 +10,7 @@ import {
   Users,
   FileText,
   Settings,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const navItems = [
   { href: "/admin/orders", label: "Đơn hàng", icon: ClipboardList },
   { href: "/admin/customers", label: "Khách hàng", icon: Users },
   { href: "/admin/blog", label: "Blog", icon: FileText },
+  { href: "/admin/accounts", label: "Tài khoản", icon: Shield },
   { href: "/admin/settings", label: "Cài đặt", icon: Settings },
 ];
 
