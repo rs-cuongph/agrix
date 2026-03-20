@@ -1,18 +1,24 @@
 import { apiGet } from "@/lib/api";
-import { BlogClient } from "@/components/admin/blog-client";
+import { BlogPageClient } from "@/components/admin/blog-page-client";
 
-type BlogPost = {
-  id: string; title: string; slug: string; status: string;
-  content?: string; createdAt: string;
-};
+export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
-  let posts: BlogPost[] = [];
+  let posts: any[] = [];
+  let categories: any[] = [];
+  let tags: any[] = [];
+
   try {
-    posts = await apiGet<BlogPost[]>("/blog/admin/posts");
+    [posts, categories, tags] = await Promise.all([
+      apiGet<any[]>("/blog/admin/posts"),
+      apiGet<any[]>("/blog/admin/categories"),
+      apiGet<any[]>("/blog/admin/tags"),
+    ]);
   } catch (e) {
     console.error("Blog fetch error:", e);
   }
 
-  return <BlogClient posts={posts} />;
+  return (
+    <BlogPageClient posts={posts} categories={categories} tags={tags} />
+  );
 }

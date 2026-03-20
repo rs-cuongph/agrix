@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
-
-export const MINIO_CLIENT = 'MINIO_CLIENT';
+import { StorageService } from './storage.service';
+import { MINIO_CLIENT } from './storage.constants';
 
 @Module({
   imports: [ConfigModule],
@@ -20,7 +20,8 @@ export const MINIO_CLIENT = 'MINIO_CLIENT';
         });
       },
     },
+    StorageService,
   ],
-  exports: [MINIO_CLIENT],
+  exports: [MINIO_CLIENT, StorageService],
 })
 export class StorageModule {}

@@ -1,45 +1,68 @@
-import { Settings, Store, Printer, RefreshCw, Info } from "lucide-react";
+import { apiGet, type PaginatedResponse } from "@/lib/api";
+import { SettingsClient } from "@/components/admin/settings-client";
 
-export default function SettingsPage() {
+type Category = { id: string; name: string; description?: string };
+type BaseUnit = { id: string; name: string; abbreviation?: string; description?: string };
+type UnitConversion = {
+  id: string; productId: string; unitName: string;
+  conversionFactor: number; sellPrice: number | null;
+  product: { id: string; name: string; baseUnit: string; baseSellPrice: number };
+};
+type Product = { id: string; name: string; baseUnit: string; baseSellPrice: number };
+type AdminUser = {
+  id: string; username: string; fullName: string;
+  role: string; isActive: boolean; createdAt: string;
+};
+type Permission = {
+  id: string; role: string; module: string;
+  canRead: boolean; canCreate: boolean; canEdit: boolean; canDelete: boolean;
+};
+
+export default async function SettingsPage() {
+  let categories: Category[] = [];
+  let baseUnits: BaseUnit[] = [];
+  let conversions: UnitConversion[] = [];
+  let products: Product[] = [];
+  let users: AdminUser[] = [];
+  let permissions: Permission[] = [];
+  let userRole = "";
+
+  try {
+    const [catRes, unitRes, convRes, prodRes, meRes] = await Promise.all([
+      apiGet<Category[]>("/categories"),
+      apiGet<BaseUnit[]>("/units"),
+      apiGet<UnitConversion[]>("/unit-conversions"),
+      apiGet<PaginatedResponse<Product>>("/products"),
+      apiGet<{ role: string }>("/auth/me"),
+    ]);
+    categories = catRes;
+    baseUnits = unitRes;
+    conversions = convRes;
+    products = prodRes.data;
+    userRole = meRes.role;
+
+    // Only fetch accounts if ADMIN
+    if (userRole === "ADMIN") {
+      const [userRes, permRes] = await Promise.all([
+        apiGet<AdminUser[]>("/admin-users"),
+        apiGet<Permission[]>("/admin-users/permissions"),
+      ]);
+      users = userRes;
+      permissions = permRes;
+    }
+  } catch (e) {
+    console.error("Settings data fetch error:", e);
+  }
+
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-        <Settings className="w-6 h-6" /> Cài đặt
-      </h1>
-
-      <div className="space-y-3 max-w-2xl">
-        <div className="rounded-xl border bg-card p-4 shadow-sm flex items-center gap-4 hover:bg-muted/30 transition-colors cursor-pointer">
-          <Store className="w-5 h-5 text-emerald-600" />
-          <div className="flex-1">
-            <p className="font-medium">Thông tin cửa hàng</p>
-            <p className="text-sm text-muted-foreground">Agrix — Đại lý vật tư nông nghiệp</p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-card p-4 shadow-sm flex items-center gap-4 hover:bg-muted/30 transition-colors cursor-pointer">
-          <Printer className="w-5 h-5 text-blue-600" />
-          <div className="flex-1">
-            <p className="font-medium">Cài đặt máy in</p>
-            <p className="text-sm text-muted-foreground">Chưa kết nối máy in</p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-card p-4 shadow-sm flex items-center gap-4 hover:bg-muted/30 transition-colors cursor-pointer">
-          <RefreshCw className="w-5 h-5 text-orange-600" />
-          <div className="flex-1">
-            <p className="font-medium">Đồng bộ dữ liệu</p>
-            <p className="text-sm text-muted-foreground">Backend: http://localhost:3000/api/v1</p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-card p-4 shadow-sm flex items-center gap-4 hover:bg-muted/30 transition-colors cursor-pointer">
-          <Info className="w-5 h-5 text-gray-600" />
-          <div className="flex-1">
-            <p className="font-medium">Phiên bản</p>
-            <p className="text-sm text-muted-foreground">Agrix Admin v2.0.0 (Next.js)</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <SettingsClient
+      categories={categories}
+      baseUnits={baseUnits}
+      conversions={conversions}
+      products={products}
+      users={users}
+      permissions={permissions}
+      userRole={userRole}
+    />
   );
 }

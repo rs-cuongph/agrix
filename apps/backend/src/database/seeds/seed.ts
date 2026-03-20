@@ -17,6 +17,19 @@ async function seed() {
   await ds.initialize();
   console.log('Connected to database');
 
+  // 0. Drop stale columns removed from entity (TypeORM sync doesn't drop columns)
+  const staleCols = [
+    { table: 'products', col: 'base_cost_price' },
+    { table: 'products', col: 'usage_instructions' },
+    { table: 'products', col: 'image_url' },
+  ];
+  for (const { table, col } of staleCols) {
+    await ds.query(
+      `ALTER TABLE ${table} DROP COLUMN IF EXISTS ${col}`,
+    ).catch(() => {});
+  }
+  console.log('✅ Stale columns cleaned');
+
   // 1. Create admin user
   const passwordHash = await bcrypt.hash('admin123', 10);
   await ds.query(
@@ -54,30 +67,67 @@ async function seed() {
   }
   console.log('✅ Categories seeded');
 
+  // 2b. Create base units
+  const units = [
+    { name: 'Kg', abbreviation: 'Kg', description: 'Kilogram' },
+    { name: 'Gói', abbreviation: 'Gói', description: 'Gói / Bịch' },
+    { name: 'Cái', abbreviation: 'Cái', description: 'Cái / Chiếc' },
+    { name: 'Chai', abbreviation: 'Chai', description: 'Chai / Lọ' },
+  ];
+  for (const u of units) {
+    await ds.query(
+      `INSERT INTO units (id, name, abbreviation, description)
+       VALUES (gen_random_uuid(), $1, $2, $3)
+       ON CONFLICT DO NOTHING`,
+      [u.name, u.abbreviation, u.description],
+    );
+  }
+  console.log('✅ Units seeded');
+
   // 3. Get category IDs
   const catRows = await ds.query(`SELECT id, name FROM categories`);
   const catMap = Object.fromEntries(catRows.map((c: any) => [c.name, c.id]));
 
-  // 4. Create products
+  // 4. Create products (initial stock = 0, will be set via stock entries)
   const products = [
-    { sku: 'TTS-001', name: 'Thuốc trừ sâu Regent 800WG', category: 'Thuốc trừ sâu', baseUnit: 'Gói', costPrice: 15000, sellPrice: 22000, stock: 500 },
-    { sku: 'TTS-002', name: 'Thuốc diệt cỏ Gramaxone', category: 'Thuốc trừ sâu', baseUnit: 'Chai', costPrice: 45000, sellPrice: 65000, stock: 200 },
-    { sku: 'PB-001', name: 'Phân NPK 16-16-8 Đầu Trâu', category: 'Phân bón', baseUnit: 'Kg', costPrice: 8000, sellPrice: 12000, stock: 2000 },
-    { sku: 'PB-002', name: 'Phân hữu cơ vi sinh Sông Gianh', category: 'Phân bón', baseUnit: 'Kg', costPrice: 5000, sellPrice: 8000, stock: 3000 },
-    { sku: 'HG-001', name: 'Hạt giống dưa leo F1', category: 'Hạt giống', baseUnit: 'Gói', costPrice: 25000, sellPrice: 40000, stock: 150 },
-    { sku: 'HG-002', name: 'Hạt giống cà chua Savior', category: 'Hạt giống', baseUnit: 'Gói', costPrice: 35000, sellPrice: 55000, stock: 100 },
-    { sku: 'DC-001', name: 'Bình xịt điện 20L', category: 'Dụng cụ', baseUnit: 'Cái', costPrice: 450000, sellPrice: 650000, stock: 20 },
+    { sku: 'TTS-001', name: 'Thuốc trừ sâu Regent 800WG', category: 'Thuốc trừ sâu', baseUnit: 'Gói', sellPrice: 22000, stock: 500, costPrice: 15000 },
+    { sku: 'TTS-002', name: 'Thuốc diệt cỏ Gramaxone', category: 'Thuốc trừ sâu', baseUnit: 'Chai', sellPrice: 65000, stock: 200, costPrice: 45000 },
+    { sku: 'PB-001', name: 'Phân NPK 16-16-8 Đầu Trâu', category: 'Phân bón', baseUnit: 'Kg', sellPrice: 12000, stock: 2000, costPrice: 8000 },
+    { sku: 'PB-002', name: 'Phân hữu cơ vi sinh Sông Gianh', category: 'Phân bón', baseUnit: 'Kg', sellPrice: 8000, stock: 3000, costPrice: 5000 },
+    { sku: 'HG-001', name: 'Hạt giống dưa leo F1', category: 'Hạt giống', baseUnit: 'Gói', sellPrice: 40000, stock: 150, costPrice: 25000 },
+    { sku: 'HG-002', name: 'Hạt giống cà chua Savior', category: 'Hạt giống', baseUnit: 'Gói', sellPrice: 55000, stock: 100, costPrice: 35000 },
+    { sku: 'DC-001', name: 'Bình xịt điện 20L', category: 'Dụng cụ', baseUnit: 'Cái', sellPrice: 650000, stock: 20, costPrice: 450000 },
   ];
 
   for (const p of products) {
     await ds.query(
-      `INSERT INTO products (id, sku, name, category_id, base_unit, base_cost_price, base_sell_price, current_stock_base, is_active)
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, true)
+      `INSERT INTO products (id, sku, name, category_id, base_unit, base_sell_price, current_stock_base, is_active)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, true)
        ON CONFLICT (sku) DO NOTHING`,
-      [p.sku, p.name, catMap[p.category], p.baseUnit, p.costPrice, p.sellPrice, p.stock],
+      [p.sku, p.name, catMap[p.category], p.baseUnit, p.sellPrice, p.stock],
     );
   }
   console.log('✅ Products seeded');
+
+  // 4b. Create stock entry IMPORT records for initial stock (data consistency)
+  const adminRow = await ds.query(`SELECT id FROM users WHERE username = 'admin' LIMIT 1`);
+  const adminId = adminRow[0]?.id;
+  const prodRows = await ds.query(`SELECT id, sku FROM products`);
+  const prodMap = Object.fromEntries(prodRows.map((r: any) => [r.sku, r.id]));
+
+  for (const p of products) {
+    const productId = prodMap[p.sku];
+    if (!productId) continue;
+    const now = new Date();
+    const batchNumber = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${p.sku}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    await ds.query(
+      `INSERT INTO stock_entries (id, product_id, quantity_base, type, cost_price_per_unit, batch_number, remaining_quantity, note, created_by)
+       VALUES (gen_random_uuid(), $1, $2, 'IMPORT', $3, $4, $2, 'Nhập tồn kho ban đầu (seed)', $5)
+       ON CONFLICT DO NOTHING`,
+      [productId, p.stock, p.costPrice, batchNumber, adminId],
+    );
+  }
+  console.log('✅ Stock entries seeded');
 
   // 5. Create unit conversions for NPK (Bao = 50kg)
   const npkRow = await ds.query(`SELECT id FROM products WHERE sku = 'PB-001'`);

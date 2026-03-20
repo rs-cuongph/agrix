@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Users, Plus, Pencil, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Customer = {
   id: string; name: string; phone: string; address: string; outstandingDebt: number;
@@ -21,15 +22,18 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
 
   const handleCreate = async (data: Record<string, any>) => {
     await adminApiCall("/customers", "POST", data);
+    toast.success("Tạo khách hàng thành công");
     router.refresh();
   };
   const handleEdit = async (data: Record<string, any>) => {
     await adminApiCall(`/customers/${dialog?.data?.id}`, "PUT", data);
+    toast.success("Cập nhật khách hàng thành công");
     router.refresh();
   };
   const handleDelete = async (id: string) => {
     if (!confirm("Xóa khách hàng này? Dữ liệu công nợ sẽ bị mất.")) return;
     await adminApiCall(`/customers/${id}`, "DELETE");
+    toast.success("Xóa khách hàng thành công");
     router.refresh();
   };
 

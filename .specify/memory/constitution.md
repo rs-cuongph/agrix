@@ -1,20 +1,12 @@
 <!-- Sync Impact Report
-Version change: 0.0.0 → 1.0.0
-Modified principles: None (Initial Ratification)
-Added sections: 
-- I. Mobile-First & Offline-First
-- II. Monorepo Architecture
-- III. Scalable Core
-- IV. Traceability & Financial Accuracy
-- V. Simple & Intuitive UI
-- Technical Constraints
-- Development Workflow
+Version change: 1.1.0 → 1.2.0
+Modified principles:
+- V. Simple & Intuitive UI → Added CRUD toast notification rule
+Added sections: None
 Removed sections: None
-Templates requiring updates: 
-- ⚠ .specify/templates/plan-template.md
-- ⚠ .specify/templates/spec-template.md
-- ⚠ .specify/templates/tasks-template.md
-Follow-up TODOs: Implement automated testing requirements.
+Templates requiring updates:
+- ✅ .specify/memory/constitution.md
+Follow-up TODOs: None
 -->
 
 # Agrix Constitution
@@ -36,6 +28,10 @@ All inventory modifications and financial transactions must be precisely traceab
 ### V. Simple & Intuitive UI
 The user interface must prioritize operational speed and clarity. It must adhere to Clean & Minimalist Material Design 3 principles, relying on ample negative space, unambiguous color coding (Emerald Green for primary actions), and support for hardware (EAN-13 Barcode scanners, thermal Bluetooth printers).
 
+**No Emoji Icons**: Web UI MUST NOT use Unicode emoji characters (e.g., 📋, 📥, 🔧) as icons. All icons MUST come from icon libraries (lucide-react for Next.js web, Material Icons for Flutter). This ensures consistent rendering across browsers and devices.
+
+**CRUD Toast Notifications**: All Create/Update/Delete operations MUST show a Sonner toast notification on completion. Success → `toast.success(message)`. Error → `toast.error(message)`. API errors (401/403/404/500) are handled globally by `adminApiCall`. This applies to all admin modules without exception.
+
 ## Technical & Infrastructure Constraints
 
 - **Backend**: NestJS (Node.js) with PostgreSQL as the primary RDBMS.
@@ -53,4 +49,4 @@ The user interface must prioritize operational speed and clarity. It must adhere
 The strict architectural guidelines regarding the offline-first sync mechanism and the monorepo structure supersede generic coding practices.
 Any amendments to these core rules (e.g., splitting the monorepo, changing the primary datastore) require formal documentation, impact analysis on the background sync worker, and approval from the lead engineer.
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-19 | **Last Amended**: 2026-03-19
+**Version**: 1.2.0 | **Ratified**: 2026-03-19 | **Last Amended**: 2026-03-20

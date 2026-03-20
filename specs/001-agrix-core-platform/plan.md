@@ -1,110 +1,72 @@
-# Implementation Plan: ACL + Admin Account Management (FR-016)
+# Implementation Plan: Batch-Based Stock System
 
-**Branch**: `001-agrix-core-platform` | **Date**: 2026-03-20
-**Input**: FR-016 — RBAC + Module ACL for admin account management
+**Branch**: `001-agrix-core-platform` | **Date**: 2026-03-20 | **Spec**: [spec.md](file:///Users/cuongph/Workspace/agrix/specs/001-agrix-core-platform/spec.md)
+**Input**: FR-017, FR-018 — Batch-level inventory tracking with FIFO deduction
 
 ## Summary
 
-Add module-level permissions (ACL) to existing RBAC system and a new `/admin/accounts` page for managing admin users and their permissions. The existing `User` entity already serves as admin accounts — no new AdminUser entity needed.
+Implement batch-level stock tracking where each import creates a numbered batch (YYYYMMDD-SKU-HHMM) with `remainingQuantity`. All stock deductions (SALE, ADJUSTMENT, DAMAGE, RETURN) use **FIFO** — splitting into multiple StockEntry records per batch deducted. This enables **per-order profit calculation** by preserving `costPricePerUnit` from the source batch on each deduction entry.
 
-## Technical Context — Existing Auth System
+## Technical Context
 
-**Already exists:**
-- ✅ `User` entity: id, username, passwordHash, fullName, role (ADMIN|CASHIER|INVENTORY), isActive
-- ✅ `AuthService`: login, createUser (with bcrypt hashing)
-- ✅ `RolesGuard`: checks `user.role` against `@Roles()` decorator
-- ✅ JWT strategy: extracts user from token
-
-**What's missing:**
-- ❌ Module-level permissions per role (e.g., CASHIER can read Products but not edit Blog)
-- ❌ Admin UI to manage users
-- ❌ Admin UI to manage role-permission assignments
+**Language/Version**: TypeScript 5.x (NestJS 10 backend, Next.js 14 frontend)
+**Primary Dependencies**: TypeORM, PostgreSQL, sonner (toasts), lucide-react
+**Storage**: PostgreSQL (existing) — migration needed for new column
+**Testing**: Manual verification + build check
+**Target Platform**: Web (admin dashboard)
+**Project Type**: Monorepo web application (apps/backend + apps/web-base)
+**Constraints**: Offline-first POS sync must not break; FIFO logic must be transaction-safe
 
 ## Constitution Check
 
-| Gate | Status |
-|------|--------|
-| II. Monorepo | ✅ PASS |
-| III. Modular Monolith | ✅ PASS — extends auth module |
-| IV. Security | ✅ PASS — bcrypt passwords, JWT auth, module ACL |
+*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-## Proposed Changes
+| Principle | Status | Notes |
+|-----------|--------|-------|
+| I. Offline-First | ✅ PASS | Backend-only change; POS sync untouched |
+| II. Monorepo | ✅ PASS | Changes within existing apps/ structure |
+| III. Modular Monolith | ✅ PASS | Changes scoped to `inventory` module |
+| IV. Traceability | ✅ PASS | Core goal — batch tracking enhances traceability |
+| V. Simple UI | ✅ PASS | FIFO auto-deduction simplifies UX (no batch selection) |
+| CRUD Toasts | ✅ PASS | Already implemented globally |
+| No Emoji Icons | ✅ PASS | Using lucide-react |
 
-### Phase 1: Backend — RolePermission Entity + Seed
+## Project Structure
 
-#### [NEW] `apps/backend/src/auth/entities/role-permission.entity.ts`
-- Entity: `role_permissions` table
-- Fields: `id`, `role` (UserRole enum), `module` (string enum), `canRead`, `canCreate`, `canEdit`, `canDelete`
-- Unique constraint on (role, module)
+### Documentation (this feature)
 
-#### [MODIFY] [auth.module.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/auth/auth.module.ts)
-- Register `RolePermission` entity in TypeORM
+```text
+specs/001-agrix-core-platform/
+├── plan.md              # This file
+├── research.md          # Phase 0 — no unknowns, decisions documented
+├── data-model.md        # Phase 1 — entity changes
+├── contracts/           # Phase 1 — API contract updates
+│   └── stock-api.md
+└── tasks.md             # Phase 2 — task breakdown (speckit.tasks)
+```
 
-#### [MODIFY] [seed.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/database/seeds/seed.ts)
-- Seed default permissions: ADMIN=full access, CASHIER=read products+orders, INVENTORY=read/edit products+stock
+### Source Code (changes)
 
----
+```text
+apps/backend/src/inventory/
+├── entities/
+│   └── stock-entry.entity.ts     # [MODIFY] Add remainingQuantity, make batchNumber required for IMPORT
+├── stock-import.service.ts        # [MODIFY] FIFO logic, auto-generate batchNumber, split deductions
+├── stock.controller.ts            # [MODIFY] Add batch-listing endpoint
+└── inventory.module.ts            # [NO CHANGE]
 
-### Phase 2: Backend — Permissions Guard + Service
+apps/web-base/src/
+├── components/admin/
+│   └── inventory-client.tsx       # [MODIFY] Update import form (auto batchNumber), adjust form UX
+└── app/admin/inventory/
+    └── page.tsx                   # [MODIFY] Pass batch data to client
 
-#### [NEW] `apps/backend/src/auth/guards/permissions.guard.ts`
-- `@Permissions('products', 'canEdit')` decorator
-- Guard checks user's role against `role_permissions` table
-- ADMIN role bypasses all checks (superadmin)
+apps/backend/src/database/seeds/
+└── seed.ts                        # [MODIFY] Set remainingQuantity on IMPORT entries
+```
 
-#### [NEW] `apps/backend/src/auth/permissions.service.ts`
-- `getPermissionsForRole(role)` — returns all module permissions
-- `updatePermission(role, module, permissions)` — updates specific permission
-- `getAllPermissions()` — returns role-permission matrix
+**Structure Decision**: All changes within existing modules. No new modules needed.
 
-#### [NEW] `apps/backend/src/auth/admin-users.controller.ts`
-- `GET /admin-users` — list all users (without password)
-- `POST /admin-users` — create new user
-- `PUT /admin-users/:id` — update user (role, fullName, isActive)
-- `DELETE /admin-users/:id` — deactivate user
-- `GET /admin-users/permissions` — get full permission matrix
-- `PUT /admin-users/permissions/:role` — update permissions for a role
+## Complexity Tracking
 
----
-
-### Phase 3: Frontend — Admin Accounts Page
-
-#### [NEW] `apps/web-base/src/components/admin/accounts-client.tsx`
-- Users table + CRUD (Create/Edit/Toggle Active)
-- Permission matrix editor: checkboxes per module × action
-
-#### [NEW] `apps/web-base/src/app/admin/accounts/page.tsx`
-- Server component fetching users + permissions
-
-#### [MODIFY] [sidebar.tsx](file:///Users/cuongph/Workspace/agrix/apps/web-base/src/components/admin/sidebar.tsx)
-- Add "Tài khoản" nav item with Shield icon
-
-## Data Model
-
-### RolePermission
-| Field | Type | Description |
-|-------|------|-------------|
-| id | UUID | PK |
-| role | ENUM(ADMIN,CASHIER,INVENTORY) | FK to UserRole |
-| module | VARCHAR | products, orders, customers, blog, settings, units |
-| canRead | BOOLEAN | default true |
-| canCreate | BOOLEAN | default false |
-| canEdit | BOOLEAN | default false |
-| canDelete | BOOLEAN | default false |
-
-### Default Permissions Seed
-
-| Role | Products | Orders | Customers | Blog | Settings | Units |
-|------|----------|--------|-----------|------|----------|-------|
-| ADMIN | RCUD | RCUD | RCUD | RCUD | RCUD | RCUD |
-| CASHIER | R--- | RC-- | RC-- | ---- | ---- | R--- |
-| INVENTORY | RCU- | R--- | ---- | ---- | ---- | RCU- |
-
-R=Read, C=Create, U=Update/Edit, D=Delete
-
-## Verification Plan
-
-- `npm run build` — zero errors
-- Login as admin → see all modules
-- Login as cashier → restricted to permitted modules
-- Admin can create/edit users, toggle active, update role permissions
+No constitution violations. No complexity justification needed.

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Plus, Pencil, Power, Key } from "lucide-react";
+import { Shield, Plus, Pencil, Power, Key, Users as UsersIcon, Lightbulb } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type AdminUser = {
   id: string; username: string; fullName: string;
@@ -41,6 +43,7 @@ const editUserFields = [
       { value: "CASHIER", label: "Thu ngân" },
       { value: "INVENTORY", label: "Kho" },
     ] },
+  { name: "password", label: "Mật khẩu mới", placeholder: "Để trống nếu không đổi" },
 ];
 
 const ROLE_LABELS: Record<string, string> = {
@@ -56,11 +59,13 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
 
   const handleCreate = async (data: Record<string, any>) => {
     await adminApiCall("/admin-users", "POST", data);
+    toast.success("Tạo tài khoản thành công");
     router.refresh();
   };
 
   const handleEdit = async (data: Record<string, any>) => {
     await adminApiCall(`/admin-users/${dialog?.data?.id}`, "PUT", data);
+    toast.success("Cập nhật tài khoản thành công");
     router.refresh();
   };
 
@@ -68,6 +73,7 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
     const user = users.find(u => u.id === id);
     if (!user) return;
     await adminApiCall(`/admin-users/${id}`, "PUT", { isActive: !user.isActive });
+    toast.success(user.isActive ? "Đã vô hiệu hóa tài khoản" : "Đã kích hoạt tài khoản");
     router.refresh();
   };
 
@@ -87,6 +93,7 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
         module, canRead: perm.canRead, canCreate: perm.canCreate,
         canEdit: perm.canEdit, canDelete: perm.canDelete,
       });
+      toast.success("Lưu phân quyền thành công");
     } finally {
       setSaving(false);
     }
@@ -110,11 +117,11 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
       <div className="flex gap-1 border-b">
         <button onClick={() => setTab("users")}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === "users" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-          👥 Tài khoản
+          <UsersIcon className="w-4 h-4 inline mr-1" /> Tài khoản
         </button>
         <button onClick={() => setTab("permissions")}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === "permissions" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-          🔐 Phân quyền
+          <Key className="w-4 h-4 inline mr-1" /> Phân quyền
         </button>
       </div>
 
@@ -200,9 +207,9 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
                         <td className="px-4 py-2 font-medium">{MODULE_LABELS[mod]}</td>
                         {["canRead", "canCreate", "canEdit", "canDelete"].map((field) => (
                           <td key={field} className="text-center px-3 py-2">
-                            <input type="checkbox" checked={perm ? (perm as any)[field] : false}
-                              onChange={() => togglePerm(role, mod, field)}
-                              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                            <Checkbox checked={perm ? (perm as any)[field] : false}
+                              onCheckedChange={() => togglePerm(role, mod, field)}
+                              className="mx-auto" />
                           </td>
                         ))}
                         <td className="text-center px-3 py-2">
@@ -218,8 +225,8 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
               </table>
             </div>
           ))}
-          <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-700">
-            💡 <strong>Quản trị viên (ADMIN)</strong> luôn có toàn quyền truy cập — không thể giới hạn.
+          <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-700 flex items-center gap-1.5">
+            <Lightbulb className="w-4 h-4" /> <strong>Quản trị viên (ADMIN)</strong> luôn có toàn quyền truy cập — không thể giới hạn.
           </div>
         </div>
       )}

@@ -32,9 +32,6 @@ export class Product {
   @Column({ name: 'base_unit' })
   baseUnit: string;
 
-  @Column({ name: 'base_cost_price', type: 'int' })
-  baseCostPrice: number;
-
   @Column({ name: 'base_sell_price', type: 'int' })
   baseSellPrice: number;
 
@@ -50,9 +47,6 @@ export class Product {
   @Column({ name: 'expiration_alert_days', type: 'int', default: 30 })
   expirationAlertDays: number;
 
-  @Column({ name: 'usage_instructions', type: 'text', nullable: true })
-  usageInstructions: string;
-
   @Column({ type: 'text', nullable: true })
   description: string;
 
@@ -61,9 +55,6 @@ export class Product {
 
   @Column({ name: 'qr_code_internal', unique: true, nullable: true })
   qrCodeInternal: string;
-
-  @Column({ name: 'image_url', nullable: true })
-  imageUrl: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
