@@ -1,93 +1,48 @@
-# Quickstart — Agrix Core Platform
+# Quickstart: Web Admin (Next.js)
 
 ## Prerequisites
+- Node.js 18+
+- Backend running on `localhost:3000` (see backend quickstart)
+- Seeded database (`npm run seed` in backend)
 
-- **Docker** & **Docker Compose** (v2+)
-- **Flutter SDK** 3.x (for mobile/web-admin development)
-- **Node.js** 20+ & **npm** 9+ (for backend & web-base development)
-- **Git**
-
-## 1. Clone & Setup
+## Development
 
 ```bash
-git clone <repo-url> agrix
-cd agrix
-```
-
-## 2. Start Backend Services (Docker)
-
-```bash
-# Copy environment template
-cp docker/.env.example docker/.env
-# Edit docker/.env with your database password, MinIO keys, OpenAI API key, etc.
-
-# Start PostgreSQL, MinIO, NestJS backend
-cd docker
-docker compose up -d
-```
-
-Services will be available at:
-- **NestJS API**: `http://localhost:3000`
-- **MinIO Console**: `http://localhost:9001`
-- **PostgreSQL**: `localhost:5432`
-
-## 3. Run Database Migrations
-
-```bash
-cd apps/backend
-npm install
-npm run migration:run
-```
-
-## 4. Run Flutter Mobile App
-
-```bash
-cd apps/mobile
-flutter pub get
-flutter run -d <device_id>
-```
-
-## 5. Run Flutter Web Admin
-
-```bash
-cd apps/web-admin
-flutter pub get
-flutter run -d chrome
-```
-
-## 6. Run Next.js Web Base
-
-```bash
+# From project root
 cd apps/web-base
+
+# Install dependencies (includes Tailwind + shadcn/ui)
 npm install
+
+# Start dev server (port 3002)
 npm run dev
 ```
 
-Available at: `http://localhost:3001`
+## Access Admin
 
-## 7. Run Tests
+1. Open `http://localhost:3002/admin`
+2. You will be redirected to `/admin/login`
+3. Login with:
+   - Username: `admin`
+   - Password: `admin123`
+4. After login, you'll see the admin dashboard
+
+## Admin Routes
+
+| Route | Description |
+|-------|-------------|
+| `/admin` | Dashboard — revenue, top products, alerts |
+| `/admin/login` | Login page |
+| `/admin/products` | Products CRUD (create, edit, delete) |
+| `/admin/orders` | Order history (read-only) |
+| `/admin/customers` | Customer list + debt management |
+| `/admin/blog` | Blog post management |
+| `/admin/settings` | System settings |
+
+## Build for Production
 
 ```bash
-# Backend tests
-cd apps/backend && npm test
-
-# Flutter unit tests
-cd apps/mobile && flutter test
-
-# Flutter integration tests
-cd apps/mobile && flutter test integration_test/
-
-# Next.js tests
-cd apps/web-base && npm test
+cd apps/web-base
+npm run build
+npm run start
 ```
-
-## Key Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection | `postgres://user:pass@localhost:5432/agrix` |
-| `MINIO_ENDPOINT` | MinIO host | `localhost` |
-| `MINIO_ACCESS_KEY` | MinIO access | `minioadmin` |
-| `MINIO_SECRET_KEY` | MinIO secret | `minioadmin` |
-| `OPENAI_API_KEY` | For AI Chatbot | `sk-...` |
-| `JWT_SECRET` | JWT signing key | `your-secret-key` |

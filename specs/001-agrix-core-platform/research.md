@@ -1,95 +1,34 @@
-# Phase 0: Research — Agrix Core Platform
+# Research: Web Admin Next.js Migration
 
-**Date**: 2026-03-19
-**Feature**: [spec.md](spec.md)
+## Decision 1: Auth Strategy for Admin Routes
 
-## Research Topics & Decisions
+**Decision**: Server-side middleware with JWT in httpOnly cookie
+**Rationale**: Next.js middleware runs at the edge before page render, preventing unauthorized access at infrastructure level. httpOnly cookies prevent XSS token theft. Login goes through a Next.js API route that proxies to backend and sets the cookie.
+**Alternatives Considered**:
+- Client-side localStorage + useEffect guard → vulnerable to flash of unauthorized content
+- BFF pattern with separate server → unnecessary complexity for single admin panel
 
-### 1. Offline Sync Strategy for Flutter + NestJS
+## Decision 2: UI Component Library
 
-**Decision**: Implement a **queue-based idempotent sync** using Drift (SQLite) on mobile and a dedicated `/sync` endpoint on NestJS.
+**Decision**: shadcn/ui + Tailwind CSS
+**Rationale**: Copy-paste components (not npm dependency), tree-shakeable, modern design. Provides DataTable, Form, Dialog, Card components out of the box — exactly what admin dashboards need.
+**Alternatives Considered**:
+- Ant Design → heavy bundle, opinionated styling hard to customize
+- MUI → Google Material style but large dependency tree
+- Custom CSS → too time-consuming for admin dashboard
 
-**Rationale**:
-- Each offline transaction gets assigned a UUID (`idempotencyKey`) at creation time on the client.
-- When online, the app's `SyncEngine` sends queued transactions to `POST /api/v1/sync/orders`.
-- The server checks `idempotencyKey` against a `processed_sync_keys` table. If already processed → skip (return success). If new → process and record.
-- This guarantees zero duplicate orders even if the sync request is retried or network flickers.
+## Decision 3: API Communication Pattern
 
-**Alternatives considered**:
-- **CRDTs (Conflict-free Replicated Data Types)**: Powerful but overkill for a single-store POS. Complexity not justified.
-- **Timestamp-based last-write-wins**: Risky for financial data since clock skew between tablets can cause data loss.
+**Decision**: Next.js Server Components fetch backend API directly (server-to-server); Client Components use Next.js API routes as proxy
+**Rationale**: Server Components can fetch with the JWT from cookies directly. For mutations (create/update/delete), Client Components call Next.js API routes which forward to backend with the cookie JWT. This avoids CORS issues entirely for admin pages.
+**Alternatives Considered**:
+- Direct browser→backend calls → CORS issues, token in localStorage
+- GraphQL gateway → overkill for existing REST API
 
----
+## Decision 4: Flutter Web Admin Disposition
 
-### 2. Dynamic Unit Conversion Arithmetic
-
-**Decision**: Store all inventory quantities in the **smallest base unit** (e.g., "Chai"/Bottle is base). Conversion factors are stored per product.
-
-**Rationale**:
-- Arithmetic on integers (base units) avoids all floating-point precision issues.
-- Display logic converts base units → user-selected display unit (e.g., 397 Bottles → "9 Thùng, 37 Chai").
-- Pricing is calculated as: `baseUnitPrice * quantity_in_base_units`.
-
-**Alternatives considered**:
-- **Store in original import unit + fractional fields**: Complex to query, prone to rounding errors.
-- **Decimal fields with precision**: PostgreSQL `NUMERIC` handles this, but integer base-unit is simpler and more universally safe on both SQLite and PostgreSQL.
-
----
-
-### 3. AI Chatbot Architecture (RAG)
-
-**Decision**: Use **OpenAI Embeddings + pgvector** for vector storage, with LangChain.js on NestJS for the RAG pipeline.
-
-**Rationale**:
-- `pgvector` extends the existing PostgreSQL database — no new infra needed.
-- Admin uploads PDF/text documents → NestJS chunks them → generates embeddings → stores in `knowledge_embeddings` table.
-- On query, the system retrieves top-K relevant chunks and passes them as context to GPT-4/Gemini for answer generation.
-- Product-specific queries automatically include the product's own metadata (name, usage instructions) as extra context.
-
-**Alternatives considered**:
-- **Pinecone/Weaviate (managed vector DB)**: More scalable but adds external dependency and cost. pgvector is sufficient for <10K documents.
-- **In-memory FAISS**: Fast but not persistent across restarts and can't be shared across multiple NestJS instances.
-
----
-
-### 4. Thermal Printer Integration
-
-**Decision**: Use the `esc_pos_utils` + `esc_pos_bluetooth` + `esc_pos_printer` Flutter packages for ESC/POS over Bluetooth and Wi-Fi/LAN.
-
-**Rationale**:
-- ESC/POS is the universal protocol for POS58/POS80 thermal printers.
-- `esc_pos_bluetooth` handles Bluetooth discovery and connection.
-- For Wi-Fi/LAN printers, raw TCP socket connection to the printer's IP:9100 using `esc_pos_printer`.
-- Both share the same `esc_pos_utils` for formatting receipts (text alignment, QR codes on bill, cut commands).
-
-**Alternatives considered**:
-- **Platform channels with native Android printing SDK**: Maximum control but significantly more code and no iOS portability.
-- **CUPS/OS-level printing**: Not suitable for raw thermal receipt formatting.
-
----
-
-### 5. VietQR Payment Integration
-
-**Decision**: Generate VietQR codes client-side using the NAPAS standard (VietQR format) with the `qr_flutter` package.
-
-**Rationale**:
-- VietQR follows the EMV QR Code standard. The QR payload encodes: bank BIN, account number, amount, and transaction description.
-- No external API call needed — the QR is generated entirely on-device from pre-configured bank account details (stored in app settings).
-- The cashier displays the QR on tablet screen for the customer to scan with their banking app.
-
-**Alternatives considered**:
-- **Payment gateway integration (VNPay, MoMo)**: Requires merchant registration, API keys, and transaction fees. Overkill for a simple "show QR to scan" workflow.
-
----
-
-### 6. Monorepo Tooling
-
-**Decision**: Use **Melos** for Dart/Flutter packages and **npm workspaces** for TypeScript packages.
-
-**Rationale**:
-- `melos` is the standard monorepo manager for Flutter/Dart. It handles inter-package dependencies, versioning, and running scripts across all packages.
-- `npm workspaces` (built into npm 7+) manages the NestJS backend + Next.js web-base + shared TypeScript types without extra tooling (no Nx/Turborepo needed at this scale).
-
-**Alternatives considered**:
-- **Nx monorepo**: Powerful but heavy. Overkill for 2 TypeScript apps at this stage.
-- **Turborepo**: Good caching but adds complexity. npm workspaces are sufficient.
+**Decision**: Keep but mark as deprecated
+**Rationale**: Zero-risk rollback option. Can be removed after Next.js admin is verified stable.
+**Alternatives Considered**:
+- Delete immediately → no fallback
+- Maintain both → double the maintenance cost

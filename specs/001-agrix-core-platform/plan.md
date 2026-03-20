@@ -1,108 +1,111 @@
-# Implementation Plan: Agrix Core Platform
+# Implementation Plan: Web Admin Migration to Next.js
 
-**Branch**: `001-agrix-core-platform` | **Date**: 2026-03-19 | **Spec**: [spec.md](spec.md)
-**Input**: Feature specification from `/specs/001-agrix-core-platform/spec.md`
+**Branch**: `001-agrix-core-platform` | **Date**: 2026-03-20 | **Spec**: [spec.md](file:///Users/cuongph/Workspace/agrix/specs/001-agrix-core-platform/spec.md)
+**Input**: Migrate Web Admin from Flutter Web to Next.js, integrated into `apps/web-base/` under `/admin/*` route.
 
 ## Summary
 
-Build a full-stack agricultural retail management platform with **offline-first POS** on Flutter (Android/Tablet), a **modular monolith NestJS backend**, and a **Next.js public landing page**. The system supports dynamic unit conversions (Box→Bottle), AI-powered product consultation (RAG), thermal printing (ESC/POS via Bluetooth & Wi-Fi), and customer debt tracking — all within a single monorepo.
+Migrate the admin dashboard from Flutter Web (`apps/web-admin/`) to Next.js pages within the existing `apps/web-base/` application. Admin pages live under `/admin/*` route with server-side middleware authentication (JWT in httpOnly cookie). UI uses shadcn/ui + Tailwind CSS. Flutter web-admin is deprecated but retained.
 
 ## Technical Context
 
-**Language/Version**: Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+)
-**Primary Dependencies**:
-- Flutter: `sqflite`, `drift`, `flutter_blue_plus`, `mobile_scanner`, `provider/riverpod`, `dio`, `connectivity_plus`
-- NestJS: `@nestjs/typeorm`, `typeorm`, `@nestjs/jwt`, `@nestjs/passport`, `minio`, `langchain`
-- Next.js: `next`, `react`, `tailwindcss`
-**Storage**: PostgreSQL 15+ (server), SQLite via Drift (local app), MinIO (object storage)
-**Testing**: `flutter_test` + `integration_test` (Flutter), `jest` + `supertest` (NestJS), `jest` (Next.js)
-**Target Platform**: Android Tablet (primary), Android Phone, Web (Chrome/Firefox)
-**Project Type**: Monorepo (mobile-app + web-service + web-app)
-**Performance Goals**: POS barcode scan-to-cart <500ms, Background sync <5min after reconnect, AI response <3s
-**Constraints**: Offline-capable (all POS operations), ESC/POS thermal printing, single monorepo
-**Scale/Scope**: Single-store operation (1-5 concurrent tablets), ~500-2000 SKUs, ~50-200 daily transactions
+**Language/Version**: TypeScript 5.x, React 18, Next.js 14 (App Router)
+**Primary Dependencies**: next, react, shadcn/ui, tailwindcss, lucide-react
+**Storage**: PostgreSQL (via NestJS backend REST API at `localhost:3000`)
+**Testing**: Next.js build verification + manual browser testing
+**Target Platform**: Web browser (desktop admin)
+**Project Type**: Web application (admin panel extension)
+**Constraints**: Must integrate into existing `apps/web-base/` Next.js app; backend API already exists; no new backend modules needed
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
-
-| Principle | Status | Evidence |
-|-----------|--------|----------|
-| I. Mobile-First & Offline-First | ✅ PASS | SQLite via Drift for local storage, background sync with idempotency keys |
-| II. Monorepo Architecture | ✅ PASS | Single repo: `apps/mobile`, `apps/backend`, `apps/web-admin`, `apps/web-base` |
-| III. Scalable Core (Modular Monolith) | ✅ PASS | NestJS modules: AuthModule, InventoryModule, OrderModule, AIModule |
-| IV. Traceability & Financial Accuracy | ✅ PASS | All inventory ops use base-unit arithmetic, RBAC via JWT+Guards |
-| V. Simple & Intuitive UI | ✅ PASS | Material Design 3, Emerald Green palette, hardware peripheral support |
+| Gate | Status | Notes |
+|------|--------|-------|
+| II. Monorepo Architecture | ✅ PASS | Admin integrated into existing `apps/web-base/`, single repo |
+| III. Scalable Core (Modular Monolith) | ✅ PASS | No backend changes, uses existing REST API |
+| V. Simple & Intuitive UI | ✅ PASS | shadcn/ui provides clean, modern Material-like UI |
+| Dev Workflow | ✅ PASS | Standard Next.js dev workflow, `npm run dev` |
 
 ## Project Structure
 
-### Documentation (this feature)
+### Source Code
 
 ```text
-specs/001-agrix-core-platform/
-├── plan.md              # This file
-├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output (API contracts)
-└── tasks.md             # Phase 2 output (/speckit.tasks command)
+apps/web-base/
+├── src/app/
+│   ├── page.tsx                     # Public landing (existing)
+│   ├── blog/                        # Public blog (existing)
+│   ├── products/                    # Public products (existing)
+│   ├── contact/                     # Public contact (existing)
+│   ├── admin/                       # 🆕 Admin section
+│   │   ├── layout.tsx               # Admin layout (sidebar + content)
+│   │   ├── page.tsx                 # Dashboard (/admin)
+│   │   ├── login/
+│   │   │   └── page.tsx             # Login page (/admin/login)
+│   │   ├── products/
+│   │   │   └── page.tsx             # Products CRUD (/admin/products)
+│   │   ├── orders/
+│   │   │   └── page.tsx             # Orders read-only (/admin/orders)
+│   │   ├── customers/
+│   │   │   └── page.tsx             # Customers + Debt (/admin/customers)
+│   │   ├── blog/
+│   │   │   └── page.tsx             # Blog management (/admin/blog)
+│   │   └── settings/
+│   │       └── page.tsx             # Settings (/admin/settings)
+│   └── api/
+│       └── auth/
+│           ├── login/route.ts       # 🆕 Proxy login → sets httpOnly cookie
+│           └── logout/route.ts      # 🆕 Clears cookie
+├── src/components/
+│   └── admin/                       # 🆕 Admin UI components
+│       ├── sidebar.tsx
+│       ├── stat-card.tsx
+│       └── data-table.tsx
+├── src/lib/
+│   ├── api.ts                       # 🆕 Server-side API client (fetch)
+│   └── auth.ts                      # 🆕 Cookie/JWT helpers
+├── middleware.ts                     # 🆕 Auth guard for /admin/*
+├── tailwind.config.ts               # 🆕 Tailwind configuration
+├── components.json                  # 🆕 shadcn/ui config
+└── postcss.config.mjs               # 🆕 PostCSS for Tailwind
 ```
 
-### Source Code (repository root)
+## Phases
 
-```text
-agrix/
-├── apps/
-│   ├── mobile/                  # Flutter App (Android/Tablet/Desktop)
-│   │   ├── lib/
-│   │   │   ├── core/            # Theme, constants, DI, routing
-│   │   │   ├── data/            # Drift DB, repositories, API clients
-│   │   │   ├── domain/          # Entities, use cases, repository interfaces
-│   │   │   ├── presentation/    # Screens, widgets, state management
-│   │   │   └── services/        # Sync engine, printer service, scanner
-│   │   ├── test/
-│   │   └── integration_test/
-│   │
-│   ├── backend/                 # NestJS API Server
-│   │   ├── src/
-│   │   │   ├── auth/            # AuthModule (JWT, RBAC, guards)
-│   │   │   ├── inventory/       # InventoryModule (products, units, stock)
-│   │   │   ├── orders/          # OrderModule (POS, sync, payments)
-│   │   │   ├── customers/       # CustomerModule (profiles, debt ledger)
-│   │   │   ├── ai/              # AIModule (chatbot, RAG, knowledge base)
-│   │   │   ├── blog/            # BlogModule (content management)
-│   │   │   ├── storage/         # StorageModule (MinIO integration)
-│   │   │   └── common/          # Shared guards, pipes, interceptors
-│   │   └── test/
-│   │
-│   ├── web-admin/               # Flutter Web (Admin Dashboard)
-│   │   ├── lib/
-│   │   └── test/
-│   │
-│   └── web-base/                # Next.js (Public Landing/Blog/SEO)
-│       ├── src/
-│       │   ├── app/             # App Router pages
-│       │   ├── components/
-│       │   └── lib/
-│       └── __tests__/
-│
-├── packages/
-│   └── shared/                  # Shared DTOs, constants, enums
-│       ├── dart/                # Shared Dart code (mobile + web-admin)
-│       └── typescript/          # Shared TS types (backend + web-base)
-│
-├── docker/
-│   ├── docker-compose.yml       # PostgreSQL, MinIO, NestJS, Next.js
-│   ├── Dockerfile.backend
-│   ├── Dockerfile.web-base
-│   └── .env.example
-│
-├── specs/                       # Speckit feature specs
-└── .specify/                    # Speckit configuration
-```
+### Phase 1: Foundation (Tailwind + shadcn/ui + Auth)
+1. Install Tailwind CSS + PostCSS + shadcn/ui in `apps/web-base/`
+2. Create `middleware.ts` — check JWT cookie, redirect unauthorized `/admin/*` → `/admin/login`
+3. Create `src/app/api/auth/login/route.ts` — proxy login to backend, set httpOnly cookie
+4. Create `src/app/api/auth/logout/route.ts` — clear cookie
+5. Create `src/lib/api.ts` — server-side fetch wrapper with JWT from cookie
+6. Create `src/lib/auth.ts` — cookie read/write helpers
 
-**Structure Decision**: Monorepo with `apps/` for deployable applications and `packages/` for shared code. This satisfies Constitution Principle II (Monorepo) while keeping each app independently buildable. Flutter's `melos` or manual `pubspec.yaml` path references can be used for Dart code sharing between `mobile` and `web-admin`.
+### Phase 2: Admin Layout + Login
+7. Create `src/app/admin/layout.tsx` — sidebar navigation + top bar
+8. Create `src/app/admin/login/page.tsx` — login form
+9. Create `src/components/admin/sidebar.tsx` — navigation component
 
-## Complexity Tracking
+### Phase 3: Dashboard + Data Pages
+10. Create `src/app/admin/page.tsx` — dashboard with metrics from `/dashboard/*` endpoints
+11. Create `src/app/admin/products/page.tsx` — products data table with CRUD
+12. Create `src/app/admin/orders/page.tsx` — orders history (read-only)
+13. Create `src/app/admin/customers/page.tsx` — customers + debt info
+14. Create `src/app/admin/blog/page.tsx` — blog management
+15. Create `src/app/admin/settings/page.tsx` — settings page
 
-> No constitution violations detected. No complexity justification needed.
+### Phase 4: Polish + Verification
+16. Verify all pages render with real backend data
+17. Mark `apps/web-admin/` as deprecated (add DEPRECATED.md)
+
+## Verification Plan
+
+### Automated
+- `cd apps/web-base && npm run build` — zero errors
+- `cd apps/web-base && npm run lint` — no lint errors
+
+### Manual
+1. Navigate to `http://localhost:3002/admin` → redirects to `/admin/login`
+2. Login with `admin/admin123` → redirected to dashboard
+3. Dashboard shows real metrics (7 products, 3 customers)
+4. Products page shows data table with 7 seeded products
+5. All navigation links work correctly

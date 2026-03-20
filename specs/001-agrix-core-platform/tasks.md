@@ -1,203 +1,81 @@
-# Tasks: Agrix Core Platform
+# Tasks: Web Admin Next.js Migration
 
 **Input**: Design documents from `/specs/001-agrix-core-platform/`
-**Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/ ✅
+**Prerequisites**: plan.md, spec.md, research.md, quickstart.md
 
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[US-ADM]**: Admin migration user story (all tasks)
 - Include exact file paths in descriptions
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Tailwind + shadcn/ui)
 
-**Purpose**: Monorepo initialization and project scaffolding
+**Purpose**: Install dependencies and configure Tailwind CSS + shadcn/ui in existing `apps/web-base/`
 
-- [x] T001 Create monorepo root structure with `apps/`, `packages/`, `docker/`, `specs/` directories
-- [x] T002 [P] Initialize Flutter project in `apps/mobile/` with dependencies: `drift`, `dio`, `connectivity_plus`, `provider`, `mobile_scanner`, `flutter_blue_plus`, `qr_flutter`
-- [x] T003 [P] Initialize NestJS project in `apps/backend/` with dependencies: `@nestjs/typeorm`, `typeorm`, `@nestjs/jwt`, `@nestjs/passport`, `pg`, `minio`, `langchain`
-- [x] T004 [P] Initialize Next.js 14+ project in `apps/web-base/` with App Router
-- [x] T005 [P] Initialize Flutter Web project in `apps/web-admin/` (shared packages with mobile)
-- [x] T006 [P] Create shared Dart package in `packages/shared/dart/` for DTOs, enums, constants
-- [x] T007 [P] Create shared TypeScript package in `packages/shared/typescript/` for API types
-- [x] T008 [P] Create Docker Compose config in `docker/docker-compose.yml` (PostgreSQL 15, MinIO, NestJS, Next.js)
-- [x] T009 [P] Create `docker/.env.example` with all required environment variables (DATABASE_URL, MINIO keys, JWT_SECRET, OPENAI_API_KEY)
-- [x] T010 [P] Setup Melos for Flutter monorepo management with `melos.yaml` at project root
-- [x] T011 [P] Setup npm workspaces in root `package.json` for `apps/backend` and `apps/web-base`
+- [ ] T001 Install Tailwind CSS, PostCSS, Autoprefixer in `apps/web-base/`
+- [ ] T002 Create Tailwind config at `apps/web-base/tailwind.config.ts` and PostCSS config at `apps/web-base/postcss.config.mjs`
+- [ ] T003 Update `apps/web-base/src/app/globals.css` with Tailwind directives (`@tailwind base/components/utilities`)
+- [ ] T004 Initialize shadcn/ui: run `npx shadcn@latest init` in `apps/web-base/`, create `components.json`
+- [ ] T005 [P] Install shadcn/ui components: `button`, `input`, `card`, `table`, `dialog`, `badge`, `dropdown-menu`, `separator`
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 2: Foundation (Auth + API Client + Middleware)
 
-**Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
+**Purpose**: Core auth infrastructure that MUST be complete before any admin page
 
-**⚠️ CRITICAL**: No user story work can begin until this phase is complete
+**⚠️ CRITICAL**: No admin page work can begin until this phase is complete
 
-- [x] T012 Create PostgreSQL database schema and TypeORM migration framework in `apps/backend/src/database/`
-- [x] T013 [P] Create User entity with RBAC (ADMIN, CASHIER, INVENTORY) in `apps/backend/src/auth/entities/user.entity.ts`
-- [x] T014 [P] Create Category entity with self-referencing parent in `apps/backend/src/inventory/entities/category.entity.ts`
-- [x] T015 [P] Create Product entity with all fields (SKU, base_unit, prices, stock, expiry, barcode) in `apps/backend/src/inventory/entities/product.entity.ts`
-- [x] T016 [P] Create ProductUnitConversion entity in `apps/backend/src/inventory/entities/product-unit-conversion.entity.ts`
-- [x] T017 [P] Create Customer entity in `apps/backend/src/customers/entities/customer.entity.ts`
-- [x] T018 [P] Create StockEntry ledger entity in `apps/backend/src/inventory/entities/stock-entry.entity.ts`
-- [x] T019 Implement AuthModule with JWT strategy, login endpoint, and RBAC guards in `apps/backend/src/auth/`
-- [x] T020 [P] Configure MinIO StorageModule for image uploads in `apps/backend/src/storage/storage.module.ts`
-- [x] T021 [P] Setup global error handling interceptor in `apps/backend/src/common/interceptors/`
-- [x] T022 [P] Setup logging infrastructure in `apps/backend/src/common/logger/`
-- [x] T023 [P] Create Drift (SQLite) database schema in `apps/mobile/lib/data/local/database.dart` mirroring core server entities (Product, Order, Customer, StockEntry)
-- [x] T024 [P] Implement DI and routing setup in `apps/mobile/lib/core/` (theme with Emerald Green palette, Material Design 3)
-- [x] T025 [P] Implement API client with Dio + JWT interceptor in `apps/mobile/lib/data/remote/api_client.dart`
-- [x] T026 [P] Implement connectivity monitoring service in `apps/mobile/lib/services/connectivity_service.dart`
-- [x] T027 Run initial TypeORM migration to create all tables in `apps/backend/`
+- [ ] T006 [P] Create auth helpers at `apps/web-base/src/lib/auth.ts` — cookie read/write for JWT token, `getToken()`, `setToken()`, `clearToken()` using httpOnly cookies
+- [ ] T007 [P] Create server-side API client at `apps/web-base/src/lib/api.ts` — `fetch` wrapper with JWT from cookie, base URL `http://localhost:3000/api/v1`, methods: `apiGet()`, `apiPost()`, `apiPut()`, `apiDelete()`
+- [ ] T008 Create login API route at `apps/web-base/src/app/api/auth/login/route.ts` — proxy POST to backend `/auth/login`, set JWT as httpOnly cookie, return user info
+- [ ] T009 [P] Create logout API route at `apps/web-base/src/app/api/auth/logout/route.ts` — clear JWT cookie
+- [ ] T010 Create Next.js middleware at `apps/web-base/middleware.ts` — check JWT cookie for `/admin/*` paths (except `/admin/login`), redirect to `/admin/login` if missing
 
-**Checkpoint**: Foundation ready — user story implementation can now begin
+**Checkpoint**: Auth infrastructure ready — admin pages can now be built
 
 ---
 
-## Phase 3: User Story 1 — Offline-First Sales Execution (Priority: P1) 🎯 MVP
+## Phase 3: Admin UI (Layout + Login + All Pages)
 
-**Goal**: Enable cashiers to search products (barcode/QR), create orders, process payments (cash + VietQR), print thermal receipts, and work fully offline with background sync.
+**Goal**: Full admin dashboard with sidebar navigation and all data pages calling real backend API
 
-**Independent Test**: Disable network → complete a full sale → restore network → verify the order appears on the server with no duplicates.
+**Independent Test**: Navigate to `http://localhost:3002/admin` → redirected to login → login with `admin/admin123` → see dashboard with real data (7 products, 3 customers)
 
-### Backend Implementation
+### Layout & Login
 
-- [x] T028 [P] [US1] Create Order entity with idempotencyKey and syncStatus in `apps/backend/src/orders/entities/order.entity.ts`
-- [x] T029 [P] [US1] Create OrderItem entity in `apps/backend/src/orders/entities/order-item.entity.ts`
-- [x] T030 [US1] Implement InventoryService (product lookup by barcode/QR/name, stock deduction with base-unit arithmetic) in `apps/backend/src/inventory/inventory.service.ts`
-- [x] T031 [US1] Implement OrderService (create order, validate stock, generate ledger entries) in `apps/backend/src/orders/orders.service.ts`
-- [x] T032 [US1] Implement SyncController with idempotent `POST /sync/orders` endpoint in `apps/backend/src/orders/sync.controller.ts`
-- [x] T033 [P] [US1] Implement ProductsController (GET /products, GET /products/:id, GET /products/lookup) in `apps/backend/src/inventory/products.controller.ts`
-- [x] T034 [P] [US1] Implement OrdersController (POST /orders, GET /orders) in `apps/backend/src/orders/orders.controller.ts`
+- [ ] T011 [US-ADM] Create admin sidebar component at `apps/web-base/src/components/admin/sidebar.tsx` — navigation links: Dashboard, Sản phẩm, Đơn hàng, Khách hàng, Blog, Cài đặt. Use lucide-react icons
+- [ ] T012 [US-ADM] Create admin layout at `apps/web-base/src/app/admin/layout.tsx` — sidebar + main content area, logout button, user display
+- [ ] T013 [US-ADM] Create login page at `apps/web-base/src/app/admin/login/page.tsx` — username/password form, calls `/api/auth/login`, redirects to `/admin` on success
 
-### Mobile App Implementation
+### Dashboard
 
-- [x] T035 [P] [US1] Implement Product repository (local Drift + remote API fallback) in `apps/mobile/lib/data/repositories/product_repository.dart`
-- [x] T036 [P] [US1] Implement Order repository (local-first, queue for sync) in `apps/mobile/lib/data/repositories/order_repository.dart`
-- [x] T037 [US1] Implement SyncEngine service (background sync with idempotency keys, retry, conflict resolution) in `apps/mobile/lib/services/sync_engine.dart`
-- [x] T038 [US1] Implement barcode/QR scanner service using `mobile_scanner` in `apps/mobile/lib/services/scanner_service.dart`
-- [x] T039 [US1] Implement ESC/POS thermal printer service (Bluetooth + Wi-Fi/TCP) in `apps/mobile/lib/services/printer_service.dart`
-- [x] T040 [US1] Implement VietQR generator service (EMV QR Code) in `apps/mobile/lib/services/vietqr_service.dart`
-- [x] T041 [US1] Build POS main screen (product search bar, barcode scan button, product grid) in `apps/mobile/lib/presentation/screens/pos_screen.dart`
-- [x] T042 [US1] Build Cart/Checkout widget (item list, unit selector, total, payment method toggle) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
-- [x] T043 [US1] Build Payment dialog (cash input, VietQR display, print bill button) in `apps/mobile/lib/presentation/widgets/payment_dialog.dart`
-- [x] T044 [US1] Build offline status indicator (sync icon ☁️) in `apps/mobile/lib/presentation/widgets/sync_status_indicator.dart`
-- [x] T045 [US1] Build order history screen in `apps/mobile/lib/presentation/screens/order_history_screen.dart`
+- [ ] T014 [US-ADM] Create stat card component at `apps/web-base/src/components/admin/stat-card.tsx` — reusable metric card (icon, label, value, color)
+- [ ] T015 [US-ADM] Create dashboard page at `apps/web-base/src/app/admin/page.tsx` — fetch `/dashboard/revenue`, `/dashboard/top-products`, `/dashboard/alerts`; display 4 stat cards + top products table + low stock alerts
 
-**Checkpoint**: At this point, the core POS flow (search → cart → pay → print → offline sync) should be fully functional
+### Data Pages
+
+- [ ] T016 [P] [US-ADM] Create products page at `apps/web-base/src/app/admin/products/page.tsx` — data table with SKU, Name, Unit, Price, Stock, Status columns; fetch from `/products`
+- [ ] T017 [P] [US-ADM] Create orders page at `apps/web-base/src/app/admin/orders/page.tsx` — read-only data table; fetch from `/orders`
+- [ ] T018 [P] [US-ADM] Create customers page at `apps/web-base/src/app/admin/customers/page.tsx` — data table with Name, Phone, Address, Outstanding Debt; fetch from `/customers`
+- [ ] T019 [P] [US-ADM] Create blog page at `apps/web-base/src/app/admin/blog/page.tsx` — data table with Title, Author, Status, Date; fetch from `/blog/admin/posts`
+- [ ] T020 [P] [US-ADM] Create settings page at `apps/web-base/src/app/admin/settings/page.tsx` — store info, printer config, sync status, version info
+
+**Checkpoint**: All admin pages functional with real backend data
 
 ---
 
-## Phase 4: User Story 2 — Dynamic Unit Inventory Management (Priority: P2)
+## Phase 4: Polish & Verification
 
-**Goal**: Enable warehouse workers to import stock in bulk units (Thùng/Box) and cashiers to sell in any defined sub-unit (Chai/Bottle) with automatic price calculation and precise stock deduction.
+**Purpose**: Final validation and cleanup
 
-**Independent Test**: Import 10 Boxes (40 Bottles each) → sell 3 Bottles → verify inventory shows 397 Bottles total.
-
-### Backend Implementation
-
-- [x] T046 [US2] Implement StockImportService (import by any unit, convert to base units, create StockEntry) in `apps/backend/src/inventory/stock-import.service.ts`
-- [x] T047 [US2] Implement StockController with `POST /stock/import` and `GET /stock/alerts` in `apps/backend/src/inventory/stock.controller.ts`
-- [x] T048 [US2] Implement unit conversion logic in InventoryService (derive price per unit, validate conversion factors) in `apps/backend/src/inventory/unit-conversion.service.ts`
-- [x] T049 [P] [US2] Implement Categories CRUD controller in `apps/backend/src/inventory/categories.controller.ts`
-- [x] T050 [P] [US2] Implement Products CRUD (create/update with unit conversions) in `apps/backend/src/inventory/products.controller.ts`
-
-### Mobile App Implementation
-
-- [x] T051 [US2] Build Stock Import screen (select product, enter quantity per unit, batch number) in `apps/mobile/lib/presentation/screens/stock_import_screen.dart`
-- [x] T052 [US2] Build Product Management screen (CRUD, unit conversions editor, QR generation) in `apps/mobile/lib/presentation/screens/product_management_screen.dart`
-- [x] T053 [US2] Build unit selector widget (dropdown showing all available units with calculated prices) in `apps/mobile/lib/presentation/widgets/unit_selector_widget.dart`
-- [x] T054 [US2] Build stock alerts widget (low stock + expiring items) in `apps/mobile/lib/presentation/widgets/stock_alerts_widget.dart`
-- [x] T055 [US2] Build Dashboard screen (revenue summary, top products, low stock alerts) in `apps/mobile/lib/presentation/screens/dashboard_screen.dart`
-
-**Checkpoint**: At this point, full inventory lifecycle (import → manage → sell with unit conversion) should work independently
-
----
-
-## Phase 5: User Story 3 — AI-Assisted Agricultural Consultation (Priority: P3)
-
-**Goal**: Provide an AI Chatbot that answers agricultural questions using admin-uploaded documents and product-specific context (RAG).
-
-**Independent Test**: Upload a test PDF with mixing rules → ask "Can Pesticide X be mixed with Fertilizer Y?" → verify the AI answers using the uploaded document.
-
-### Backend Implementation
-
-- [x] T056 [P] [US3] Enable `pgvector` extension and create KnowledgeDocument + KnowledgeEmbedding entities in `apps/backend/src/ai/entities/`
-- [x] T057 [US3] Implement KnowledgeService (upload document, chunk text, generate embeddings, store in pgvector) in `apps/backend/src/ai/knowledge.service.ts`
-- [x] T058 [US3] Implement ChatbotService (query embeddings, build RAG context, call OpenAI/Gemini, return answer with sources) in `apps/backend/src/ai/chatbot.service.ts`
-- [x] T059 [US3] Implement AIController (`POST /ai/ask`, `POST /ai/knowledge`) in `apps/backend/src/ai/ai.controller.ts`
-
-### Mobile App Implementation
-
-- [x] T060 [US3] Build "Hỏi Ngay" (Ask Now) button on product detail screen in `apps/mobile/lib/presentation/widgets/ask_ai_button.dart`
-- [x] T061 [US3] Build AI Chat dialog (message history, typing indicator, source citations) in `apps/mobile/lib/presentation/screens/ai_chat_screen.dart`
-
-**Checkpoint**: AI chatbot should answer product-specific agricultural questions accurately
-
----
-
-## Phase 6: Customer Debt Management (Priority: P4)
-
-**Goal**: Enable tracking of customer purchases on credit and partial debt repayment — essential for agricultural retail.
-
-### Backend Implementation
-
-- [x] T062 [P] [US4] Create DebtLedgerEntry entity in `apps/backend/src/customers/entities/debt-ledger-entry.entity.ts`
-- [x] T063 [US4] Implement CustomerService (CRUD, debt calculation, payment recording) in `apps/backend/src/customers/customers.service.ts`
-- [x] T064 [US4] Implement CustomersController (GET/POST customers, GET debt-ledger, POST payment) in `apps/backend/src/customers/customers.controller.ts`
-
-### Mobile App Implementation
-
-- [x] T065 [US4] Build Customer list/search screen in `apps/mobile/lib/presentation/screens/customer_list_screen.dart`
-- [x] T066 [US4] Build Customer detail screen (info, outstanding debt, ledger history) in `apps/mobile/lib/presentation/screens/customer_detail_screen.dart`
-- [x] T067 [US4] Build Payment recording dialog in `apps/mobile/lib/presentation/widgets/payment_dialog_debt.dart`
-- [x] T068 [US4] Integrate customer selection into POS checkout flow (optional link to existing customer) in `apps/mobile/lib/presentation/widgets/cart_widget.dart`
-
-**Checkpoint**: Full debt lifecycle (create debt on sale → view ledger → record payment) should work
-
----
-
-## Phase 7: Web Platforms
-
-**Goal**: Web Admin (Flutter Web) for management access and Web Base (Next.js) for public landing page, blog, and product pricing.
-
-### Web Admin (Flutter Web)
-
-- [x] T069 [P] [WEB] Setup shared code between mobile and web-admin via `packages/shared/dart/` in `apps/web-admin/`
-- [x] T070 [P] [WEB] Build Web Admin login page in `apps/web-admin/lib/presentation/screens/login_screen.dart`
-- [x] T071 [P] [WEB] Build Web Admin dashboard (reuse dashboard widgets from mobile) in `apps/web-admin/lib/presentation/screens/dashboard_screen.dart`
-- [x] T072 [P] [WEB] Build Web Admin product management page in `apps/web-admin/lib/presentation/screens/products_screen.dart`
-- [x] T073 [P] [WEB] Build Web Admin order history page in `apps/web-admin/lib/presentation/screens/orders_screen.dart`
-
-### Web Base (Next.js — Public)
-
-- [x] T074 [P] [WEB] Implement BlogModule (CRUD for admin, public read) in `apps/backend/src/blog/`
-- [x] T075 [P] [WEB] Create BlogPost entity in `apps/backend/src/blog/entities/blog-post.entity.ts`
-- [x] T076 [P] [WEB] Build landing page with hero section and product highlights in `apps/web-base/src/app/page.tsx`
-- [x] T077 [P] [WEB] Build blog listing page (by category) in `apps/web-base/src/app/blog/page.tsx`
-- [x] T078 [P] [WEB] Build blog post detail page (SSR for SEO) in `apps/web-base/src/app/blog/[slug]/page.tsx`
-- [x] T079 [P] [WEB] Build product pricing page (current prices, trends) in `apps/web-base/src/app/products/page.tsx`
-- [x] T080 [P] [WEB] Build contact page in `apps/web-base/src/app/contact/page.tsx`
-- [x] T081 [WEB] Implement Blog CRUD in Web Admin in `apps/web-admin/lib/presentation/screens/blog_management_screen.dart`
-
-**Checkpoint**: Web admin mirrors core app functions, public website is SEO-ready with blog and product info
-
----
-
-## Phase 8: Polish & Cross-Cutting Concerns
-
-**Purpose**: Improvements that affect multiple user stories
-
-- [x] T082 [P] Add comprehensive API documentation (Swagger/OpenAPI) in `apps/backend/`
-- [x] T083 [P] Add product image upload flow (MinIO integration) across mobile + web-admin
-- [x] T084 [P] Add QR code generation and printing for internal product labels in `apps/mobile/lib/services/qr_label_service.dart`
-- [x] T085 Implement data seeding script for demo/testing in `apps/backend/src/database/seeds/`
-- [x] T086 [P] Add comprehensive error handling and user-friendly error messages across all Flutter apps
-- [x] T087 [P] Performance optimization: add pagination, caching, and lazy loading across all list screens
-- [x] T088 Security audit: validate all RBAC guards, SQL injection prevention, JWT expiry handling
-- [x] T089 Run quickstart.md validation end-to-end (Docker up → migrate → seed → test all flows)
+- [ ] T021 Run `cd apps/web-base && npm run build` — verify zero build errors
+- [ ] T022 Run `cd apps/web-base && npm run lint` — verify no lint errors
+- [ ] T023 Add `DEPRECATED.md` to `apps/web-admin/` marking Flutter admin as deprecated
+- [ ] T024 Run quickstart.md validation — manual browser test of all admin routes
 
 ---
 
@@ -205,75 +83,45 @@
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies — can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion — BLOCKS all user stories
-- **User Stories (Phase 3-6)**: All depend on Foundational phase completion
-  - US1 (P1): Can start first, establishes core POS flow
-  - US2 (P2): Can start after Phase 2, extends inventory management
-  - US3 (P3): Can start after Phase 2, independent AI module
-  - US4 (P4): Can start after Phase 2, uses Customer entity from Phase 2
-- **Web (Phase 7)**: Depends on backend endpoints from Phases 3-6 being available
-- **Polish (Phase 8)**: Depends on all desired user stories being complete
+- **Setup (Phase 1)**: No dependencies — start immediately
+- **Foundation (Phase 2)**: Depends on Setup completion — BLOCKS all admin pages
+- **Admin UI (Phase 3)**: Depends on Foundation — login must work before data pages
+- **Polish (Phase 4)**: Depends on Phase 3 completion
 
-### Within Each User Story
+### Within Phase 3
 
-- Models before services
-- Services before controllers/endpoints
-- Backend endpoints before mobile screens that consume them
-- Core implementation before integration
+- Layout + Login (T011-T013) MUST complete before data pages
+- Dashboard (T014-T015) can parallel with data pages
+- All data pages (T016-T020) can run in parallel (different files, no dependencies)
 
 ### Parallel Opportunities
 
-- T002-T011 can all run in parallel (project scaffolding)
-- T013-T018 can all run in parallel (entity creation)
-- T028-T029 and T033-T034 can run in parallel (order entities + product controllers)
-- T035-T036 can run in parallel (mobile repositories)
-- All Phase 7 Web tasks marked [P] can run in parallel
-- US2, US3, and US4 can be worked on in parallel by different developers after Phase 2
+```text
+# Phase 2 parallel tasks:
+T006 (auth.ts) || T007 (api.ts) || T009 (logout route)
 
----
-
-## Parallel Example: User Story 1
-
-```bash
-# Launch backend entity creation in parallel:
-Task: "T028 Create Order entity in apps/backend/src/orders/entities/order.entity.ts"
-Task: "T029 Create OrderItem entity in apps/backend/src/orders/entities/order-item.entity.ts"
-
-# Launch mobile repositories in parallel:
-Task: "T035 Implement Product repository in apps/mobile/lib/data/repositories/product_repository.dart"
-Task: "T036 Implement Order repository in apps/mobile/lib/data/repositories/order_repository.dart"
+# Phase 3 data pages parallel:
+T016 (products) || T017 (orders) || T018 (customers) || T019 (blog) || T020 (settings)
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### Sequential Delivery
 
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational (CRITICAL — blocks all stories)
-3. Complete Phase 3: User Story 1 (Offline POS)
-4. **STOP and VALIDATE**: Test offline sale → sync → no duplicates
-5. Deploy/demo if ready
-
-### Incremental Delivery
-
-1. Setup + Foundational → Foundation ready
-2. Add US1 (POS) → Test independently → Deploy/Demo (**MVP!**)
-3. Add US2 (Inventory) → Test independently → Deploy/Demo
-4. Add US3 (AI Chatbot) → Test independently → Deploy/Demo
-5. Add US4 (Debt) → Test independently → Deploy/Demo
-6. Add Web platforms → Deploy/Demo
-7. Each story adds value without breaking previous stories
+1. Phase 1: Setup (T001-T005) → Tailwind + shadcn/ui ready
+2. Phase 2: Foundation (T006-T010) → Auth + API client ready
+3. Phase 3: Login + Layout (T011-T013) → Can login and see sidebar
+4. Phase 3: Dashboard (T014-T015) → Real metrics visible
+5. Phase 3: Data pages (T016-T020) → All admin features live
+6. Phase 4: Polish (T021-T024) → Verified and documented
 
 ---
 
 ## Notes
 
-- [P] tasks = different files, no dependencies
-- [Story] label maps task to specific user story for traceability
-- Each user story should be independently completable and testable
-- Commit after each task or logical group
-- Stop at any checkpoint to validate story independently
-- All quantities in code MUST use base unit (integer) arithmetic per Constitution Principle IV
+- All admin pages use Server Components for initial data fetch (no client-side loading spinners for initial render)
+- Client Components used only for interactive elements (forms, modals)
+- API calls from server components go through `src/lib/api.ts` with JWT from cookie
+- Login flow: browser → Next.js API route → backend → set cookie → redirect
