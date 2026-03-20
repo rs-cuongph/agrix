@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BlogEditor } from "@/components/admin/blog-editor";
 import { adminApiCall } from "@/components/admin/crud-dialog";
 import { toast } from "sonner";
-import { Save, Eye, ArrowLeft, Upload, X, Search } from "lucide-react";
+import { Save, Eye, EyeOff, ArrowLeft, Upload, X, Search } from "lucide-react";
 
 type Category = { id: string; name: string; slug: string };
 type Tag = { id: string; name: string; slug: string };
@@ -245,7 +245,7 @@ export function BlogEditorPage({
             <Save size={16} /> Lưu nháp
           </button>
           {status === "PUBLISHED" ? (
-            <button onClick={() => { setStatus("DRAFT"); handleSave("DRAFT"); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm font-medium">
+            <button onClick={() => { setStatus("DRAFT"); handleSave("DRAFT"); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
               <EyeOff size={16} /> Ngừng xuất bản
             </button>
           ) : (
