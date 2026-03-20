@@ -41,6 +41,9 @@ export const apiPut = <T>(path: string, body: unknown, token?: string) =>
 export const apiDelete = <T>(path: string, token?: string) =>
   apiFetch<T>(path, { method: "DELETE", token });
 
+export const apiPatch = <T>(path: string, body?: unknown, token?: string) =>
+  apiFetch<T>(path, { method: "PATCH", body, token });
+
 // Type helpers for paginated responses
 export type PaginatedResponse<T> = {
   data: T[];

@@ -104,4 +104,13 @@ export class OrderService {
     const [data, total] = await qb.getManyAndCount();
     return { data, meta: { total, page, limit } };
   }
+
+  async findById(id: string): Promise<Order> {
+    const order = await this.orderRepo.findOne({
+      where: { id },
+      relations: ['items', 'customer'],
+    });
+    if (!order) throw new BadRequestException(`Order ${id} not found`);
+    return order;
+  }
 }

@@ -91,4 +91,10 @@ export class CustomersService {
 
     return saved;
   }
+
+  async remove(id: string) {
+    const customer = await this.findById(id);
+    await this.customerRepo.remove(customer);
+    return { deleted: true };
+  }
 }

@@ -26,4 +26,7 @@ export class ProductUnitConversion {
 
   @Column({ name: 'conversion_factor', type: 'int' })
   conversionFactor: number;
+
+  @Column({ name: 'sell_price', type: 'int', nullable: true })
+  sellPrice: number | null;
 }

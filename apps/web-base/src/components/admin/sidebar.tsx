@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
+  Ruler,
   ClipboardList,
   Users,
   FileText,
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard },
   { href: "/admin/products", label: "Sản phẩm", icon: Package },
+  { href: "/admin/units", label: "Đơn vị", icon: Ruler },
   { href: "/admin/orders", label: "Đơn hàng", icon: ClipboardList },
   { href: "/admin/customers", label: "Khách hàng", icon: Users },
   { href: "/admin/blog", label: "Blog", icon: FileText },

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductUnitConversion } from './entities/product-unit-conversion.entity';
@@ -13,34 +13,71 @@ export class UnitConversionService {
     private readonly productRepo: Repository<Product>,
   ) {}
 
-  /**
-   * Convert a quantity from any unit to base units.
-   * E.g., 10 "Thùng" (Box) × 40 factor = 400 base units (Chai/Bottle)
-   */
+  // ── CRUD ────────────────────────────────────────────────
+
+  async findAll(productId?: string) {
+    const where = productId ? { productId } : {};
+    return this.unitRepo.find({
+      where,
+      relations: ['product'],
+      order: { productId: 'ASC', unitName: 'ASC' },
+    });
+  }
+
+  async create(data: {
+    productId: string;
+    unitName: string;
+    conversionFactor: number;
+    sellPrice?: number | null;
+  }) {
+    const product = await this.productRepo.findOne({ where: { id: data.productId } });
+    if (!product) throw new NotFoundException(`Product ${data.productId} not found`);
+    const entity = this.unitRepo.create(data);
+    return this.unitRepo.save(entity);
+  }
+
+  async update(id: string, data: Partial<{
+    unitName: string;
+    conversionFactor: number;
+    sellPrice: number | null;
+  }>) {
+    const existing = await this.unitRepo.findOne({ where: { id } });
+    if (!existing) throw new NotFoundException(`UnitConversion ${id} not found`);
+    Object.assign(existing, data);
+    return this.unitRepo.save(existing);
+  }
+
+  async remove(id: string) {
+    const existing = await this.unitRepo.findOne({ where: { id } });
+    if (!existing) throw new NotFoundException(`UnitConversion ${id} not found`);
+    await this.unitRepo.remove(existing);
+    return { deleted: true };
+  }
+
+  // ── Conversion logic ───────────────────────────────────
+
   async toBaseUnits(productId: string, quantity: number, unitName: string): Promise<number> {
     const product = await this.productRepo.findOne({ where: { id: productId } });
-    if (!product) throw new Error(`Product ${productId} not found`);
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
-    // If unit matches base unit, return as-is
     if (unitName === product.baseUnit) return quantity;
 
     const conversion = await this.unitRepo.findOne({
       where: { productId, unitName },
     });
     if (!conversion) {
-      throw new Error(`Unit "${unitName}" not defined for product ${productId}`);
+      throw new NotFoundException(`Unit "${unitName}" not defined for product ${productId}`);
     }
 
     return quantity * conversion.conversionFactor;
   }
 
   /**
-   * Derive the price of any unit from the base sell price.
-   * E.g., base = 10,000đ/Chai → Thùng (40 Chai) = 400,000đ/Thùng
+   * Use sellPrice if set, otherwise derive from baseSellPrice * conversionFactor.
    */
   async derivePrice(productId: string, unitName: string): Promise<number> {
     const product = await this.productRepo.findOne({ where: { id: productId } });
-    if (!product) throw new Error(`Product ${productId} not found`);
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
     if (unitName === product.baseUnit) return product.baseSellPrice;
 
@@ -48,15 +85,12 @@ export class UnitConversionService {
       where: { productId, unitName },
     });
     if (!conversion) {
-      throw new Error(`Unit "${unitName}" not defined for product ${productId}`);
+      throw new NotFoundException(`Unit "${unitName}" not defined for product ${productId}`);
     }
 
-    return product.baseSellPrice * conversion.conversionFactor;
+    return conversion.sellPrice ?? product.baseSellPrice * conversion.conversionFactor;
   }
 
-  /**
-   * Get all available units with derived prices for a product.
-   */
   async getAvailableUnits(productId: string): Promise<
     { unitName: string; conversionFactor: number; price: number }[]
   > {
@@ -64,7 +98,7 @@ export class UnitConversionService {
       where: { id: productId },
       relations: ['units'],
     });
-    if (!product) throw new Error(`Product ${productId} not found`);
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
     const units = [
       {
@@ -78,7 +112,7 @@ export class UnitConversionService {
       units.push({
         unitName: conversion.unitName,
         conversionFactor: conversion.conversionFactor,
-        price: product.baseSellPrice * conversion.conversionFactor,
+        price: conversion.sellPrice ?? product.baseSellPrice * conversion.conversionFactor,
       });
     }
 

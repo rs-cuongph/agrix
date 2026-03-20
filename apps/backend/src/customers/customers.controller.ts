@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -61,5 +62,12 @@ export class CustomersController {
     @Req() req: any,
   ) {
     return this.customersService.recordPayment(id, body.amount, req.user.id, body.note);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async remove(@Param('id') id: string) {
+    return this.customersService.remove(id);
   }
 }

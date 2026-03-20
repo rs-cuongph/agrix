@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Body,
   Param,
   Query,
@@ -136,5 +137,16 @@ export class ProductsController {
     }
 
     return this.inventoryService.findById(id);
+  }
+
+  @Patch(':id/toggle-active')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async toggleActive(@Param('id') id: string) {
+    const product = await this.productRepo.findOne({ where: { id } });
+    if (!product) throw new Error(`Product ${id} not found`);
+    product.isActive = !product.isActive;
+    await this.productRepo.save(product);
+    return { id, isActive: product.isActive };
   }
 }

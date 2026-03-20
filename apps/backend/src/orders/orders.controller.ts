@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Body,
+  Param,
   Query,
   UseGuards,
   Req,
@@ -33,5 +34,11 @@ export class OrdersController {
     @Query('limit') limit = 20,
   ) {
     return this.orderService.findOrders(from, to, +page, +limit);
+  }
+
+  @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.CASHIER)
+  async findOne(@Param('id') id: string) {
+    return this.orderService.findById(id);
   }
 }

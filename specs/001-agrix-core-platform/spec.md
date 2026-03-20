@@ -66,6 +66,10 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **FR-010**: Web Admin MUST be implemented as Next.js pages under `/admin/*` route in `apps/web-base/`, using shadcn/ui + Tailwind CSS, with server-side middleware auth (JWT in httpOnly cookie). Flutter `apps/web-admin/` is deprecated.
 - **FR-011**: Backend MUST enable CORS (allow `*` in dev, whitelist specific origins in production) to support Web Admin browser requests.
 - **FR-012**: Backend MUST expose separate dashboard endpoints (`/dashboard/revenue`, `/dashboard/top-products`, `/dashboard/alerts`) for flexible, independently-cacheable metric loading.
+- **FR-013**: System MUST provide full-stack unit conversion management: Backend CRUD API at `/api/v1/unit-conversions` + Web Admin page at `/admin/units` for creating, editing, and deleting product unit conversions (e.g., 1 Thùng = 40 Chai) with target price per unit.
+- **FR-014**: System MUST auto-generate internal QR codes for products and special lots for fast scanning identification.
+- **FR-015**: Web Admin MUST provide full CRUD for: Products (Create/Edit/Detail/Toggle Active), Units (Create/Edit/Delete), Customers (Create/Edit/Detail/Delete), Blog (Create/Edit/Detail/Delete). Orders remain read-only with Detail view.
+- **FR-016**: System MUST provide Admin Account Management with RBAC + Module ACL. Roles assign permissions per module (Products, Orders, Customers, Blog, Settings, Units). Each module supports Read/Create/Edit/Delete permissions. Managed via `/admin/accounts` page.
 
 ### Key Entities
 
@@ -73,6 +77,9 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **ProductUnitConversion**: Conversion rules. Attributes: ProductID, TargetUnit, ConversionFactor, TargetPrice.
 - **Order**: A sales transaction. Attributes: OrderID, CustomerID, TotalAmount, Status (Synced/Pending), PaymentMethod.
 - **Customer**: Buyer profile. Attributes: CustomerID, Name, Phone, OutstandingDebt.
+- **AdminUser**: Admin account. Attributes: ID, Username, PasswordHash, RoleID, IsActive.
+- **Role**: Permission role. Attributes: ID, Name, Description.
+- **RolePermission**: Module-level permission. Attributes: RoleID, Module (products|orders|customers|blog|settings|units), CanRead, CanCreate, CanEdit, CanDelete.
 
 ## Success Criteria *(mandatory)*
 
@@ -97,3 +104,14 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - Q: Admin route authentication approach? → A: Server-side middleware — JWT lưu trong httpOnly cookie, Next.js middleware validate trước khi render `/admin/*` pages. Redirect về `/admin/login` nếu chưa auth.
 - Q: UI component library cho admin? → A: shadcn/ui + Tailwind CSS — modern, lightweight, copy-paste components, dễ customize.
 - Q: Xử lý Flutter web-admin hiện tại? → A: Giữ nguyên, đánh dấu deprecated. Focus development chuyển sang Next.js admin.
+
+### Session 2026-03-20 — Unit Management Clarification
+
+- Q: Web Admin cần CRUD unit conversions ở đâu trong UX flow? → A: Trang riêng `/admin/units` — quản lý tất cả đơn vị quy đổi tập trung.
+- Q: Backend API cho Unit Conversions đã có hay cần tạo mới? → A: Chưa có — cần tạo cả CRUD endpoints `/api/v1/unit-conversions` + frontend `/admin/units` page.
+
+### Session 2026-03-20 — CRUD & ACL Clarification
+
+- Q: CRUD cho Products: cần full CRUD hay giới hạn? → A: Full CRUD + Soft-delete — Create, Edit, Detail, Toggle Active (ẩn/hiện) thay vì xóa cứng. Sản phẩm liên kết đơn hàng + tồn kho nên không xóa thật.
+- Q: ACL cấu trúc phân quyền module cho admin? → A: RBAC + Module ACL — Roles gán permissions theo module (Products, Orders, Customers, Blog, Settings, Units). Mỗi module: Read/Create/Edit/Delete.
+- Q: Backend auth hiện tại — tạo mới AdminUser hay extend user hiện có? → A: Tạo mới AdminUser entity riêng biệt, tách khỏi Customer. Auth login check AdminUser table.
