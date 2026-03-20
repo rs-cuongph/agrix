@@ -115,3 +115,18 @@
   padding: 0;
 }
 
+/* Chat Widget Animations */
+@keyframes chat-slide-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes chat-bubble-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.chat-window-enter {
+  animation: chat-slide-in 0.25s ease-out;
+}
+.chat-bubble-enter {
+  animation: chat-bubble-bounce 2s ease-in-out infinite;
+}
