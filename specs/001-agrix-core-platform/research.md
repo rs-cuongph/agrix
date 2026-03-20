@@ -1,20 +1,28 @@
-# Research: ACL + Admin Account Management
+# Research: Batch-Based Stock System
 
-## Decision 1: Reuse User Entity vs New AdminUser Entity
+**Date**: 2026-03-20 | **Status**: Complete — No unknowns
 
-**Decision**: Reuse existing `User` entity — it already has username, password, role, isActive
-**Rationale**: User entity IS the admin user entity. Creating a separate AdminUser would duplicate schema and auth logic. The `UserRole` enum (ADMIN, CASHIER, INVENTORY) already provides role distinction.
-**Alternatives Considered**: New AdminUser entity — rejected as unnecessary duplication
+## Decisions
 
-## Decision 2: Permission Storage
+### 1. Batch Deduction Strategy
+- **Decision**: Pure FIFO (First In, First Out)
+- **Rationale**: Agricultural products (pesticides, fertilizers) have expiration dates — oldest stock should ship first. Simplifies UX (no manual batch selection).
+- **Alternatives considered**: LIFO (not suitable for perishable goods), Manual selection (too complex for cashiers), FIFO + Manual override (unnecessary complexity per user feedback)
 
-**Decision**: `RolePermission` table with role → module → permissions mapping
-**Rationale**: Flexible yet simple. Allows admin to customize what each role can do per module. Unique constraint on (role, module) prevents duplicates. Permissions are cached on login via JWT payload for performance.
-**Alternatives Considered**:
-- Hardcoded permissions — too rigid, can't be customized at runtime
-- Full ACL with custom roles — overengineered for 3 fixed roles
+### 2. Batch Tracking Data Model
+- **Decision**: Add `remainingQuantity` column to `StockEntry` (only meaningful for IMPORT type entries)
+- **Rationale**: Simplest approach — no new tables. Query "available batches" = `WHERE type='IMPORT' AND remainingQuantity > 0 ORDER BY createdAt ASC`.
+- **Alternatives considered**: Separate `StockBatch` table (normalized but adds complexity), realtime calculation from ledger (slow at scale)
 
-## Decision 3: ADMIN Bypass
+### 3. Split Deduction Entries
+- **Decision**: When SALE/ADJUSTMENT spans multiple batches, create one `StockEntry` per batch deducted
+- **Rationale**: Each entry carries `batchNumber` + `costPricePerUnit` from the source batch. `referenceId` groups entries for the same Order. Enables precise profit calculation per order.
+- **Alternatives considered**: Junction table (more complex), JSONB array (harder to query)
 
-**Decision**: ADMIN role always has full access (superadmin), bypasses permission checks
-**Rationale**: At least one role must always have full access to manage the system. Prevents lockout scenarios. Only CASHIER and INVENTORY roles are subject to ACL restrictions.
+### 4. Batch Number Format
+- **Decision**: `YYYYMMDD-SKU-HHMM` (auto-generated on import, not user-editable)
+- **Rationale**: Human-readable, sortable, unique per import session. Example: `20260320-TB001-0900`
+
+### 5. Transaction Safety
+- **Decision**: Use TypeORM `QueryRunner` transaction for FIFO deduction
+- **Rationale**: Lock IMPORT rows with `remainingQuantity > 0` during deduction to prevent race conditions. Essential for concurrent POS sales.

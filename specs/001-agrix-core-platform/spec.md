@@ -70,6 +70,8 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **FR-014**: System MUST auto-generate internal QR codes for products and special lots for fast scanning identification.
 - **FR-015**: Web Admin MUST provide full CRUD for: Products (Create/Edit/Detail/Toggle Active), Units (Create/Edit/Delete), Customers (Create/Edit/Detail/Delete), Blog (Create/Edit/Detail/Delete). Orders remain read-only with Detail view.
 - **FR-016**: System MUST provide Admin Account Management with RBAC + Module ACL. Roles assign permissions per module (Products, Orders, Customers, Blog, Settings, Units). Each module supports Read/Create/Edit/Delete permissions. Managed via `/admin/accounts` page.
+- **FR-017**: Web Admin MUST provide full Inventory Management at `/admin/inventory` with tabbed UI: (1) Tổng quan kho — stock overview with low-stock alerts, (2) Nhập kho — stock import form with per-batch cost price tracking, auto-generated batchNumber (format YYYYMMDD-SKU-HHMM), and import history, (3) Điều chỉnh kho — stock adjustment for damage/loss, supplier return, inventory audit; user enters total quantity, system auto-deducts using FIFO, (4) Lịch sử — full stock movement ledger.
+- **FR-018**: System MUST track stock at batch level. Each IMPORT creates a batch with `remainingQuantity`. SALE/ADJUSTMENT entries are split per batch (one StockEntry per batch deducted), each carrying the batch's `costPricePerUnit` and `batchNumber`. `referenceId` links all entries to the source Order/adjustment. This enables per-order profit calculation.
 
 ### Key Entities
 
@@ -80,6 +82,7 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - **AdminUser**: Admin account. Attributes: ID, Username, PasswordHash, RoleID, IsActive.
 - **Role**: Permission role. Attributes: ID, Name, Description.
 - **RolePermission**: Module-level permission. Attributes: RoleID, Module (products|orders|customers|blog|settings|units), CanRead, CanCreate, CanEdit, CanDelete.
+- **StockEntry**: Stock movement ledger. Attributes: ID, ProductID, QuantityBase, Type (IMPORT|SALE|DAMAGE|RETURN|ADJUSTMENT|SYNC), CostPricePerUnit (set on IMPORT; copied from source batch on SALE/ADJUSTMENT), BatchNumber (auto-generated YYYYMMDD-SKU-HHMM on IMPORT; references source batch on SALE/ADJUSTMENT), RemainingQuantity (only for IMPORT — tracks how many units remain in this batch), ReferenceID (Order ID for SALE, or adjustment group ID), CreatedBy, CreatedAt.
 
 ## Success Criteria *(mandatory)*
 
@@ -115,3 +118,51 @@ A cashier needs to advise a customer whether Pesticide X can be mixed with Ferti
 - Q: CRUD cho Products: cần full CRUD hay giới hạn? → A: Full CRUD + Soft-delete — Create, Edit, Detail, Toggle Active (ẩn/hiện) thay vì xóa cứng. Sản phẩm liên kết đơn hàng + tồn kho nên không xóa thật.
 - Q: ACL cấu trúc phân quyền module cho admin? → A: RBAC + Module ACL — Roles gán permissions theo module (Products, Orders, Customers, Blog, Settings, Units). Mỗi module: Read/Create/Edit/Delete.
 - Q: Backend auth hiện tại — tạo mới AdminUser hay extend user hiện có? → A: Tạo mới AdminUser entity riêng biệt, tách khỏi Customer. Auth login check AdminUser table.
+
+### Session 2026-03-20 — Inventory Management Clarification
+
+- Q: Phạm vi quản lý Nhập/Xuất kho cần thiết? → A: Full — Nhập kho (lịch sử, giá nhập) + Xuất/Hao hụt + Cảnh báo tồn kho thấp + Báo cáo hàng khó tiêu thụ.
+- Q: Giá nhập kho theo dõi theo lô hay theo sản phẩm? → A: Theo lô — mỗi lần nhập kho ghi nhận giá nhập riêng (cost price per batch). Giá vốn trung bình tự tính.
+- Q: Tiêu chí xác định "hàng khó tiêu thụ"? → A: Kết hợp — không bán được trong X ngày VÀ tồn kho trên Y đơn vị. Tránh cảnh báo nhầm sản phẩm mới nhập ít.
+- Q: Loại xuất kho / điều chỉnh kho cần hỗ trợ? → A: Đầy đủ — Hao hụt/Hư hỏng + Trả hàng NCC + Điều chỉnh kiểm kê (chênh lệch thực tế vs hệ thống).
+- Q: Bố trí trang quản lý kho trong Admin? → A: Một trang `/admin/inventory` với tabs: Tổng quan kho, Nhập kho, Điều chỉnh kho, Lịch sử. Báo cáo sẽ chuyển ra dashboard.
+
+### Session 2026-03-20 — Inventory & Units Refinement
+
+- Q: Tab "Xuất/Điều chỉnh" đổi tên? → A: Đổi thành "Điều chỉnh kho" — bán hàng qua POS, không phải xuất kho admin.
+- Q: Tab "Báo cáo" trong Kho? → A: Xóa khỏi trang Kho, chuyển sang Dashboard sau.
+- Q: Quản lý đơn vị gốc (base unit) thế nào? → A: Tạo entity Unit riêng (id, name, abbreviation). Tab 1: Đơn vị gốc (CRUD). Tab 2: Quy đổi đơn vị. Product.baseUnit liên kết tới Unit entity.
+
+### Session 2026-03-20 — Product Simplification
+
+- Q: Các trường ẩn trên Product entity? → A: Xóa baseCostPrice, usageInstructions, imageUrl khỏi entity. Giữ currentStockBase, minStockThreshold, expirationDate.
+- Q: Form sản phẩm gồm những trường nào? → A: 7 trường: SKU, Tên, Danh mục, Đơn vị gốc (dropdown từ bảng Unit), Giá bán lẻ, Barcode EAN-13, Mô tả.
+- Q: Giá nhập quản lý ở đâu? → A: Chỉ ở tab Nhập kho (per-batch cost price). Tách biệt giá nhập/giá bán để tính doanh thu/lợi nhuận.
+- Q: Vị trí trang Sản phẩm? → A: Move vào /admin/inventory như tab đầu tiên. Kho hàng gồm 5 tabs: Tổng quan, Sản phẩm, Nhập kho, Điều chỉnh, Lịch sử.
+
+### Session 2026-03-20 — UI Icons & Stock Consistency
+
+- Q: Dùng icon gì trên web UI? → A: Chỉ dùng icon từ thư viện (lucide-react, shadcn). KHÔNG dùng emoji Unicode (📋, 📥...). Đã cập nhật constitution v1.1.0.
+- Q: Tồn kho seed có nhất quán? → A: Seed phải tạo StockEntry IMPORT records tương ứng để lịch sử nhập kho khớp với tồn kho hiện tại.
+
+### Session 2026-03-20 — Authentication & Logout
+
+- Q: API trả 401? → A: Bug proxy cookie name (`token` vs `agrix_token`). Fixed: proxy nay đọc đúng `agrix_token`.
+- Q: Nút đăng xuất? → A: Thêm nút "Đăng xuất" (LogOut icon) ở cuối sidebar. Gọi POST /api/auth/logout, clear cookie, redirect /admin/login.
+- Q: Backend bảo vệ API? → A: Tất cả controllers đã có @UseGuards(AuthGuard('jwt'), RolesGuard). RBAC permissions đã seed.
+
+### Session 2026-03-20 — Error Handling
+
+- Q: Xử lý lỗi API? → A: 401→logout + redirect /admin/login. 403/404/500→Sonner toast (richColors, top-right) với message tiếng Việt. Package: sonner.
+
+### Session 2026-03-20 — Batch-Based Stock Adjustment
+
+- Q: Chiến lược trừ kho theo lô? → A: FIFO — luôn trừ lô nhập trước xuất trước. Không cho chọn lô thủ công (đơn giản hóa UX).
+- Q: Tracking tồn kho theo lô? → A: Thêm `remainingQuantity` vào StockEntry IMPORT. Khi SALE/ADJUSTMENT, tách thành nhiều StockEntry (1 per batch), mỗi entry mang `batchNumber` + `costPricePerUnit` của lô gốc. `referenceId` nhóm entries cùng Order. Tính lợi nhuận chính xác từng đơn hàng.
+- Q: UI điều chỉnh kho theo lô? → A: Auto FIFO only — người dùng chỉ nhập tổng SL điều chỉnh, hệ thống tự trừ theo FIFO. Không cần chọn lô trên form.
+- Q: Manual override cho lô? → A: Bỏ manual override — toàn bộ FIFO, không cho chọn lô. Đơn giản nhất.
+
+### Session 2026-03-20 — Settings Page Reorganization
+
+- Q: Cấu trúc tabs trong Cài đặt? → A: 4 tabs: Danh mục → Đơn vị → Tài khoản → Khác. Xóa nội dung cũ (máy in, đồng bộ, phiên bản). Sidebar chỉ còn link Cài đặt (không còn Danh mục, Đơn vị, Tài khoản riêng).
+- Q: Nội dung tab "Khác"? → A: Placeholder — "Chưa có cài đặt nào" + thông tin phiên bản nhỏ ở footer.

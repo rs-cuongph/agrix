@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText, Plus, Pencil, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type BlogPost = {
   id: string; title: string; slug: string; status: string;
@@ -24,15 +25,18 @@ export function BlogClient({ posts }: { posts: BlogPost[] }) {
 
   const handleCreate = async (data: Record<string, any>) => {
     await adminApiCall("/blog/admin/posts", "POST", data);
+    toast.success("Tạo bài viết thành công");
     router.refresh();
   };
   const handleEdit = async (data: Record<string, any>) => {
     await adminApiCall(`/blog/admin/posts/${dialog?.data?.id}`, "PUT", data);
+    toast.success("Cập nhật bài viết thành công");
     router.refresh();
   };
   const handleDelete = async (id: string) => {
     if (!confirm("Xóa bài viết này?")) return;
     await adminApiCall(`/blog/admin/posts/${id}`, "DELETE");
+    toast.success("Xóa bài viết thành công");
     router.refresh();
   };
 

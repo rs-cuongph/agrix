@@ -24,14 +24,11 @@ interface CreateProductDto {
   name: string;
   categoryId: string;
   baseUnit: string;
-  baseCostPrice: number;
   baseSellPrice: number;
   minStockThreshold?: number;
   expirationDate?: string;
-  usageInstructions?: string;
   description?: string;
   barcodeEan13?: string;
-  imageUrl?: string;
   unitConversions?: { unitName: string; conversionFactor: number }[];
 }
 
@@ -86,11 +83,9 @@ export class ProductsController {
       name: dto.name,
       categoryId: dto.categoryId,
       baseUnit: dto.baseUnit,
-      baseCostPrice: dto.baseCostPrice,
       baseSellPrice: dto.baseSellPrice,
       minStockThreshold: dto.minStockThreshold ?? 0,
       expirationDate: dto.expirationDate,
-      usageInstructions: dto.usageInstructions,
       description: dto.description,
       barcodeEan13: dto.barcodeEan13,
     });

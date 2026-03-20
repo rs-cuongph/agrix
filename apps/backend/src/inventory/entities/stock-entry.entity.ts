@@ -12,6 +12,8 @@ import { User } from '../../auth/entities/user.entity';
 export enum StockEntryType {
   IMPORT = 'IMPORT',
   SALE = 'SALE',
+  DAMAGE = 'DAMAGE',
+  RETURN = 'RETURN',
   ADJUSTMENT = 'ADJUSTMENT',
   SYNC = 'SYNC',
 }
@@ -34,11 +36,20 @@ export class StockEntry {
   @Column({ type: 'enum', enum: StockEntryType })
   type: StockEntryType;
 
+  @Column({ name: 'cost_price_per_unit', type: 'int', nullable: true })
+  costPricePerUnit: number;
+
   @Column({ name: 'batch_number', nullable: true })
   batchNumber: string;
 
+  @Column({ type: 'text', nullable: true })
+  note: string;
+
   @Column({ name: 'reference_id', type: 'uuid', nullable: true })
   referenceId: string;
+
+  @Column({ name: 'remaining_quantity', type: 'int', nullable: true })
+  remainingQuantity: number;
 
   @Column({ name: 'created_by' })
   createdBy: string;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 type FieldConfig = {
   name: string;
@@ -117,17 +118,48 @@ export function CrudDialog({
   );
 }
 
-// Helper to call the proxy API route
+const ERROR_MESSAGES: Record<number, string> = {
+  401: "Phiên đăng nhập hết hạn. Đang chuyển đến trang đăng nhập...",
+  403: "Bạn không có quyền thực hiện thao tác này.",
+  404: "Không tìm thấy dữ liệu yêu cầu.",
+  500: "Lỗi hệ thống. Vui lòng thử lại sau.",
+};
+
+// Helper to call the proxy API route with error handling
 export async function adminApiCall(path: string, method: string, body?: unknown) {
   const res = await fetch("/api/admin/proxy", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path, method, body }),
   });
+
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `Error ${res.status}`);
+    const status = res.status;
+
+    // 401: redirect to login
+    if (status === 401) {
+      toast.error(ERROR_MESSAGES[401]);
+      await fetch("/api/auth/logout", { method: "POST" });
+      setTimeout(() => {
+        window.location.href = "/admin/login";
+      }, 1000);
+      throw new Error(ERROR_MESSAGES[401]);
+    }
+
+    // 403, 404, 500: show toast
+    const msg = ERROR_MESSAGES[status] || `Lỗi ${status}`;
+    let detail = "";
+    try {
+      const json = JSON.parse(await res.text());
+      detail = json.message || "";
+    } catch {
+      // ignore parse errors
+    }
+    toast.error(msg, { description: detail || undefined });
+    throw new Error(detail || msg);
   }
+
   const text = await res.text();
   return text ? JSON.parse(text) : {};
 }
+

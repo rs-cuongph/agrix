@@ -5,6 +5,10 @@ Auto-generated from all feature plans. Last updated: 2026-03-20
 ## Active Technologies
 - TypeScript 5.x, React 18, Next.js 14 (App Router) + next, react, shadcn/ui, tailwindcss, lucide-reac (001-agrix-core-platform)
 - PostgreSQL (via NestJS backend REST API at `localhost:3000`) (001-agrix-core-platform)
+- TypeScript 5.x (NestJS 10 backend, Next.js 14 frontend) + TypeORM, PostgreSQL, sonner (toasts), lucide-reac (001-agrix-core-platform)
+- PostgreSQL (existing) — migration needed for new column (001-agrix-core-platform)
+- TypeScript 5.x (NestJS backend, Next.js 14 frontend) + TipTap v2 (rich editor), MinIO (storage), TypeORM (ORM) (002-professional-blog)
+- PostgreSQL (primary), MinIO (images, bucket: `agrix-media`) (002-professional-blog)
 
 - Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+) (001-agrix-core-platform)
 
@@ -25,9 +29,10 @@ npm test && npm run lint
 Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+): Follow standard conventions
 
 ## Recent Changes
+- 002-professional-blog: Added TypeScript 5.x (NestJS backend, Next.js 14 frontend) + TipTap v2 (rich editor), MinIO (storage), TypeORM (ORM)
+- 001-agrix-core-platform: Added TypeScript 5.x (NestJS 10 backend, Next.js 14 frontend) + TypeORM, PostgreSQL, sonner (toasts), lucide-reac
 - 001-agrix-core-platform: Added TypeScript 5.x, React 18, Next.js 14 (App Router) + next, react, shadcn/ui, tailwindcss, lucide-reac
 
-- 001-agrix-core-platform: Added Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

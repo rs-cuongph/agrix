@@ -55,12 +55,13 @@ export class AdminUsersController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() body: { fullName?: string; role?: string; isActive?: boolean }) {
+  async update(@Param('id') id: string, @Body() body: { fullName?: string; role?: string; isActive?: boolean; password?: string }) {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new Error(`User ${id} not found`);
     if (body.fullName !== undefined) user.fullName = body.fullName;
     if (body.role !== undefined) user.role = body.role as UserRole;
     if (body.isActive !== undefined) user.isActive = body.isActive;
+    if (body.password) user.passwordHash = await bcrypt.hash(body.password, 10);
     await this.userRepo.save(user);
     const { passwordHash, ...result } = user;
     return result;

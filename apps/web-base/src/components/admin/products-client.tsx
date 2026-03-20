@@ -1,66 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Plus, Pencil, Power, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Power, RefreshCw } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type Product = {
   id: string; sku: string; name: string; baseUnit: string;
-  baseSellPrice: number; baseCostPrice: number; currentStockBase: number;
+  baseSellPrice: number; currentStockBase: number;
   isActive: boolean; categoryId: string; barcodeEan13?: string;
-  description?: string; usageInstructions?: string;
+  description?: string;
 };
 
 type Category = { id: string; name: string };
+type BaseUnit = { id: string; name: string; abbreviation?: string };
 
-const productFields = (categories: Category[]) => [
-  { name: "sku", label: "SKU", required: true, placeholder: "VD: PB-001" },
-  { name: "name", label: "Tên sản phẩm", required: true },
-  { name: "categoryId", label: "Danh mục", type: "select" as const, required: true,
-    options: categories.map(c => ({ value: c.id, label: c.name })) },
-  { name: "baseUnit", label: "Đơn vị gốc", required: true, placeholder: "VD: Kg, Chai, Gói" },
-  { name: "baseCostPrice", label: "Giá vốn (đ)", type: "number" as const, required: true },
-  { name: "baseSellPrice", label: "Giá bán (đ)", type: "number" as const, required: true },
-  { name: "barcodeEan13", label: "Barcode EAN-13", placeholder: "13 số" },
-  { name: "description", label: "Mô tả", type: "textarea" as const },
-];
-
-export function ProductsClient({ products, categories }: { products: Product[]; categories: Category[] }) {
+export function ProductsClient({
+  products, categories, units,
+}: {
+  products: Product[]; categories: Category[]; units: BaseUnit[];
+}) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: Product } | null>(null);
   const router = useRouter();
 
+  const productFields = [
+    { name: "sku", label: "SKU", required: true, placeholder: "VD: PB-001" },
+    { name: "name", label: "Tên sản phẩm", required: true },
+    { name: "categoryId", label: "Danh mục", type: "select" as const, required: true,
+      options: categories.map(c => ({ value: c.id, label: c.name })) },
+    { name: "baseUnit", label: "Đơn vị gốc", type: "select" as const, required: true,
+      options: units.map(u => ({ value: u.name, label: u.abbreviation ? `${u.name} (${u.abbreviation})` : u.name })) },
+    { name: "baseSellPrice", label: "Giá bán lẻ (đ)", type: "number" as const, required: true },
+    { name: "barcodeEan13", label: "Barcode EAN-13", placeholder: "13 số hoặc để trống tự sinh" },
+    { name: "description", label: "Mô tả", type: "textarea" as const },
+  ];
+
   const handleCreate = async (data: Record<string, any>) => {
     await adminApiCall("/products", "POST", data);
+    toast.success("Tạo sản phẩm thành công");
     router.refresh();
   };
-
   const handleEdit = async (data: Record<string, any>) => {
     await adminApiCall(`/products/${dialog?.data?.id}`, "PUT", data);
+    toast.success("Cập nhật sản phẩm thành công");
     router.refresh();
   };
-
   const handleToggle = async (id: string) => {
     await adminApiCall(`/products/${id}/toggle-active`, "PATCH");
+    toast.success("Đã thay đổi trạng thái sản phẩm");
     router.refresh();
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <Package className="w-6 h-6" /> Sản phẩm
-        </h1>
-        <div className="flex gap-2">
-          <button onClick={() => setDialog({ mode: "create" })}
-            className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-            <Plus className="w-4 h-4" /> Tạo sản phẩm
-          </button>
-          <button onClick={() => router.refresh()}
-            className="inline-flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors">
-            <RefreshCw className="w-4 h-4" /> Làm mới
-          </button>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-end gap-2">
+        <button onClick={() => setDialog({ mode: "create" })}
+          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+          <Plus className="w-4 h-4" /> Tạo sản phẩm
+        </button>
+        <button onClick={() => router.refresh()}
+          className="inline-flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors">
+          <RefreshCw className="w-4 h-4" /> Làm mới
+        </button>
       </div>
 
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
@@ -116,7 +118,7 @@ export function ProductsClient({ products, categories }: { products: Product[]; 
       {dialog && (
         <CrudDialog
           title="sản phẩm"
-          fields={productFields(categories)}
+          fields={productFields}
           initialData={dialog.mode === "edit" ? dialog.data : {}}
           onSubmit={dialog.mode === "create" ? handleCreate : handleEdit}
           onClose={() => setDialog(null)}
@@ -126,3 +128,4 @@ export function ProductsClient({ products, categories }: { products: Product[]; 
     </div>
   );
 }
+
