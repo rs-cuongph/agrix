@@ -19,7 +19,7 @@ async function getProducts(): Promise<Product[]> {
     );
     if (!res.ok) return [];
     const data = await res.json();
-    return data.items || [];
+    return data.data || [];
   } catch {
     return [];
   }

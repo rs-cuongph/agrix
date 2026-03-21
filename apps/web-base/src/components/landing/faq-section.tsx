@@ -27,8 +27,6 @@ async function getFaqs(): Promise<FaqItem[]> {
 export default async function FaqSection() {
   const faqs = await getFaqs();
 
-  if (faqs.length === 0) return null;
-
   return (
     <section id="faq" className="py-20 px-6 bg-gray-50">
       <div className="max-w-3xl mx-auto">
@@ -41,22 +39,28 @@ export default async function FaqSection() {
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqs.map((faq) => (
-            <AccordionItem
-              key={faq.id}
-              value={faq.id}
-              className="bg-white border border-gray-200 rounded-xl px-5 data-[state=open]:shadow-sm"
-            >
-              <AccordionTrigger className="text-sm font-semibold text-gray-800 hover:text-emerald-600 py-4 [&[data-state=open]]:text-emerald-600">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-gray-600 leading-relaxed pb-4">
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        {faqs.length === 0 ? (
+          <div className="py-16 text-center text-gray-400 border border-dashed border-gray-200 rounded-2xl">
+            Chưa có câu hỏi thường gặp nào.
+          </div>
+        ) : (
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((faq) => (
+              <AccordionItem
+                key={faq.id}
+                value={faq.id}
+                className="bg-white border border-gray-200 rounded-xl px-5 data-[state=open]:shadow-sm"
+              >
+                <AccordionTrigger className="text-sm font-semibold text-gray-800 hover:text-emerald-600 py-4 [&[data-state=open]]:text-emerald-600">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-600 leading-relaxed pb-4">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
       </div>
     </section>
   );

@@ -19,16 +19,17 @@ interface Product {
   description?: string;
 }
 
-async function getProducts(): Promise<{ items: Product[]; total: number }> {
+async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/public/products?limit=50`,
       { next: { revalidate: 300 } },
     );
-    if (!res.ok) return { items: [], total: 0 };
-    return res.json();
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
   } catch {
-    return { items: [], total: 0 };
+    return [];
   }
 }
 
@@ -37,7 +38,7 @@ function formatVND(amount: number): string {
 }
 
 export default async function ProductsPage() {
-  const { items: products } = await getProducts();
+  const products = await getProducts();
 
   return (
     <>
