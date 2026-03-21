@@ -26,10 +26,10 @@ export class KnowledgeEmbedding {
   @Column({ type: 'text' })
   content: string;
 
-  // pgvector column — stored as float[]
-  // Note: Requires `CREATE EXTENSION IF NOT EXISTS vector;` in the DB
-  @Column({ type: 'simple-array', nullable: true })
-  embedding: number[];
+  // pgvector column — requires CREATE EXTENSION vector;
+  // Using float array stored as text for compatibility; will be cast to vector for similarity search
+  @Column({ type: 'text', nullable: true })
+  embedding: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -32,6 +32,8 @@ The user interface must prioritize operational speed and clarity. It must adhere
 
 **CRUD Toast Notifications**: All Create/Update/Delete operations MUST show a Sonner toast notification on completion. Success → `toast.success(message)`. Error → `toast.error(message)`. API errors (401/403/404/500) are handled globally by `adminApiCall`. This applies to all admin modules without exception.
 
+**shadcn/ui Priority (web-base)**: When building UI components in `apps/web-base`, ALWAYS prioritize using shadcn/ui components (installed via the `shadcn` skill: `/shadcn`). Admin pages (`/admin/*`) use shadcn natively with full design tokens (scoped via `.admin-scope` in `admin/layout.tsx`). Public landing pages may use custom Tailwind styling but should still prefer shadcn primitives (Tabs, Slider, Dialog, etc.) when available. Never hand-code a UI primitive that shadcn already provides.
+
 ## Technical & Infrastructure Constraints
 
 - **Backend**: NestJS (Node.js) with PostgreSQL as the primary RDBMS.
@@ -49,4 +51,4 @@ The user interface must prioritize operational speed and clarity. It must adhere
 The strict architectural guidelines regarding the offline-first sync mechanism and the monorepo structure supersede generic coding practices.
 Any amendments to these core rules (e.g., splitting the monorepo, changing the primary datastore) require formal documentation, impact analysis on the background sync worker, and approval from the lead engineer.
 
-**Version**: 1.2.0 | **Ratified**: 2026-03-19 | **Last Amended**: 2026-03-20
+**Version**: 1.3.0 | **Ratified**: 2026-03-19 | **Last Amended**: 2026-03-21

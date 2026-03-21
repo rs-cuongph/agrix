@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Settings, FolderTree, Ruler, Shield, MoreHorizontal } from "lucide-react";
 import { CategoriesClient } from "@/components/admin/categories-client";
 import { UnitsClient } from "@/components/admin/units-client";
 import { AccountsClient } from "@/components/admin/accounts-client";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type Category = { id: string; name: string; description?: string };
 type BaseUnit = { id: string; name: string; abbreviation?: string; description?: string };
@@ -50,7 +49,6 @@ export function SettingsClient({
 }) {
   const isAdmin = userRole === "ADMIN";
   const visibleTabs = ALL_TABS.filter((t) => !t.adminOnly || isAdmin);
-  const [tab, setTab] = useState<string>(visibleTabs[0]?.id || "categories");
 
   return (
     <div className="p-6 space-y-4">
@@ -58,36 +56,34 @@ export function SettingsClient({
         <Settings className="w-6 h-6" /> Cài đặt
       </h1>
 
-      {/* Tab bar */}
-      <div className="flex gap-1 border-b">
-        {visibleTabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors",
-              tab === t.id
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-muted-foreground hover:text-gray-900 hover:border-gray-300"
-            )}
-          >
-            <t.icon className="w-4 h-4" />
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue={visibleTabs[0]?.id || "categories"}>
+        <TabsList>
+          {visibleTabs.map((t) => (
+            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5">
+              <t.icon className="w-4 h-4" /> {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      {/* Tab content */}
-      {tab === "categories" && <CategoriesClient categories={categories} />}
-      {tab === "units" && <UnitsClient baseUnits={baseUnits} conversions={conversions} products={products} />}
-      {tab === "accounts" && isAdmin && <AccountsClient users={users} permissions={permissions} />}
-      {tab === "other" && (
-        <div className="rounded-xl border bg-card p-8 shadow-sm text-center space-y-3">
-          <MoreHorizontal className="w-10 h-10 mx-auto text-muted-foreground/40" />
-          <p className="text-muted-foreground">Chưa có cài đặt nào</p>
-          <p className="text-xs text-muted-foreground/60">Agrix Admin v2.0.0 (Next.js)</p>
-        </div>
-      )}
+        <TabsContent value="categories">
+          <CategoriesClient categories={categories} />
+        </TabsContent>
+        <TabsContent value="units">
+          <UnitsClient baseUnits={baseUnits} conversions={conversions} products={products} />
+        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="accounts">
+            <AccountsClient users={users} permissions={permissions} />
+          </TabsContent>
+        )}
+        <TabsContent value="other">
+          <div className="rounded-xl border bg-card p-8 shadow-sm text-center space-y-3">
+            <MoreHorizontal className="w-10 h-10 mx-auto text-muted-foreground/40" />
+            <p className="text-muted-foreground">Chưa có cài đặt nào</p>
+            <p className="text-xs text-muted-foreground/60">Agrix Admin v2.0.0 (Next.js)</p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

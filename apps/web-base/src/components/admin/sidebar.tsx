@@ -11,6 +11,7 @@ import {
   Settings,
   Warehouse,
   LogOut,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/admin/orders", label: "Đơn hàng", icon: ClipboardList, module: "orders" },
   { href: "/admin/customers", label: "Khách hàng", icon: Users, module: "customers" },
   { href: "/admin/blog", label: "Blog", icon: FileText, module: "blog" },
+  { href: "/admin/ai-assistant", label: "Trợ lý AI", icon: Bot, module: "settings" },
   { href: "/admin/settings", label: "Cài đặt", icon: Settings, module: "settings" },
 ];
 

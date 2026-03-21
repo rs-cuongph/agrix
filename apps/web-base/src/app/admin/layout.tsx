@@ -40,15 +40,15 @@ export default async function AdminLayout({
   // Not authenticated — render without sidebar (login page)
   if (!user) {
     return (
-      <>
+      <div className="admin-scope">
         {children}
         <Toaster richColors position="top-right" />
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-muted/30">
+    <div className="admin-scope flex min-h-screen bg-muted/30">
       <AdminSidebar role={user.role} permissions={user.permissions} />
       <main className="flex-1 overflow-auto p-6">{children}</main>
       <Toaster richColors position="top-right" />

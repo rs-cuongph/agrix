@@ -1,5 +1,9 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ===== Shared CSS Variables (used by both admin & web) ===== */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -21,19 +25,49 @@
     --ring: 160 84% 39%;
     --radius: 0.5rem;
   }
-}
-
-@layer base {
-  * {
-    border-color: hsl(var(--border));
-  }
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
 }
 
-/* TipTap Editor Styles */
+/* ===== Default border color (shadcn standard — @layer base is lower priority than utilities) ===== */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+}
+
+/* ===== shadcn theme tokens (for shadcn components like Slider, Tabs…) ===== */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/* ===== TipTap Editor Styles ===== */
 .tiptap {
   outline: none;
 }
@@ -115,3 +149,18 @@
   padding: 0;
 }
 
+/* ===== Chat Widget Animations ===== */
+@keyframes chat-slide-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes chat-bubble-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.chat-window-enter {
+  animation: chat-slide-in 0.25s ease-out;
+}
+.chat-bubble-enter {
+  animation: chat-bubble-bounce 2s ease-in-out infinite;
+}
