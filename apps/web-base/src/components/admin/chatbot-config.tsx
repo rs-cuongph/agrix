@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { Slider } from '@/components/ui/slider';
 
 interface Config {
   systemPrompt: string;
@@ -14,15 +15,21 @@ interface Config {
   maxMessagesPerSession: number;
 }
 
-async function adminApiCall(path: string, options?: RequestInit) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options?.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+async function adminFetch(path: string, options?: { method?: string; body?: any }) {
+  if (!options?.body && !options?.method) {
+    // GET
+    const res = await fetch(`/api/admin/proxy?path=${encodeURIComponent(path)}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Lỗi' }));
+      throw new Error(err.message || `Error ${res.status}`);
+    }
+    return res.json();
+  }
+  // POST/PUT
+  const res = await fetch('/api/admin/proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, method: options?.method || 'POST', body: options?.body }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Lỗi' }));
@@ -50,7 +57,7 @@ export default function ChatbotConfigPanel() {
 
   const loadConfig = async () => {
     try {
-      const data = await adminApiCall('/ai/admin/config');
+      const data = await adminFetch('/ai/admin/config');
       setConfig(data);
       setSystemPrompt(data.systemPrompt);
       setPrimaryProvider(data.primaryProvider);
@@ -75,9 +82,9 @@ export default function ChatbotConfigPanel() {
       if (primaryApiKey) updates.primaryApiKey = primaryApiKey;
       if (secondaryApiKey) updates.secondaryApiKey = secondaryApiKey;
 
-      await adminApiCall('/ai/admin/config', {
+      await adminFetch('/ai/admin/config', {
         method: 'PUT',
-        body: JSON.stringify(updates),
+        body: updates,
       });
 
       toast.success('Đã cập nhật cấu hình');
@@ -196,12 +203,12 @@ export default function ChatbotConfigPanel() {
       <div className="p-4 bg-white rounded-lg border">
         <h4 className="font-medium mb-2">Giới hạn tin nhắn / phiên</h4>
         <div className="flex items-center gap-4">
-          <input
-            type="range"
+          <Slider
             min={5}
             max={100}
-            value={maxMessages}
-            onChange={(e) => setMaxMessages(Number(e.target.value))}
+            step={5}
+            value={[maxMessages]}
+            onValueChange={(v) => setMaxMessages(v[0])}
             className="flex-1"
           />
           <span className="text-sm font-medium w-10 text-center">{maxMessages}</span>

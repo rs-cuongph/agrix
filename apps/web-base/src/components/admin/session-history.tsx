@@ -18,11 +18,8 @@ interface Message {
   createdAt: string;
 }
 
-async function adminApiCall(path: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
+async function adminFetch(path: string) {
+  const res = await fetch(`/api/admin/proxy?path=${encodeURIComponent(path)}`);
   if (!res.ok) throw new Error(`Error ${res.status}`);
   return res.json();
 }
@@ -40,7 +37,7 @@ export default function SessionHistory() {
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminApiCall(`/ai/admin/sessions?page=${page}&limit=${limit}`);
+      const data = await adminFetch(`/ai/admin/sessions?page=${page}&limit=${limit}`);
       setSessions(data.data);
       setTotal(data.total);
     } catch (error: any) {
@@ -56,7 +53,7 @@ export default function SessionHistory() {
 
   const viewSession = async (id: string) => {
     try {
-      const data = await adminApiCall(`/ai/admin/sessions/${id}`);
+      const data = await adminFetch(`/ai/admin/sessions/${id}`);
       setMessages(data.messages || []);
       setSelectedSession(id);
     } catch (error: any) {

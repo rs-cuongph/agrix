@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server';
  */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const backendUrl = process.env.API_BASE_URL || 'http://localhost:3000/api/v1';
 
   try {
     const response = await fetch(`${backendUrl}/ai/public/chat`, {

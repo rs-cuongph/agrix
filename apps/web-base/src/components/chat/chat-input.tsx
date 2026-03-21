@@ -22,7 +22,6 @@ export default function ChatInput({ onSend, disabled, placeholder }: ChatInputPr
     }
     onSend(trimmed);
     setMessage('');
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -44,23 +43,25 @@ export default function ChatInput({ onSend, disabled, placeholder }: ChatInputPr
   }, [message]);
 
   return (
-    <div className="flex items-end gap-2 p-3 border-t bg-white">
-      <textarea
-        ref={textareaRef}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={disabled}
-        placeholder={placeholder || 'Nhập câu hỏi...'}
-        rows={1}
-        className="flex-1 resize-none border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 max-h-[120px]"
-      />
+    <div className="flex items-end gap-2 px-3 py-3 bg-white border-t border-gray-100 flex-shrink-0">
+      <div className="flex-1 relative">
+        <textarea
+          ref={textareaRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          placeholder={placeholder || 'Nhập câu hỏi...'}
+          rows={1}
+          className="w-full resize-none bg-gray-50 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-emerald-400 disabled:opacity-50 max-h-[120px] placeholder:text-gray-400 transition-all"
+        />
+      </div>
       <button
         onClick={handleSend}
         disabled={disabled || !message.trim()}
-        className="flex-shrink-0 w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 transition-colors"
+        className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 disabled:opacity-30 disabled:hover:bg-emerald-500 transition-all active:scale-90 shadow-sm"
       >
-        <Send size={16} />
+        <Send size={16} className="ml-0.5" />
       </button>
     </div>
   );

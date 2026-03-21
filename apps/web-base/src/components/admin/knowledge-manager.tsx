@@ -15,14 +15,35 @@ interface Document {
   createdAt: string;
 }
 
-async function adminApiCall(path: string, options?: RequestInit) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${path}`, {
-    ...options,
-    headers: {
-      ...(options?.headers || {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+async function adminFetch(path: string, options?: { method?: string; body?: any }) {
+  if (options?.method === 'DELETE' || (!options?.method && !options?.body)) {
+    // GET or DELETE — use query param
+    const method = options?.method || 'GET';
+    if (method === 'GET') {
+      const res = await fetch(`/api/admin/proxy?path=${encodeURIComponent(path)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Lỗi' }));
+        throw new Error(err.message || `Error ${res.status}`);
+      }
+      return res.json();
+    }
+    // DELETE
+    const res = await fetch('/api/admin/proxy', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, method: 'DELETE' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Lỗi' }));
+      throw new Error(err.message || `Error ${res.status}`);
+    }
+    return res.json();
+  }
+  // POST/PUT with JSON body
+  const res = await fetch('/api/admin/proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path, method: options?.method || 'POST', body: options?.body }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: 'Lỗi' }));
@@ -39,7 +60,7 @@ export default function KnowledgeManager() {
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const data = await adminApiCall('/ai/admin/knowledge');
+      const data = await adminFetch('/ai/admin/knowledge');
       setDocuments(data);
     } catch (error: any) {
       toast.error(error.message);
@@ -61,10 +82,14 @@ export default function KnowledgeManager() {
       const formData = new FormData();
       formData.append('file', file);
 
-      await adminApiCall('/ai/admin/knowledge', {
+      const res = await fetch('/api/admin/proxy?path=/ai/admin/knowledge', {
         method: 'POST',
         body: formData,
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Lỗi' }));
+        throw new Error(err.message || `Error ${res.status}`);
+      }
 
       toast.success(`Đã upload "${file.name}"`);
       fetchDocuments();
@@ -80,7 +105,7 @@ export default function KnowledgeManager() {
     if (!confirm(`Xóa tài liệu "${filename}"?`)) return;
 
     try {
-      await adminApiCall(`/ai/admin/knowledge/${id}`, { method: 'DELETE' });
+      await adminFetch(`/ai/admin/knowledge/${id}`, { method: 'DELETE' });
       toast.success('Đã xóa tài liệu');
       fetchDocuments();
     } catch (error: any) {
@@ -91,7 +116,7 @@ export default function KnowledgeManager() {
   const handleSyncProducts = async () => {
     setSyncing(true);
     try {
-      const result = await adminApiCall('/ai/admin/sync-products', { method: 'POST' });
+      const result = await adminFetch('/ai/admin/sync-products', { method: 'POST' });
       toast.success(`${result.message} — ${result.productCount} sản phẩm, ${result.chunkCount} chunks`);
       fetchDocuments();
     } catch (error: any) {
