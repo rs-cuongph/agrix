@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
+import { Package, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import Navbar from '@/components/landing/navbar';
 
 export const metadata: Metadata = {
-  title: "Bảng giá sản phẩm — Agrix",
-  description: "Xem bảng giá vật tư nông nghiệp mới nhất: thuốc trừ sâu, phân bón, hạt giống.",
+  title: 'Bảng giá sản phẩm — Agrix',
+  description:
+    'Xem bảng giá vật tư nông nghiệp mới nhất: thuốc trừ sâu, phân bón, hạt giống.',
 };
 
 interface Product {
@@ -12,13 +16,15 @@ interface Product {
   baseSellPrice: number;
   category?: { name: string };
   currentStockBase: number;
+  description?: string;
 }
 
 async function getProducts(): Promise<{ items: Product[]; total: number }> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/products?limit=50`, {
-      next: { revalidate: 300 },
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/public/products?limit=50`,
+      { next: { revalidate: 300 } },
+    );
     if (!res.ok) return { items: [], total: 0 };
     return res.json();
   } catch {
@@ -34,47 +40,68 @@ export default async function ProductsPage() {
   const { items: products } = await getProducts();
 
   return (
-    <main style={{ maxWidth: 1000, margin: '0 auto', padding: '40px 24px' }}>
-      <h1 style={{ fontSize: 32, fontWeight: 800 }}>💰 Bảng giá sản phẩm</h1>
-      <p style={{ color: '#6B7280', marginBottom: 32 }}>
-        Giá cập nhật hàng ngày. Liên hệ để nhận báo giá sỉ.
-      </p>
+    <>
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-6 py-12 pt-24">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-600 mb-6 transition-colors"
+        >
+          <ArrowLeft size={14} />
+          Trang chủ
+        </Link>
 
-      {products.length === 0 ? (
-        <div style={{
-          padding: 40, textAlign: 'center', color: '#9CA3AF',
-          border: '1px dashed #E5E7EB', borderRadius: 12,
-        }}>
-          Chưa có sản phẩm. Vui lòng liên hệ để biết giá.
-        </div>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #E5E7EB', textAlign: 'left' }}>
-              <th style={{ padding: '12px 8px' }}>Sản phẩm</th>
-              <th style={{ padding: '12px 8px' }}>Danh mục</th>
-              <th style={{ padding: '12px 8px' }}>Đơn vị</th>
-              <th style={{ padding: '12px 8px', textAlign: 'right' }}>Giá bán</th>
-              <th style={{ padding: '12px 8px', textAlign: 'right' }}>Tồn kho</th>
-            </tr>
-          </thead>
-          <tbody>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Bảng giá sản phẩm
+        </h1>
+        <p className="text-gray-500 mb-8">
+          Giá cập nhật hàng ngày. Liên hệ để nhận báo giá sỉ.
+        </p>
+
+        {products.length === 0 ? (
+          <div className="py-16 text-center text-gray-400 border border-dashed border-gray-200 rounded-2xl">
+            Chưa có sản phẩm. Vui lòng liên hệ để biết giá.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((p) => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                <td style={{ padding: '12px 8px', fontWeight: 500 }}>{p.name}</td>
-                <td style={{ padding: '12px 8px', color: '#6B7280' }}>{p.category?.name || '—'}</td>
-                <td style={{ padding: '12px 8px' }}>{p.baseUnit}</td>
-                <td style={{ padding: '12px 8px', textAlign: 'right', color: '#10B981', fontWeight: 600 }}>
-                  {formatVND(p.baseSellPrice)}
-                </td>
-                <td style={{ padding: '12px 8px', textAlign: 'right', color: p.currentStockBase > 0 ? '#374151' : '#EF4444' }}>
-                  {p.currentStockBase > 0 ? `${p.currentStockBase} ${p.baseUnit}` : 'Hết hàng'}
-                </td>
-              </tr>
+              <Link
+                key={p.id}
+                href={`/products/${p.id}`}
+                className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
+              >
+                <div className="h-40 bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
+                  <Package
+                    size={48}
+                    className="text-emerald-300 group-hover:text-emerald-400 transition-colors"
+                  />
+                </div>
+                <div className="p-4">
+                  {p.category && (
+                    <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      {p.category.name}
+                    </span>
+                  )}
+                  <h3 className="mt-2 text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                    {p.name}
+                  </h3>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-lg font-bold text-emerald-600">
+                      {formatVND(p.baseSellPrice)}
+                    </span>
+                    <span className="text-xs text-gray-400">/{p.baseUnit}</span>
+                  </div>
+                  <div className="mt-1 text-xs text-gray-400">
+                    {p.currentStockBase > 0
+                      ? `Còn ${p.currentStockBase} ${p.baseUnit}`
+                      : 'Hết hàng'}
+                  </div>
+                </div>
+              </Link>
             ))}
-          </tbody>
-        </table>
-      )}
-    </main>
+          </div>
+        )}
+      </main>
+    </>
   );
 }

@@ -12,6 +12,9 @@ import {
   Warehouse,
   LogOut,
   Bot,
+  MessageSquare,
+  HelpCircle,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +30,9 @@ const navItems = [
   { href: "/admin/orders", label: "Đơn hàng", icon: ClipboardList, module: "orders" },
   { href: "/admin/customers", label: "Khách hàng", icon: Users, module: "customers" },
   { href: "/admin/blog", label: "Blog", icon: FileText, module: "blog" },
+  { href: "/admin/contacts", label: "Liên hệ", icon: MessageSquare, module: "settings" },
+  { href: "/admin/faq", label: "FAQ", icon: HelpCircle, module: "settings" },
+  { href: "/admin/testimonials", label: "Đánh giá", icon: Star, module: "settings" },
   { href: "/admin/ai-assistant", label: "Trợ lý AI", icon: Bot, module: "settings" },
   { href: "/admin/settings", label: "Cài đặt", icon: Settings, module: "settings" },
 ];

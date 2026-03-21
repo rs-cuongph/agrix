@@ -10,6 +10,10 @@ import { StorageModule } from './storage/storage.module';
 import { AIModule } from './ai/ai.module';
 import { BlogModule } from './blog/blog.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { CommonModule } from './common/common.module';
+import { ContactModule } from './contact/contact.module';
+import { FaqModule } from './faq/faq.module';
+import { TestimonialModule } from './testimonial/testimonial.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 @Module({
@@ -27,6 +31,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     AIModule,
     BlogModule,
     DashboardModule,
+    CommonModule,
+    ContactModule,
+    FaqModule,
+    TestimonialModule,
   ],
   providers: [
     {
@@ -36,3 +44,4 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
   ],
 })
 export class AppModule {}
+

@@ -13,6 +13,7 @@ import { CategoriesController } from './categories.controller';
 import { StockController } from './stock.controller';
 import { UnitConversionController } from './unit-conversion.controller';
 import { UnitsController } from './units.controller';
+import { PublicProductsController } from './public-products.controller';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { UnitsController } from './units.controller';
       Unit,
     ]),
   ],
-  controllers: [ProductsController, CategoriesController, StockController, UnitConversionController, UnitsController],
+  controllers: [ProductsController, PublicProductsController, CategoriesController, StockController, UnitConversionController, UnitsController],
   providers: [InventoryService, UnitConversionService, StockImportService],
   exports: [TypeOrmModule, InventoryService, UnitConversionService, StockImportService],
 })
