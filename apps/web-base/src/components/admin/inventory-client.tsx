@@ -9,6 +9,7 @@ import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ProductsClient } from "@/components/admin/products-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type StockEntry = {
   id: string; productId: string; quantityBase: number;
@@ -66,7 +67,6 @@ export function InventoryClient({
   alerts: AlertData; products: Product[]; history: { data: StockEntry[]; meta: any };
   categories: Category[]; units: BaseUnit[];
 }) {
-  const [tab, setTab] = useState<string>("overview");
   const [importDialog, setImportDialog] = useState(false);
   const [adjustDialog, setAdjustDialog] = useState(false);
   const router = useRouter();
@@ -113,216 +113,212 @@ export function InventoryClient({
         <Warehouse className="w-6 h-6" /> Quản lý Kho hàng
       </h1>
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b overflow-x-auto">
-        {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
-              tab === t.id ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}>
-            <t.icon className="w-4 h-4" /> {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="overview">
+        <TabsList>
+          {TABS.map((t) => (
+            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5">
+              <t.icon className="w-4 h-4" /> {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      {/* TAB: Sản phẩm */}
-      {tab === "products" && (
-        <ProductsClient products={products} categories={categories} units={units} />
-      )}
+        {/* TAB: Sản phẩm */}
+        <TabsContent value="products">
+          <ProductsClient products={products} categories={categories} units={units} />
+        </TabsContent>
 
-      {/* TAB: Tổng quan */}
-      {tab === "overview" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-xl border bg-card shadow-sm p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1"><Package className="w-4 h-4" /> Tổng sản phẩm</div>
-              <div className="text-2xl font-bold text-gray-900">{products.length}</div>
-            </div>
-            <div className="rounded-xl border bg-card shadow-sm p-4">
-              <div className="flex items-center gap-2 text-sm text-red-600 mb-1"><AlertTriangle className="w-4 h-4" /> Sắp hết hàng</div>
-              <div className="text-2xl font-bold text-red-600">{alerts.summary.lowStockCount}</div>
-            </div>
-            <div className="rounded-xl border bg-card shadow-sm p-4">
-              <div className="flex items-center gap-2 text-sm text-orange-600 mb-1"><Clock className="w-4 h-4" /> Sắp hết hạn</div>
-              <div className="text-2xl font-bold text-orange-600">{alerts.summary.expiringCount}</div>
-            </div>
-          </div>
-
-          {alerts.lowStock.length > 0 && (
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="px-4 py-3 bg-red-50 border-b font-semibold text-sm text-red-700 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" /> Sản phẩm sắp hết hàng
+        {/* TAB: Tổng quan */}
+        <TabsContent value="overview">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-xl border bg-card shadow-sm p-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1"><Package className="w-4 h-4" /> Tổng sản phẩm</div>
+                <div className="text-2xl font-bold text-gray-900">{products.length}</div>
               </div>
+              <div className="rounded-xl border bg-card shadow-sm p-4">
+                <div className="flex items-center gap-2 text-sm text-red-600 mb-1"><AlertTriangle className="w-4 h-4" /> Sắp hết hàng</div>
+                <div className="text-2xl font-bold text-red-600">{alerts.summary.lowStockCount}</div>
+              </div>
+              <div className="rounded-xl border bg-card shadow-sm p-4">
+                <div className="flex items-center gap-2 text-sm text-orange-600 mb-1"><Clock className="w-4 h-4" /> Sắp hết hạn</div>
+                <div className="text-2xl font-bold text-orange-600">{alerts.summary.expiringCount}</div>
+              </div>
+            </div>
+
+            {alerts.lowStock.length > 0 && (
+              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="px-4 py-3 bg-red-50 border-b font-semibold text-sm text-red-700 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Sản phẩm sắp hết hàng
+                </div>
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b bg-muted/50">
+                    <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
+                    <th className="text-right px-4 py-2 font-medium">Tồn kho</th>
+                    <th className="text-right px-4 py-2 font-medium">Ngưỡng tối thiểu</th>
+                  </tr></thead>
+                  <tbody>
+                    {alerts.lowStock.map((p) => (
+                      <tr key={p.id} className="border-b last:border-0">
+                        <td className="px-4 py-2 font-medium">{p.name}</td>
+                        <td className="px-4 py-2 text-right text-red-600 font-semibold">{formatNum(p.currentStockBase)} {p.baseUnit}</td>
+                        <td className="px-4 py-2 text-right text-muted-foreground">{formatNum(p.minStockThreshold)} {p.baseUnit}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {alerts.expiring.length > 0 && (
+              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="px-4 py-3 bg-orange-50 border-b font-semibold text-sm text-orange-700 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Sản phẩm sắp hết hạn
+                </div>
+                <table className="w-full text-sm">
+                  <thead><tr className="border-b bg-muted/50">
+                    <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
+                    <th className="text-right px-4 py-2 font-medium">Ngày hết hạn</th>
+                  </tr></thead>
+                  <tbody>
+                    {alerts.expiring.map((p) => (
+                      <tr key={p.id} className="border-b last:border-0">
+                        <td className="px-4 py-2 font-medium">{p.name}</td>
+                        <td className="px-4 py-2 text-right text-orange-600">{p.expirationDate ? new Date(p.expirationDate).toLocaleDateString("vi-VN") : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* TAB: Nhập kho */}
+        <TabsContent value="import">
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <button onClick={() => setImportDialog(true)}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+                <Plus className="w-4 h-4" /> Nhập kho
+              </button>
+            </div>
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+              <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><ArrowDownToLine className="w-4 h-4" /> Lịch sử nhập kho</div>
               <table className="w-full text-sm">
-                <thead><tr className="border-b bg-muted/50">
+                <thead><tr className="border-b bg-muted/30">
+                  <th className="text-left px-4 py-2 font-medium">Thời gian</th>
                   <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
-                  <th className="text-right px-4 py-2 font-medium">Tồn kho</th>
-                  <th className="text-right px-4 py-2 font-medium">Ngưỡng tối thiểu</th>
+                  <th className="text-right px-4 py-2 font-medium">Số lượng</th>
+                  <th className="text-right px-4 py-2 font-medium">Giá nhập/ĐV</th>
+                  <th className="text-left px-4 py-2 font-medium">Lô</th>
+                  <th className="text-left px-4 py-2 font-medium">Người nhập</th>
                 </tr></thead>
                 <tbody>
-                  {alerts.lowStock.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0">
-                      <td className="px-4 py-2 font-medium">{p.name}</td>
-                      <td className="px-4 py-2 text-right text-red-600 font-semibold">{formatNum(p.currentStockBase)} {p.baseUnit}</td>
-                      <td className="px-4 py-2 text-right text-muted-foreground">{formatNum(p.minStockThreshold)} {p.baseUnit}</td>
+                  {history.data.filter(e => e.type === "IMPORT").map((e) => (
+                    <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <td className="px-4 py-2 text-muted-foreground text-xs">{formatDate(e.createdAt)}</td>
+                      <td className="px-4 py-2 font-medium">{e.product?.name || "—"}</td>
+                      <td className="px-4 py-2 text-right text-emerald-600 font-semibold">+{formatNum(e.quantityBase)} {e.product?.baseUnit}</td>
+                      <td className="px-4 py-2 text-right">{e.costPricePerUnit ? `${formatNum(e.costPricePerUnit)}đ` : "—"}</td>
+                      <td className="px-4 py-2 text-xs text-muted-foreground">{e.batchNumber || "—"}</td>
+                      <td className="px-4 py-2 text-xs">{e.creator?.fullName || "—"}</td>
                     </tr>
                   ))}
+                  {history.data.filter(e => e.type === "IMPORT").length === 0 && (
+                    <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Chưa có lịch sử nhập kho</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
+          </div>
+        </TabsContent>
 
-          {alerts.expiring.length > 0 && (
+        {/* TAB: Điều chỉnh kho */}
+        <TabsContent value="adjust">
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <button onClick={() => setAdjustDialog(true)}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                <Plus className="w-4 h-4" /> Điều chỉnh kho
+              </button>
+            </div>
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="px-4 py-3 bg-orange-50 border-b font-semibold text-sm text-orange-700 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Sản phẩm sắp hết hạn
-              </div>
+              <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><Wrench className="w-4 h-4" /> Lịch sử điều chỉnh kho</div>
               <table className="w-full text-sm">
-                <thead><tr className="border-b bg-muted/50">
+                <thead><tr className="border-b bg-muted/30">
+                  <th className="text-left px-4 py-2 font-medium">Thời gian</th>
                   <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
-                  <th className="text-right px-4 py-2 font-medium">Ngày hết hạn</th>
+                  <th className="text-center px-4 py-2 font-medium">Loại</th>
+                  <th className="text-right px-4 py-2 font-medium">Số lượng</th>
+                  <th className="text-left px-4 py-2 font-medium">Lô gốc</th>
+                  <th className="text-right px-4 py-2 font-medium">Giá nhập</th>
+                  <th className="text-left px-4 py-2 font-medium">Lý do</th>
+                  <th className="text-left px-4 py-2 font-medium">Người thực hiện</th>
                 </tr></thead>
                 <tbody>
-                  {alerts.expiring.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0">
-                      <td className="px-4 py-2 font-medium">{p.name}</td>
-                      <td className="px-4 py-2 text-right text-orange-600">{p.expirationDate ? new Date(p.expirationDate).toLocaleDateString("vi-VN") : "—"}</td>
+                  {history.data.filter(e => ["DAMAGE","RETURN","ADJUSTMENT"].includes(e.type)).map((e) => (
+                    <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <td className="px-4 py-2 text-muted-foreground text-xs">{formatDate(e.createdAt)}</td>
+                      <td className="px-4 py-2 font-medium">{e.product?.name || "—"}</td>
+                      <td className="px-4 py-2 text-center">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[e.type] || ""}`}>{TYPE_LABELS[e.type]}</span>
+                      </td>
+                      <td className="px-4 py-2 text-right text-red-600 font-semibold">{formatNum(e.quantityBase)} {e.product?.baseUnit}</td>
+                      <td className="px-4 py-2 text-xs text-muted-foreground">{e.batchNumber || "—"}</td>
+                      <td className="px-4 py-2 text-right text-xs">{e.costPricePerUnit ? `${formatNum(e.costPricePerUnit)}đ` : "—"}</td>
+                      <td className="px-4 py-2 text-xs">{e.note || "—"}</td>
+                      <td className="px-4 py-2 text-xs">{e.creator?.fullName || "—"}</td>
                     </tr>
                   ))}
+                  {history.data.filter(e => ["DAMAGE","RETURN","ADJUSTMENT"].includes(e.type)).length === 0 && (
+                    <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Chưa có lịch sử xuất/điều chỉnh</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        </TabsContent>
 
-      {/* TAB: Nhập kho */}
-      {tab === "import" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={() => setImportDialog(true)}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-              <Plus className="w-4 h-4" /> Nhập kho
-            </button>
-          </div>
+        {/* TAB: Lịch sử */}
+        <TabsContent value="history">
           <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-            <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><ArrowDownToLine className="w-4 h-4" /> Lịch sử nhập kho</div>
-            <table className="w-full text-sm">
-              <thead><tr className="border-b bg-muted/30">
-                <th className="text-left px-4 py-2 font-medium">Thời gian</th>
-                <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
-                <th className="text-right px-4 py-2 font-medium">Số lượng</th>
-                <th className="text-right px-4 py-2 font-medium">Giá nhập/ĐV</th>
-                <th className="text-left px-4 py-2 font-medium">Lô</th>
-                <th className="text-left px-4 py-2 font-medium">Người nhập</th>
-              </tr></thead>
-              <tbody>
-                {history.data.filter(e => e.type === "IMPORT").map((e) => (
-                  <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30">
-                    <td className="px-4 py-2 text-muted-foreground text-xs">{formatDate(e.createdAt)}</td>
-                    <td className="px-4 py-2 font-medium">{e.product?.name || "—"}</td>
-                    <td className="px-4 py-2 text-right text-emerald-600 font-semibold">+{formatNum(e.quantityBase)} {e.product?.baseUnit}</td>
-                    <td className="px-4 py-2 text-right">{e.costPricePerUnit ? `${formatNum(e.costPricePerUnit)}đ` : "—"}</td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{e.batchNumber || "—"}</td>
-                    <td className="px-4 py-2 text-xs">{e.creator?.fullName || "—"}</td>
-                  </tr>
-                ))}
-                {history.data.filter(e => e.type === "IMPORT").length === 0 && (
-                  <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Chưa có lịch sử nhập kho</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB: Điều chỉnh kho */}
-      {tab === "adjust" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={() => setAdjustDialog(true)}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-              <Plus className="w-4 h-4" /> Điều chỉnh kho
-            </button>
-          </div>
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-            <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><Wrench className="w-4 h-4" /> Lịch sử điều chỉnh kho</div>
+            <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><ClipboardList className="w-4 h-4" /> Toàn bộ lịch sử kho ({history.meta.total} bản ghi)</div>
             <table className="w-full text-sm">
               <thead><tr className="border-b bg-muted/30">
                 <th className="text-left px-4 py-2 font-medium">Thời gian</th>
                 <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
                 <th className="text-center px-4 py-2 font-medium">Loại</th>
                 <th className="text-right px-4 py-2 font-medium">Số lượng</th>
-                <th className="text-left px-4 py-2 font-medium">Lô gốc</th>
+                <th className="text-left px-4 py-2 font-medium">Lô</th>
                 <th className="text-right px-4 py-2 font-medium">Giá nhập</th>
-                <th className="text-left px-4 py-2 font-medium">Lý do</th>
+                <th className="text-left px-4 py-2 font-medium">Ghi chú</th>
                 <th className="text-left px-4 py-2 font-medium">Người thực hiện</th>
               </tr></thead>
               <tbody>
-                {history.data.filter(e => ["DAMAGE","RETURN","ADJUSTMENT"].includes(e.type)).map((e) => (
+                {history.data.map((e) => (
                   <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30">
                     <td className="px-4 py-2 text-muted-foreground text-xs">{formatDate(e.createdAt)}</td>
                     <td className="px-4 py-2 font-medium">{e.product?.name || "—"}</td>
                     <td className="px-4 py-2 text-center">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[e.type] || ""}`}>{TYPE_LABELS[e.type]}</span>
                     </td>
-                    <td className="px-4 py-2 text-right text-red-600 font-semibold">{formatNum(e.quantityBase)} {e.product?.baseUnit}</td>
+                    <td className={`px-4 py-2 text-right font-semibold ${e.quantityBase >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      {e.quantityBase >= 0 ? "+" : ""}{formatNum(e.quantityBase)} {e.product?.baseUnit}
+                    </td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">{e.batchNumber || "—"}</td>
                     <td className="px-4 py-2 text-right text-xs">{e.costPricePerUnit ? `${formatNum(e.costPricePerUnit)}đ` : "—"}</td>
                     <td className="px-4 py-2 text-xs">{e.note || "—"}</td>
                     <td className="px-4 py-2 text-xs">{e.creator?.fullName || "—"}</td>
                   </tr>
                 ))}
-                {history.data.filter(e => ["DAMAGE","RETURN","ADJUSTMENT"].includes(e.type)).length === 0 && (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Chưa có lịch sử xuất/điều chỉnh</td></tr>
+                {history.data.length === 0 && (
+                  <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Chưa có dữ liệu</td></tr>
                 )}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* TAB: Lịch sử */}
-      {tab === "history" && (
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><ClipboardList className="w-4 h-4" /> Toàn bộ lịch sử kho ({history.meta.total} bản ghi)</div>
-          <table className="w-full text-sm">
-            <thead><tr className="border-b bg-muted/30">
-              <th className="text-left px-4 py-2 font-medium">Thời gian</th>
-              <th className="text-left px-4 py-2 font-medium">Sản phẩm</th>
-              <th className="text-center px-4 py-2 font-medium">Loại</th>
-              <th className="text-right px-4 py-2 font-medium">Số lượng</th>
-              <th className="text-left px-4 py-2 font-medium">Lô</th>
-              <th className="text-right px-4 py-2 font-medium">Giá nhập</th>
-              <th className="text-left px-4 py-2 font-medium">Ghi chú</th>
-              <th className="text-left px-4 py-2 font-medium">Người thực hiện</th>
-            </tr></thead>
-            <tbody>
-              {history.data.map((e) => (
-                <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30">
-                  <td className="px-4 py-2 text-muted-foreground text-xs">{formatDate(e.createdAt)}</td>
-                  <td className="px-4 py-2 font-medium">{e.product?.name || "—"}</td>
-                  <td className="px-4 py-2 text-center">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${TYPE_COLORS[e.type] || ""}`}>{TYPE_LABELS[e.type]}</span>
-                  </td>
-                  <td className={`px-4 py-2 text-right font-semibold ${e.quantityBase >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                    {e.quantityBase >= 0 ? "+" : ""}{formatNum(e.quantityBase)} {e.product?.baseUnit}
-                  </td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">{e.batchNumber || "—"}</td>
-                  <td className="px-4 py-2 text-right text-xs">{e.costPricePerUnit ? `${formatNum(e.costPricePerUnit)}đ` : "—"}</td>
-                  <td className="px-4 py-2 text-xs">{e.note || "—"}</td>
-                  <td className="px-4 py-2 text-xs">{e.creator?.fullName || "—"}</td>
-                </tr>
-              ))}
-              {history.data.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Chưa có dữ liệu</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-
+        </TabsContent>
+      </Tabs>
 
       {importDialog && (
         <CrudDialog title="nhập kho" fields={importFields}

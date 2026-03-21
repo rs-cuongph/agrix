@@ -6,6 +6,7 @@ import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type AdminUser = {
   id: string; username: string; fullName: string;
@@ -52,7 +53,6 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function AccountsClient({ users, permissions }: { users: AdminUser[]; permissions: Permission[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: AdminUser } | null>(null);
-  const [tab, setTab] = useState<"users" | "permissions">("users");
   const [permState, setPermState] = useState<Permission[]>(permissions);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
@@ -105,131 +105,128 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
         <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
           <Shield className="w-6 h-6" /> Quản lý Tài khoản
         </h1>
-        {tab === "users" && (
-          <button onClick={() => setDialog({ mode: "create" })}
-            className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-            <Plus className="w-4 h-4" /> Tạo tài khoản
-          </button>
-        )}
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 border-b">
-        <button onClick={() => setTab("users")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === "users" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-          <UsersIcon className="w-4 h-4 inline mr-1" /> Tài khoản
-        </button>
-        <button onClick={() => setTab("permissions")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === "permissions" ? "border-emerald-600 text-emerald-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
-          <Key className="w-4 h-4 inline mr-1" /> Phân quyền
+        <button onClick={() => setDialog({ mode: "create" })}
+          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+          <Plus className="w-4 h-4" /> Tạo tài khoản
         </button>
       </div>
 
-      {/* Users Tab */}
-      {tab === "users" && (
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left px-4 py-3 font-semibold">Username</th>
-                <th className="text-left px-4 py-3 font-semibold">Họ tên</th>
-                <th className="text-center px-4 py-3 font-semibold">Vai trò</th>
-                <th className="text-center px-4 py-3 font-semibold">Trạng thái</th>
-                <th className="text-center px-4 py-3 font-semibold">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-mono text-sm">{u.username}</td>
-                  <td className="px-4 py-3 font-medium">{u.fullName}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      u.role === "ADMIN" ? "bg-purple-100 text-purple-700" :
-                      u.role === "CASHIER" ? "bg-blue-100 text-blue-700" :
-                      "bg-orange-100 text-orange-700"
-                    }`}>{ROLE_LABELS[u.role] || u.role}</span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      u.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
-                    }`}>{u.isActive ? "Hoạt động" : "Vô hiệu"}</span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex justify-center gap-1">
-                      <button onClick={() => setDialog({ mode: "edit", data: u })}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleToggle(u.id)}
-                        className={`p-1.5 rounded-lg hover:bg-gray-100 transition-colors ${u.isActive ? "text-gray-500 hover:text-red-600" : "text-gray-500 hover:text-emerald-600"}`}
-                        title={u.isActive ? "Vô hiệu hóa" : "Kích hoạt"}>
-                        <Power className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+      <Tabs defaultValue="users">
+        <TabsList>
+          <TabsTrigger value="users" className="flex items-center gap-1.5">
+            <UsersIcon className="w-4 h-4" /> Tài khoản
+          </TabsTrigger>
+          <TabsTrigger value="permissions" className="flex items-center gap-1.5">
+            <Key className="w-4 h-4" /> Phân quyền
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Users Tab */}
+        <TabsContent value="users">
+          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left px-4 py-3 font-semibold">Username</th>
+                  <th className="text-left px-4 py-3 font-semibold">Họ tên</th>
+                  <th className="text-center px-4 py-3 font-semibold">Vai trò</th>
+                  <th className="text-center px-4 py-3 font-semibold">Trạng thái</th>
+                  <th className="text-center px-4 py-3 font-semibold">Thao tác</th>
                 </tr>
-              ))}
-              {users.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Chưa có tài khoản</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Permissions Tab */}
-      {tab === "permissions" && (
-        <div className="space-y-6">
-          {["CASHIER", "INVENTORY"].map((role) => (
-            <div key={role} className="rounded-xl border bg-card shadow-sm overflow-hidden">
-              <div className="px-4 py-3 bg-muted/50 border-b flex items-center gap-2">
-                <Key className="w-4 h-4 text-gray-500" />
-                <span className="font-semibold text-sm">{ROLE_LABELS[role]}</span>
-                <span className="text-xs text-muted-foreground ml-1">(Chỉnh sửa quyền truy cập)</span>
-              </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left px-4 py-2 font-medium text-gray-600">Module</th>
-                    <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Xem</th>
-                    <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Tạo</th>
-                    <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Sửa</th>
-                    <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Xóa</th>
-                    <th className="text-center px-3 py-2 w-16"></th>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3 font-mono text-sm">{u.username}</td>
+                    <td className="px-4 py-3 font-medium">{u.fullName}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        u.role === "ADMIN" ? "bg-purple-100 text-purple-700" :
+                        u.role === "CASHIER" ? "bg-blue-100 text-blue-700" :
+                        "bg-orange-100 text-orange-700"
+                      }`}>{ROLE_LABELS[u.role] || u.role}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        u.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                      }`}>{u.isActive ? "Hoạt động" : "Vô hiệu"}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex justify-center gap-1">
+                        <button onClick={() => setDialog({ mode: "edit", data: u })}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleToggle(u.id)}
+                          className={`p-1.5 rounded-lg hover:bg-gray-100 transition-colors ${u.isActive ? "text-gray-500 hover:text-red-600" : "text-gray-500 hover:text-emerald-600"}`}
+                          title={u.isActive ? "Vô hiệu hóa" : "Kích hoạt"}>
+                          <Power className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {MODULES.map((mod) => {
-                    const perm = permState.find(p => p.role === role && p.module === mod);
-                    return (
-                      <tr key={mod} className="border-b last:border-0 hover:bg-muted/30">
-                        <td className="px-4 py-2 font-medium">{MODULE_LABELS[mod]}</td>
-                        {["canRead", "canCreate", "canEdit", "canDelete"].map((field) => (
-                          <td key={field} className="text-center px-3 py-2">
-                            <Checkbox checked={perm ? (perm as any)[field] : false}
-                              onCheckedChange={() => togglePerm(role, mod, field)}
-                              className="mx-auto" />
-                          </td>
-                        ))}
-                        <td className="text-center px-3 py-2">
-                          <button onClick={() => savePerm(role, mod)} disabled={saving}
-                            className="text-xs text-emerald-600 hover:text-emerald-800 font-medium disabled:opacity-50">
-                            Lưu
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ))}
-          <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-700 flex items-center gap-1.5">
-            <Lightbulb className="w-4 h-4" /> <strong>Quản trị viên (ADMIN)</strong> luôn có toàn quyền truy cập — không thể giới hạn.
+                ))}
+                {users.length === 0 && (
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">Chưa có tài khoản</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
-      )}
+        </TabsContent>
+
+        {/* Permissions Tab */}
+        <TabsContent value="permissions">
+          <div className="space-y-6">
+            {["CASHIER", "INVENTORY"].map((role) => (
+              <div key={role} className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="px-4 py-3 bg-muted/50 border-b flex items-center gap-2">
+                  <Key className="w-4 h-4 text-gray-500" />
+                  <span className="font-semibold text-sm">{ROLE_LABELS[role]}</span>
+                  <span className="text-xs text-muted-foreground ml-1">(Chỉnh sửa quyền truy cập)</span>
+                </div>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left px-4 py-2 font-medium text-gray-600">Module</th>
+                      <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Xem</th>
+                      <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Tạo</th>
+                      <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Sửa</th>
+                      <th className="text-center px-3 py-2 font-medium text-gray-600 w-20">Xóa</th>
+                      <th className="text-center px-3 py-2 w-16"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {MODULES.map((mod) => {
+                      const perm = permState.find(p => p.role === role && p.module === mod);
+                      return (
+                        <tr key={mod} className="border-b last:border-0 hover:bg-muted/30">
+                          <td className="px-4 py-2 font-medium">{MODULE_LABELS[mod]}</td>
+                          {["canRead", "canCreate", "canEdit", "canDelete"].map((field) => (
+                            <td key={field} className="text-center px-3 py-2">
+                              <Checkbox checked={perm ? (perm as any)[field] : false}
+                                onCheckedChange={() => togglePerm(role, mod, field)}
+                                className="mx-auto" />
+                            </td>
+                          ))}
+                          <td className="text-center px-3 py-2">
+                            <button onClick={() => savePerm(role, mod)} disabled={saving}
+                              className="text-xs text-emerald-600 hover:text-emerald-800 font-medium disabled:opacity-50">
+                              Lưu
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 text-sm text-purple-700 flex items-center gap-1.5">
+              <Lightbulb className="w-4 h-4" /> <strong>Quản trị viên (ADMIN)</strong> luôn có toàn quyền truy cập — không thể giới hạn.
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {dialog && (
         <CrudDialog
