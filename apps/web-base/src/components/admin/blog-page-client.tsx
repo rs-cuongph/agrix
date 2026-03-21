@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, FolderTree, Tag, Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { BlogCategoriesClient } from "@/components/admin/blog-categories-client";
 import { BlogTagsClient } from "@/components/admin/blog-tags-client";
 import { adminApiCall } from "@/components/admin/crud-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -24,11 +26,13 @@ export function BlogPageClient({
   tags: any[];
 }) {
   const router = useRouter();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa bài viết này?")) return;
-    await adminApiCall(`/blog/admin/posts/${id}`, "DELETE");
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await adminApiCall(`/blog/admin/posts/${deleteId}`, "DELETE");
     toast.success("Xóa bài viết thành công");
+    setDeleteId(null);
     router.refresh();
   };
 
@@ -92,7 +96,7 @@ export function BlogPageClient({
                       <button onClick={() => router.push(`/admin/blog/edit/${p.id}`)} className="p-1.5 rounded hover:bg-gray-100">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(p.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500">
+                      <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -113,6 +117,12 @@ export function BlogPageClient({
           <BlogTagsClient tags={tags} />
         </TabsContent>
       </Tabs>
+      <ConfirmDialog
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        description="Xóa bài viết này?"
+      />
     </div>
   );
 }

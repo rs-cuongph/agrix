@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FolderTree, Plus, Pencil, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ const categoryFields = [
 
 export function CategoriesClient({ categories }: { categories: Category[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: Category } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const router = useRouter();
 
   const handleCreate = async (data: Record<string, any>) => {
@@ -33,10 +35,11 @@ export function CategoriesClient({ categories }: { categories: Category[] }) {
     router.refresh();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa danh mục này? Hãy đảm bảo không có sản phẩm nào đang sử dụng danh mục này.")) return;
-    await adminApiCall(`/categories/${id}`, "DELETE");
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await adminApiCall(`/categories/${deleteId}`, "DELETE");
     toast.success("Xóa danh mục thành công");
+    setDeleteId(null);
     router.refresh();
   };
 
@@ -69,7 +72,7 @@ export function CategoriesClient({ categories }: { categories: Category[] }) {
                 <td className="px-4 py-3 text-center">
                   <div className="flex justify-center gap-1">
                     <button onClick={() => setDialog({ mode: "edit", data: c })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
               </tr>
@@ -87,6 +90,12 @@ export function CategoriesClient({ categories }: { categories: Category[] }) {
           onSubmit={dialog.mode === "create" ? handleCreate : handleEdit}
           onClose={() => setDialog(null)} mode={dialog.mode} />
       )}
+      <ConfirmDialog
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        description="Xóa danh mục này? Hãy đảm bảo không có sản phẩm nào đang sử dụng danh mục này."
+      />
     </div>
   );
 }

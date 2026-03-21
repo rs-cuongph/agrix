@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Users, Plus, Pencil, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -18,6 +19,7 @@ const customerFields = [
 
 export function CustomersClient({ customers }: { customers: Customer[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: Customer } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const router = useRouter();
 
   const handleCreate = async (data: Record<string, any>) => {
@@ -30,10 +32,11 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
     toast.success("Cập nhật khách hàng thành công");
     router.refresh();
   };
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa khách hàng này? Dữ liệu công nợ sẽ bị mất.")) return;
-    await adminApiCall(`/customers/${id}`, "DELETE");
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await adminApiCall(`/customers/${deleteId}`, "DELETE");
     toast.success("Xóa khách hàng thành công");
+    setDeleteId(null);
     router.refresh();
   };
 
@@ -74,7 +77,7 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
                 <td className="px-4 py-3 text-center">
                   <div className="flex justify-center gap-1">
                     <button onClick={() => setDialog({ mode: "edit", data: c })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                    <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
               </tr>
@@ -92,6 +95,12 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
           onSubmit={dialog.mode === "create" ? handleCreate : handleEdit}
           onClose={() => setDialog(null)} mode={dialog.mode} />
       )}
+      <ConfirmDialog
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        description="Xóa khách hàng này? Dữ liệu công nợ sẽ bị mất."
+      />
     </div>
   );
 }

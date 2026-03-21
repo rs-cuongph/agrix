@@ -184,13 +184,13 @@ export class AIController {
     if (body.primaryApiKey && body.primaryProvider) {
       const validation = await this.configService.validateApiKey(body.primaryProvider, body.primaryApiKey);
       if (!validation.valid) {
-        throw new BadRequestException(`Primary API key không hợp lệ: ${validation.error}`);
+        throw new BadRequestException('Primary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.');
       }
     }
     if (body.secondaryApiKey && body.secondaryProvider) {
       const validation = await this.configService.validateApiKey(body.secondaryProvider, body.secondaryApiKey);
       if (!validation.valid) {
-        throw new BadRequestException(`Secondary API key không hợp lệ: ${validation.error}`);
+        throw new BadRequestException('Secondary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.');
       }
     }
 

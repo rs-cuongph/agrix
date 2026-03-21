@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Tag, Plus, Pencil, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ const tagFields = [
 
 export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: BlogTag } | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const router = useRouter();
 
   const handleCreate = async (data: Record<string, any>) => {
@@ -27,10 +29,11 @@ export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
     toast.success("Cập nhật tag thành công");
     router.refresh();
   };
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa tag này?")) return;
-    await adminApiCall(`/blog/admin/tags/${id}`, "DELETE");
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await adminApiCall(`/blog/admin/tags/${deleteId}`, "DELETE");
     toast.success("Xóa tag thành công");
+    setDeleteId(null);
     router.refresh();
   };
 
@@ -53,7 +56,7 @@ export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
                 <td className="px-4 py-3 text-muted-foreground">{t.slug}</td>
                 <td className="px-4 py-3 flex gap-1">
                   <button onClick={() => setDialog({ mode: "edit", data: t })} className="p-1.5 rounded hover:bg-gray-100"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => setDeleteId(t.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
@@ -71,6 +74,12 @@ export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
           onClose={() => setDialog(null)}
         />
       )}
+      <ConfirmDialog
+        open={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDelete}
+        description="Xóa tag này?"
+      />
     </div>
   );
 }

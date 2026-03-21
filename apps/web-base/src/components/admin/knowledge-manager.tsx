@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Upload, Trash2, RefreshCw, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
 interface Document {
   id: string;
@@ -57,6 +58,7 @@ export default function KnowledgeManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; filename: string } | null>(null);
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -101,12 +103,12 @@ export default function KnowledgeManager() {
     }
   };
 
-  const handleDelete = async (id: string, filename: string) => {
-    if (!confirm(`Xóa tài liệu "${filename}"?`)) return;
-
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await adminFetch(`/ai/admin/knowledge/${id}`, { method: 'DELETE' });
+      await adminFetch(`/ai/admin/knowledge/${deleteTarget.id}`, { method: 'DELETE' });
       toast.success('Đã xóa tài liệu');
+      setDeleteTarget(null);
       fetchDocuments();
     } catch (error: any) {
       toast.error(error.message);
@@ -221,7 +223,7 @@ export default function KnowledgeManager() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => handleDelete(doc.id, doc.filename)}
+                      onClick={() => setDeleteTarget({ id: doc.id, filename: doc.filename })}
                       className="text-red-500 hover:text-red-700 p-1"
                       title="Xóa"
                     >
@@ -234,6 +236,12 @@ export default function KnowledgeManager() {
           </table>
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        description={deleteTarget ? `Xóa tài liệu "${deleteTarget.filename}"?` : ''}
+      />
     </div>
   );
 }

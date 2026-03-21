@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 type FieldConfig = {
   name: string;
@@ -65,8 +75,7 @@ export function CrudDialog({
             <div key={field.name} className="space-y-1">
               <label className="text-sm font-medium text-gray-700">{field.label}</label>
               {field.type === "textarea" ? (
-                <textarea
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                <Textarea
                   value={formData[field.name] || ""}
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                   required={field.required}
@@ -74,21 +83,24 @@ export function CrudDialog({
                   placeholder={field.placeholder}
                 />
               ) : field.type === "select" ? (
-                <select
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                <Select
                   value={formData[field.name] || ""}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                  required={field.required}
+                  onValueChange={(v) => setFormData({ ...formData, [field.name]: v })}
                 >
-                  <option value="">-- Chọn --</option>
-                  {field.options?.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="-- Chọn --" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      {field.options?.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               ) : (
-                <input
+                <Input
                   type={field.type || "text"}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                   value={formData[field.name] ?? ""}
                   onChange={(e) => setFormData({
                     ...formData,

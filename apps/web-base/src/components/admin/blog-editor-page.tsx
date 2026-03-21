@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { BlogEditor } from "@/components/admin/blog-editor";
@@ -227,11 +238,11 @@ export function BlogEditorPage({
           )}
         </div>
 
-        <input
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Tiêu đề bài viết"
-          className="w-full text-2xl font-bold border-0 border-b-2 border-gray-200 focus:border-emerald-500 bg-transparent py-3 outline-none placeholder:text-gray-300"
+          className="w-full text-2xl font-bold border-0 border-b-2 border-gray-200 focus:border-emerald-500 bg-transparent py-3 rounded-none shadow-none placeholder:text-gray-300"
         />
 
         <BlogEditor content={content} onChange={handleContentChangeWithAutoResume} />
@@ -260,11 +271,16 @@ export function BlogEditorPage({
         {/* Category */}
         <div>
           <label className="text-xs font-semibold text-gray-500 uppercase">Danh mục</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}
-            className="mt-1 w-full border rounded-lg px-3 py-2 text-sm">
-            <option value="">-- Chọn danh mục --</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <Select value={categoryId} onValueChange={setCategoryId}>
+            <SelectTrigger className="mt-1 w-full">
+              <SelectValue placeholder="-- Chọn danh mục --" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Tags */}
@@ -284,14 +300,14 @@ export function BlogEditorPage({
             })}
           </div>
           <div className="relative mt-1">
-            <input value={tagInput}
+            <Input value={tagInput}
               onChange={(e) => { setTagInput(e.target.value); setShowTagDropdown(true); }}
               onFocus={() => setShowTagDropdown(true)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") { e.preventDefault(); addTag(); }
                 if (e.key === "Escape") setShowTagDropdown(false);
               }}
-              placeholder="Thêm tag..." className="w-full border rounded-lg px-2 py-1 text-sm" />
+              placeholder="Thêm tag..." />
             {showTagDropdown && tagInput && filteredTags.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-32 overflow-y-auto">
                 {filteredTags.slice(0, 8).map((t) => (
@@ -337,8 +353,8 @@ export function BlogEditorPage({
           <div className="relative mt-1">
             <div className="flex items-center border rounded-lg px-2">
               <Search size={14} className="text-gray-400" />
-              <input value={productSearch} onChange={(e) => { setProductSearch(e.target.value); searchProducts(e.target.value); }}
-                placeholder="Tìm sản phẩm..." className="flex-1 border-0 px-2 py-1.5 text-sm outline-none" />
+              <Input value={productSearch} onChange={(e) => { setProductSearch(e.target.value); searchProducts(e.target.value); }}
+                placeholder="Tìm sản phẩm..." className="flex-1 border-0 shadow-none" />
             </div>
             {productResults.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
@@ -364,12 +380,12 @@ export function BlogEditorPage({
         {/* SEO */}
         <div className="space-y-2">
           <label className="text-xs font-semibold text-gray-500 uppercase">SEO</label>
-          <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)}
-            placeholder="Meta Title" className="w-full border rounded-lg px-3 py-2 text-sm" />
-          <textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)}
-            placeholder="Meta Description" rows={3} className="w-full border rounded-lg px-3 py-2 text-sm resize-none" />
-          <input value={ogImageUrl} onChange={(e) => setOgImageUrl(e.target.value)}
-            placeholder="OG Image URL" className="w-full border rounded-lg px-3 py-2 text-sm" />
+          <Input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)}
+            placeholder="Meta Title" />
+          <Textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)}
+            placeholder="Meta Description" rows={3} className="resize-none" />
+          <Input value={ogImageUrl} onChange={(e) => setOgImageUrl(e.target.value)}
+            placeholder="OG Image URL" />
         </div>
       </div>
     </div>

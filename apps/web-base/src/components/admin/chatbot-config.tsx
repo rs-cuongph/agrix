@@ -4,6 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Config {
   systemPrompt: string;
@@ -126,11 +136,10 @@ export default function ChatbotConfigPanel() {
       <div className="p-4 bg-white rounded-lg border">
         <h4 className="font-medium mb-2">System Prompt</h4>
         <p className="text-sm text-gray-500 mb-3">Hướng dẫn AI về giai điệu, phạm vi trả lời</p>
-        <textarea
+        <Textarea
           value={systemPrompt}
           onChange={(e) => setSystemPrompt(e.target.value)}
           rows={4}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
       </div>
 
@@ -142,21 +151,24 @@ export default function ChatbotConfigPanel() {
         <div>
           <label className="text-sm text-gray-600 block mb-1">Provider chính</label>
           <div className="flex gap-2">
-            <select
-              value={primaryProvider}
-              onChange={(e) => setPrimaryProvider(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="openai">OpenAI (GPT)</option>
-              <option value="gemini">Google Gemini</option>
-            </select>
+            <Select value={primaryProvider} onValueChange={setPrimaryProvider}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectGroup>
+                  <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                  <SelectItem value="gemini">Google Gemini</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             <div className="flex-1 relative">
-              <input
+              <Input
                 type={showPrimaryKey ? 'text' : 'password'}
                 value={primaryApiKey}
                 onChange={(e) => setPrimaryApiKey(e.target.value)}
                 placeholder={config.hasPrimaryKey ? '••••••• (đã cấu hình)' : 'Nhập API key...'}
-                className="w-full border rounded-lg px-3 py-2 text-sm pr-10"
+                className="pr-10"
               />
               <button
                 onClick={() => setShowPrimaryKey(!showPrimaryKey)}
@@ -172,21 +184,24 @@ export default function ChatbotConfigPanel() {
         <div>
           <label className="text-sm text-gray-600 block mb-1">Provider phụ (fallback)</label>
           <div className="flex gap-2">
-            <select
-              value={secondaryProvider}
-              onChange={(e) => setSecondaryProvider(e.target.value)}
-              className="border rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="openai">OpenAI (GPT)</option>
-              <option value="gemini">Google Gemini</option>
-            </select>
+            <Select value={secondaryProvider} onValueChange={setSecondaryProvider}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectGroup>
+                  <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                  <SelectItem value="gemini">Google Gemini</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             <div className="flex-1 relative">
-              <input
+              <Input
                 type={showSecondaryKey ? 'text' : 'password'}
                 value={secondaryApiKey}
                 onChange={(e) => setSecondaryApiKey(e.target.value)}
                 placeholder={config.hasSecondaryKey ? '••••••• (đã cấu hình)' : 'Nhập API key...'}
-                className="w-full border rounded-lg px-3 py-2 text-sm pr-10"
+                className="pr-10"
               />
               <button
                 onClick={() => setShowSecondaryKey(!showSecondaryKey)}

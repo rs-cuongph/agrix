@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Ruler, Plus, Pencil, Trash2, ArrowRightLeft } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -31,7 +32,8 @@ export function UnitsClient({
 }) {
 
   const [baseDialog, setBaseDialog] = useState<{ mode: "create" | "edit"; data?: BaseUnit } | null>(null);
-  const [convDialog, setConvDialog] = useState<{ mode: "create" | "edit"; data?: UnitConversion } | null>(null);
+  const [convDialog, setConvDialog] = useState<{ mode: "create" | "edit"; data?: any } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "base" | "conv"; id: string; message: string } | null>(null);
   const router = useRouter();
 
   const baseFields = [
@@ -59,10 +61,24 @@ export function UnitsClient({
     toast.success("Cập nhật đơn vị thành công");
     router.refresh();
   };
-  const handleDeleteBase = async (id: string) => {
-    if (!confirm("Xóa đơn vị gốc này?")) return;
-    await adminApiCall(`/units/${id}`, "DELETE");
-    toast.success("Xóa đơn vị thành công");
+  const confirmDeleteBase = (id: string) => {
+    setDeleteTarget({ type: "base", id, message: "Xóa đơn vị gốc này?" });
+  };
+
+  const confirmDeleteConv = (id: string) => {
+    setDeleteTarget({ type: "conv", id, message: "Xóa quy đổi đơn vị này?" });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === "base") {
+      await adminApiCall(`/units/${deleteTarget.id}`, "DELETE");
+      toast.success("Xóa đơn vị thành công");
+    } else {
+      await adminApiCall(`/unit-conversions/${deleteTarget.id}`, "DELETE");
+      toast.success("Xóa quy đổi thành công");
+    }
+    setDeleteTarget(null);
     router.refresh();
   };
 
@@ -75,12 +91,6 @@ export function UnitsClient({
   const handleEditConv = async (data: Record<string, any>) => {
     await adminApiCall(`/unit-conversions/${convDialog?.data?.id}`, "PUT", data);
     toast.success("Cập nhật quy đổi thành công");
-    router.refresh();
-  };
-  const handleDeleteConv = async (id: string) => {
-    if (!confirm("Xóa quy đổi đơn vị này?")) return;
-    await adminApiCall(`/unit-conversions/${id}`, "DELETE");
-    toast.success("Xóa quy đổi thành công");
     router.refresh();
   };
 
@@ -131,7 +141,7 @@ export function UnitsClient({
                       <td className="px-4 py-3 text-center">
                         <div className="flex justify-center gap-1">
                           <button onClick={() => setBaseDialog({ mode: "edit", data: u })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => handleDeleteBase(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => confirmDeleteBase(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -186,7 +196,7 @@ export function UnitsClient({
                         <td className="px-4 py-3 text-center">
                           <div className="flex justify-center gap-1">
                             <button onClick={() => setConvDialog({ mode: "edit", data: u })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                            <button onClick={() => handleDeleteConv(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => confirmDeleteConv(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -214,6 +224,12 @@ export function UnitsClient({
           onSubmit={convDialog.mode === "create" ? handleCreateConv : handleEditConv}
           onClose={() => setConvDialog(null)} mode={convDialog.mode} />
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        description={deleteTarget?.message || ""}
+      />
     </div>
   );
 }

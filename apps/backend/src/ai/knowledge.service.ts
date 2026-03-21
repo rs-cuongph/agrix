@@ -218,9 +218,12 @@ export class KnowledgeService {
       productDoc = await this.documentRepo.save(productDoc);
     }
 
-    // Fetch all products from database
+    // Fetch all products from database (JOIN categories to get category name)
     const products = await this.dataSource.query(
-      `SELECT id, name, description, category, sku FROM products`,
+      `SELECT p.id, p.name, p.description, p.sku, p.base_sell_price, p.base_unit,
+              c.name AS category
+       FROM products p
+       LEFT JOIN categories c ON c.id = p.category_id`,
     );
 
     let chunkCount = 0;
@@ -229,6 +232,8 @@ export class KnowledgeService {
         `Sản phẩm: ${product.name}`,
         product.sku ? `Mã SP: ${product.sku}` : '',
         product.category ? `Danh mục: ${product.category}` : '',
+        product.base_sell_price ? `Giá bán: ${product.base_sell_price}` : '',
+        product.base_unit ? `Đơn vị: ${product.base_unit}` : '',
         product.description ? `Mô tả: ${product.description}` : '',
       ]
         .filter(Boolean)

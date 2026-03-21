@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageCircle, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, Eye, ChevronLeft, ChevronRight, User, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Session {
@@ -65,35 +65,72 @@ export default function SessionHistory() {
 
   if (selectedSession) {
     return (
-      <div className="space-y-4">
-        <button
-          onClick={() => setSelectedSession(null)}
-          className="text-sm text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
-        >
-          <ChevronLeft size={16} /> Quay lại danh sách
-        </button>
+      <div className="flex flex-col h-[calc(100vh-240px)] max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-3 pb-4 border-b mb-4">
+          <button
+            onClick={() => setSelectedSession(null)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors"
+          >
+            <ChevronLeft size={16} /> Quay lại
+          </button>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MessageCircle size={14} />
+            <span>{messages.length} tin nhắn</span>
+          </div>
+        </div>
 
-        <div className="space-y-3 max-w-2xl">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`p-3 rounded-lg text-sm ${
-                msg.role === 'user' ? 'bg-emerald-50 ml-8' : 'bg-gray-50 mr-8'
-              }`}
-            >
-              <div className="flex justify-between mb-1">
-                <span className="text-xs font-medium text-gray-500">
-                  {msg.role === 'user' ? 'Khách hàng' : 'Trợ lý AI'}
-                </span>
-                <span className="text-xs text-gray-400">
-                  {new Date(msg.createdAt).toLocaleString('vi-VN')}
-                </span>
+        {/* Messages container */}
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+          {messages.map((msg, i) => {
+            const isUser = msg.role === 'user';
+            return (
+              <div
+                key={i}
+                className={`flex gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+              >
+                {/* Avatar */}
+                <div
+                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    isUser
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {isUser ? (
+                    <User size={14} />
+                  ) : (
+                    <Bot size={14} />
+                  )}
+                </div>
+
+                {/* Bubble */}
+                <div className={`max-w-[75%] ${isUser ? 'items-end' : 'items-start'}`}>
+                  <div
+                    className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                      isUser
+                        ? 'bg-emerald-500 text-white rounded-br-md'
+                        : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md shadow-sm'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                  </div>
+                  <span
+                    className={`block text-[10px] text-gray-400 mt-1 ${
+                      isUser ? 'text-right' : 'text-left'
+                    }`}
+                  >
+                    {new Date(msg.createdAt).toLocaleString('vi-VN')}
+                  </span>
+                </div>
               </div>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-            </div>
-          ))}
+            );
+          })}
           {messages.length === 0 && (
-            <p className="text-center text-gray-400">Phiên chat trống.</p>
+            <div className="text-center text-gray-400 py-12">
+              <MessageCircle size={32} className="mx-auto mb-2 text-gray-300" />
+              <p>Phiên chat trống.</p>
+            </div>
           )}
         </div>
       </div>
