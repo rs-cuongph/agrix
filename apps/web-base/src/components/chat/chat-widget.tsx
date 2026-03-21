@@ -1,15 +1,26 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, RotateCcw, Minimize2 } from 'lucide-react';
+import { MessageCircle, X, RotateCcw, Minimize2, Bot } from 'lucide-react';
 import ChatMessageBubble from './chat-message';
 import ChatInput from './chat-input';
 import { useChatContext } from '@/lib/chat-context';
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading, sendMessage, clearChat } = useChatContext();
+
+  // Show tooltip after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isOpen && messages.length === 0) {
+        setShowTooltip(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [isOpen, messages.length]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -29,14 +40,76 @@ export default function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-emerald-500 text-white shadow-[0_4px_20px_rgba(16,185,129,0.4)] hover:bg-emerald-600 hover:shadow-[0_4px_24px_rgba(16,185,129,0.55)] hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center chat-bubble-enter"
-        aria-label="Mở chat tư vấn"
-      >
-        <MessageCircle size={24} />
-        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full animate-pulse ring-2 ring-white" />
-      </button>
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center justify-end chat-bubble-enter">
+        {/* Tooltip Thought Bubble */}
+        <div 
+          className={`absolute bottom-[88px] right-2 transition-all duration-500 origin-bottom-right ${
+            showTooltip ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
+          }`}
+        >
+          <div className="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-br-sm shadow-[0_8px_30px_rgba(33,53,49,0.12)] border border-gray-100 max-w-[200px] animate-robot-bubble">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTooltip(false);
+              }}
+              className="absolute -top-1.5 -right-1.5 bg-white text-gray-400 hover:text-gray-600 rounded-full p-0.5 shadow-sm border border-gray-100 transition-colors"
+            >
+              <X size={12} />
+            </button>
+            <p className="text-[13px] font-medium leading-relaxed text-center text-gray-600">
+              Cần hỗ trợ <br />
+              về nông nghiệp?
+            </p>
+            {/* Thought bubbles leading to robot */}
+            <div className="absolute -bottom-3 right-6 w-3 h-3 bg-white rounded-full border border-gray-100 shadow-sm" />
+            <div className="absolute -bottom-6 right-8 w-2 h-2 bg-white rounded-full border border-gray-100 shadow-sm" />
+          </div>
+        </div>
+
+        {/* Animated Robot Button */}
+        <button
+          onClick={() => {
+            setShowTooltip(false);
+            setIsOpen(true);
+          }}
+          className="relative w-16 h-16 animate-robot-float flex items-end justify-center group"
+          aria-label="Mở chat tư vấn"
+        >
+          {/* Glowing Shadow */}
+          <div className="absolute -bottom-1 w-10 h-2 bg-emerald-500/30 rounded-full blur-md group-hover:bg-emerald-500/50 transition-colors" />
+
+          {/* Robot Head */}
+          <div className="relative w-14 h-[52px] bg-white rounded-2xl shadow-[0_4px_20px_rgba(16,185,129,0.25)] border-2 border-emerald-100 flex flex-col items-center justify-center overflow-visible group-hover:border-emerald-300 transition-colors">
+            
+            {/* Antenna */}
+            <div className="absolute -top-4 flex flex-col items-center">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)] border border-white" />
+              <div className="w-1 h-2 bg-gradient-to-b from-gray-300 to-gray-200" />
+            </div>
+
+            {/* Ears */}
+            <div className="absolute top-4 -left-2 w-2 h-5 bg-gradient-to-b from-gray-200 to-gray-300 rounded-l-md border border-gray-300 shadow-sm" />
+            <div className="absolute top-4 -right-2 w-2 h-5 bg-gradient-to-b from-gray-200 to-gray-300 rounded-r-md border border-gray-300 shadow-sm" />
+
+            {/* Face Screen */}
+            <div className="w-11 h-[26px] bg-gray-900 rounded-lg flex items-center justify-center gap-2.5 relative overflow-hidden shadow-inner border border-gray-800">
+              {/* Eyes */}
+              <div className="w-2.5 h-3.5 rounded-full bg-emerald-400 animate-robot-eye shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+              <div className="w-2.5 h-3.5 rounded-full bg-emerald-400 animate-robot-eye shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+              
+              {/* Scanline reflection */}
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-white/10 rounded-t-lg" />
+            </div>
+
+            {/* Mouth / Speaker */}
+            <div className="mt-1.5 w-3 h-0.5 bg-gray-300 rounded-full" />
+            
+            {/* Unread dot */}
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full animate-pulse ring-2 ring-white shadow-sm" />
+          </div>
+        </button>
+      </div>
     );
   }
 

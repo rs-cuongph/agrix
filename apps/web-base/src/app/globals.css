@@ -164,3 +164,31 @@
 .chat-bubble-enter {
   animation: chat-bubble-bounce 2s ease-in-out infinite;
 }
+
+/* ===== Custom Robot Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float-eye {
+  0%, 4%, 8%, 100% { transform: scaleY(1); }
+  2%, 6% { transform: scaleY(0.1); }
+}
+
+@keyframes float-bubble {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.02); }
+}
+
+.animate-robot-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-robot-eye {
+  animation: float-eye 5s infinite;
+}
+
+.animate-robot-bubble {
+  animation: float-bubble 3s ease-in-out infinite;
+}
