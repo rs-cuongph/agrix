@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
-  { label: 'Sản phẩm', href: '/' },
+  { label: 'Sản phẩm', href: '/products' },
   { label: 'Blog', href: '/blog' },
   { label: 'Đánh giá', href: '/testimonials' },
   { label: 'FAQ', href: '/faq' },

@@ -8,8 +8,12 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
@@ -18,6 +22,8 @@ import { Product } from './entities/product.entity';
 import { ProductUnitConversion } from './entities/product-unit-conversion.entity';
 import { InventoryService } from './inventory.service';
 import { UnitConversionService } from './unit-conversion.service';
+import { StorageService } from '../storage/storage.service';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CreateProductDto {
   sku: string;
@@ -28,9 +34,13 @@ interface CreateProductDto {
   minStockThreshold?: number;
   expirationDate?: string;
   description?: string;
+  imageUrls?: string[];
   barcodeEan13?: string;
   unitConversions?: { unitName: string; conversionFactor: number }[];
 }
+
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB per file
 
 @Controller('products')
 @UseGuards(AuthGuard('jwt'))
@@ -42,6 +52,7 @@ export class ProductsController {
     private readonly unitRepo: Repository<ProductUnitConversion>,
     private readonly inventoryService: InventoryService,
     private readonly unitConversionService: UnitConversionService,
+    private readonly storageService: StorageService,
   ) {}
 
   @Get()
@@ -74,6 +85,31 @@ export class ProductsController {
     return this.unitConversionService.getAvailableUnits(id);
   }
 
+  @Post('admin/upload')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.INVENTORY)
+  @UseInterceptors(FilesInterceptor('files', 10))
+  async upload(@UploadedFiles() files: Express.Multer.File[]) {
+    if (!files || files.length === 0) throw new BadRequestException('No files provided');
+    
+    const uploadPromises = files.map(file => {
+      if (!ALLOWED_MIMES.includes(file.mimetype)) {
+        throw new BadRequestException(`File type not allowed for ${file.originalname}. Allowed: JPEG, PNG, WebP, GIF`);
+      }
+      if (file.size > MAX_SIZE) {
+        throw new BadRequestException(`File ${file.originalname} too large. Maximum 5MB`);
+      }
+
+      const ext = file.originalname.split('.').pop() || 'jpg';
+      const key = `products/${uuidv4()}.${ext}`;
+      return this.storageService.uploadFile(key, file.buffer, file.mimetype);
+    });
+
+    const results = await Promise.all(uploadPromises);
+    // Assuming uploadFile returns an object { url: string } or a string directly based on Blog implementation
+    return { urls: results.map(r => (typeof r === 'string' ? r : r.url)) };
+  }
+
   @Post()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.INVENTORY)
@@ -87,6 +123,7 @@ export class ProductsController {
       minStockThreshold: dto.minStockThreshold ?? 0,
       expirationDate: dto.expirationDate,
       description: dto.description,
+      imageUrls: dto.imageUrls || [],
       barcodeEan13: dto.barcodeEan13,
     });
 
@@ -111,7 +148,7 @@ export class ProductsController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.INVENTORY)
   async update(@Param('id') id: string, @Body() dto: Partial<CreateProductDto>) {
-    const { unitConversions, ...productFields } = dto;
+    const { unitConversions, units, category, createdAt, updatedAt, id: productId, ...productFields } = dto as any;
 
     // Update product fields
     await this.productRepo.update(id, productFields as any);

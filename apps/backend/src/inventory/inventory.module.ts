@@ -15,6 +15,8 @@ import { UnitConversionController } from './unit-conversion.controller';
 import { UnitsController } from './units.controller';
 import { PublicProductsController } from './public-products.controller';
 
+import { StorageModule } from '../storage/storage.module';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -24,6 +26,7 @@ import { PublicProductsController } from './public-products.controller';
       StockEntry,
       Unit,
     ]),
+    StorageModule,
   ],
   controllers: [ProductsController, PublicProductsController, CategoriesController, StockController, UnitConversionController, UnitsController],
   providers: [InventoryService, UnitConversionService, StockImportService],

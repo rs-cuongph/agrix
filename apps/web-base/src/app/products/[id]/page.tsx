@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ArrowLeft, Package, Phone } from 'lucide-react';
 import Link from 'next/link';
+import { ProductGallery } from '@/components/public/product-gallery';
 
 interface Product {
   id: string;
@@ -11,6 +12,7 @@ interface Product {
   currentStockBase: number;
   description?: string;
   sku?: string;
+  imageUrls?: string[];
 }
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -80,10 +82,7 @@ export default async function ProductDetailPage({
       </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Product Image Placeholder */}
-        <div className="aspect-square bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl flex items-center justify-center">
-          <Package size={80} className="text-emerald-200" />
-        </div>
+        <ProductGallery images={product.imageUrls} productName={product.name} />
 
         {/* Product Info */}
         <div>

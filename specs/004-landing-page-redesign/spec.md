@@ -5,6 +5,11 @@
 **Status**: Draft  
 **Input**: User description: "Trang Landing Page ko phải là giới thiệu web. Tôi muốn là web bán hàng các sản phẩm của hệ thống, rồi các blog tôi quản lý ở admin phải đc show ra, ngoiaf ra cũng phải có tab phần liên hệ để user có thể contact (cần hiển thị thông tin cửa hàng bao gồm sdt, địa chỉ, tên cửa hàng,..., ngoài ra có form để user contact). ngoài ra có gì cần thêm thì gợi ý với tôi"
 
+## Clarifications
+
+### Session 2026-03-21
+- Q: Số lượng ảnh cần upload cho sản phẩm ở Admin và vị trí lưu trữ? → A: Cho phép upload nhiều ảnh dạng bộ sưu tập (gallery) dùng lưu trữ cục bộ, sẽ điều chỉnh Database để hỗ trợ (Thay thế trường URL đơn).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Khám phá và mua Sản phẩm (Priority: P1)
@@ -80,7 +85,7 @@ Ngoài các phần chính, Landing Page sẽ bao gồm các phần sau để tă
 
 ### Key Entities *(include if feature involves data)*
 
-- **Product**: ID, Name, Price, ImageURL, Description, Status.
+- **Product**: ID, Name, Price, ImageURLs (hỗ trợ nhiều ảnh/gallery), Description, Status.
 - **Blog Post**: ID, Title, ThumbnailURL, Excerpt, PublishedDate, Author.
 - **Contact Info Config**: StoreName, Address, PhoneNumber, Email (Lưu cấu hình hệ thống).
 - **Contact Submission**: ID, CustomerName, PhoneNumber, Message, CreatedAt, Status (New/Read).

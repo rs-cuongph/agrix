@@ -15,7 +15,7 @@ async function getFaqs(): Promise<FaqItem[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/public/faq`,
-      { next: { revalidate: 300 } },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     return res.json();

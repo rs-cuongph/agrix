@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Package, ArrowLeft } from 'lucide-react';
+import { Package } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/landing/navbar';
 
@@ -17,13 +17,14 @@ interface Product {
   category?: { name: string };
   currentStockBase: number;
   description?: string;
+  imageUrls?: string[];
 }
 
 async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/public/products?limit=50`,
-      { next: { revalidate: 300 } },
+      { next: { revalidate: 0 } },
     );
     if (!res.ok) return [];
     const json = await res.json();
@@ -44,13 +45,6 @@ export default async function ProductsPage() {
     <>
       <Navbar />
       <main className="max-w-7xl mx-auto px-6 py-12 pt-24">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-600 mb-6 transition-colors"
-        >
-          <ArrowLeft size={14} />
-          Trang chủ
-        </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Bảng giá sản phẩm
@@ -71,11 +65,22 @@ export default async function ProductsPage() {
                 href={`/products/${p.id}`}
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
               >
-                <div className="h-40 bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
-                  <Package
-                    size={48}
-                    className="text-emerald-300 group-hover:text-emerald-400 transition-colors"
-                  />
+                <div className="h-40 bg-gray-50 flex items-center justify-center relative overflow-hidden group-hover:bg-emerald-50/50 transition-colors">
+                  {p.imageUrls && p.imageUrls.length > 0 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.imageUrls[0]}
+                      alt={p.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                      <Package
+                        size={48}
+                        className="text-emerald-300 group-hover:text-emerald-400 transition-transform duration-300 group-hover:scale-110"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="p-4">
                   {p.category && (

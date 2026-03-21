@@ -130,7 +130,8 @@ export function BlogEditorPage({
       const payload = { ...buildPayload(), status: newStatus || status };
       if (currentPostId) {
         await adminApiCall(`/blog/admin/posts/${currentPostId}`, "PUT", payload);
-        toast.success(newStatus === "PUBLISHED" ? "Đã xuất bản!" : "Đã lưu!");
+        const isUpdatePublished = status === "PUBLISHED" && !newStatus;
+        toast.success(newStatus === "PUBLISHED" ? "Đã xuất bản!" : isUpdatePublished ? "Đã cập nhật!" : "Đã lưu!");
       } else {
         const res = await adminApiCall("/blog/admin/posts", "POST", payload);
         setCurrentPostId(res.id);
@@ -252,17 +253,24 @@ export function BlogEditorPage({
       <div className="w-80 border-l bg-white p-4 space-y-5 overflow-y-auto">
         {/* Actions */}
         <div className="space-y-2">
-          <button onClick={() => handleSave()} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium">
-            <Save size={16} /> Lưu nháp
-          </button>
           {status === "PUBLISHED" ? (
-            <button onClick={() => { setStatus("DRAFT"); handleSave("DRAFT"); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm font-medium">
-              <EyeOff size={16} /> Ngừng xuất bản
-            </button>
+            <>
+              <button onClick={() => handleSave()} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium shadow-sm">
+                <Save size={16} /> Cập nhật
+              </button>
+              <button onClick={() => { setStatus("DRAFT"); handleSave("DRAFT"); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium">
+                <EyeOff size={16} /> Hủy xuất bản
+              </button>
+            </>
           ) : (
-            <button onClick={() => handleSave("PUBLISHED")} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-              <Eye size={16} /> Xuất bản
-            </button>
+            <>
+              <button onClick={() => handleSave()} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 text-sm font-medium shadow-sm">
+                <Save size={16} /> Lưu nháp
+              </button>
+              <button onClick={() => { setStatus("PUBLISHED"); handleSave("PUBLISHED"); }} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+                <Eye size={16} /> Xuất bản
+              </button>
+            </>
           )}
         </div>
 
@@ -317,7 +325,7 @@ export function BlogEditorPage({
               </div>
             )}
             {showTagDropdown && tagInput.trim() && !allTags.some((t) => t.name.toLowerCase() === tagInput.trim().toLowerCase()) && (
-              <p className="text-xs text-muted-foreground mt-1">Enter để tạo tag "{tagInput.trim()}"</p>
+              <p className="text-xs text-muted-foreground mt-1">Enter để tạo tag &quot;{tagInput.trim()}&quot;</p>
             )}
           </div>
         </div>

@@ -14,7 +14,7 @@ async function getPosts(): Promise<BlogPost[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/blog/posts?limit=6`,
-      { next: { revalidate: 300 } },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     const data = await res.json();

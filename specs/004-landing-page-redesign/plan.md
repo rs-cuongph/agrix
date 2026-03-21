@@ -1,35 +1,32 @@
-# Implementation Plan: Landing Page Redesign
+# Implementation Plan: Landing Page Redesign & Product Gallery
 
-**Branch**: `004-landing-page-redesign` | **Date**: 2026-03-21 | **Spec**: [spec.md](file:///Users/cuongph/Workspace/agrix/specs/004-landing-page-redesign/spec.md)
+**Branch**: `004-landing-page-redesign` | **Date**: 2026-03-21 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/004-landing-page-redesign/spec.md`
 
 ## Summary
 
-Redesign the Landing Page from a static intro page to a fully functional e-commerce storefront. The page will showcase Products (linking to a dedicated Product Detail Page), display Blog posts from Admin, show store Contact Info with a submission form (saving to DB + Admin notification), and include FAQ & Testimonials sections managed via Admin Dashboard.
+The objective is to overhaul the public-facing Landing Page (`apps/web-base/src/app/page.tsx`) to serve as an attractive e-commerce storefront showcasing products, latest blogs, and a contact section. Additionally, the Admin panel will be updated to support uploading multiple images (a gallery) for Products, replacing the single image approach, allowing users to see richer product details.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x (Node.js 20+)
-**Primary Dependencies**: Next.js 15 (App Router, RSC), NestJS, shadcn/ui, Tailwind CSS v4, TypeORM, lucide-react
-**Storage**: PostgreSQL (via TypeORM)
-**Testing**: Manual browser verification + API endpoint testing
-**Target Platform**: Web (Desktop + Mobile responsive)
-**Project Type**: Monorepo web application (Next.js frontend + NestJS backend)
-**Performance Goals**: Landing Page load < 2s, ISR with 5-minute revalidation
-**Constraints**: Must use shadcn primitives where available (Constitution V), no emoji icons (use lucide-react), CRUD toast notifications via Sonner
-**Scale/Scope**: ~8 new/modified frontend pages, ~4 new backend modules, ~4 new DB entities
+**Language/Version**: TypeScript (Node 20+)
+**Primary Dependencies**: Next.js 14 (App Router), NestJS, TypeORM, Tailwind CSS v4, shadcn/ui.
+**Storage**: PostgreSQL (via TypeORM), MinIO for image uploads.
+**Testing**: Manual UI verification and API endpoint testing.
+**Target Platform**: Web Browser (Responsive Desktop & Mobile).
+**Project Type**: Fullstack Web Application (Next.js Frontend + NestJS Backend).
+**Performance Goals**: Fast LCP for landing page (< 2s), optimized image delivery.
+**Constraints**: Must adhere to Clean Material Design 3 and Agrix Constitution (shadcn components, clear Toasts for CRUD).
+**Scale/Scope**: Updating 1 public page route, 1 admin page route, 1 backend controller/service, and modifying the Product database schema.
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| # | Rule | Status | Notes |
-|---|------|--------|-------|
-| I | Mobile-First & Offline-First | ✅ N/A | Landing page is server-rendered, no offline requirement |
-| II | Monorepo Architecture | ✅ Pass | All code in `apps/backend` and `apps/web-base` |
-| III | Scalable Core (Modular Monolith) | ✅ Pass | New modules (Contact, FAQ, Testimonial) follow existing NestJS module pattern |
-| IV | Traceability | ✅ N/A | No financial transactions involved |
-| V | Simple & Intuitive UI | ✅ Pass | Using shadcn/ui + lucide-react, no emoji, Sonner toasts |
+- **II. Monorepo Architecture**: Changes will span `apps/backend` and `apps/web-base` within the single monorepo.
+- **V. Simple & Intuitive UI**: We will strictly use `shadcn` components for the Admin gallery upload and `lucide-react` for icons. CRUD operations for saving the product gallery will trigger `toast.success` and handle standard frontend errors.
+
+All gates PASSED.
 
 ## Project Structure
 
@@ -40,70 +37,29 @@ specs/004-landing-page-redesign/
 ├── plan.md              # This file
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output
-│   └── api-endpoints.md
-└── tasks.md             # Phase 2 output (via /speckit.tasks)
+└── quickstart.md        # Phase 1 output
 ```
 
 ### Source Code (repository root)
 
 ```text
-apps/backend/src/
-├── contact/                    # [NEW] Contact module
-│   ├── contact.module.ts
-│   ├── contact.controller.ts
-│   ├── contact.service.ts
-│   └── entities/
-│       └── contact-submission.entity.ts
-├── faq/                        # [NEW] FAQ module
-│   ├── faq.module.ts
-│   ├── faq.controller.ts
-│   ├── faq.service.ts
-│   └── entities/
-│       └── faq.entity.ts
-├── testimonial/                # [NEW] Testimonial module
-│   ├── testimonial.module.ts
-│   ├── testimonial.controller.ts
-│   ├── testimonial.service.ts
-│   └── entities/
-│       └── testimonial.entity.ts
-├── common/
-│   └── entities/
-│       └── store-settings.entity.ts  # [NEW] or extend existing settings
+apps/backend/
+├── src/
+│   └── products/           # Update Product entity and controller for image gallery
 
-apps/web-base/src/
-├── app/
-│   ├── page.tsx                    # [MODIFY] Complete redesign
-│   ├── products/
-│   │   ├── page.tsx                # [MODIFY] Product grid/card view
-│   │   └── [id]/
-│   │       └── page.tsx            # [NEW] Product Detail Page
-│   ├── blog/
-│   │   ├── page.tsx                # [MODIFY] Blog listing
-│   │   └── [slug]/page.tsx         # [EXISTS] Blog detail
-│   ├── contact/
-│   │   └── page.tsx                # [MODIFY] Contact info + form
-│   └── api/
-│       └── contact/
-│           └── route.ts            # [NEW] API proxy for contact form
-├── components/
-│   ├── landing/                    # [NEW] Landing page sections
-│   │   ├── hero-section.tsx
-│   │   ├── products-section.tsx
-│   │   ├── blog-section.tsx
-│   │   ├── testimonials-section.tsx
-│   │   ├── faq-section.tsx
-│   │   ├── contact-section.tsx
-│   │   └── navbar.tsx
-│   └── admin/
-│       ├── contact-management.tsx  # [NEW] Admin contact submissions
-│       ├── faq-management.tsx      # [NEW] Admin FAQ CRUD
-│       └── testimonial-management.tsx # [NEW] Admin Testimonial CRUD
+apps/web-base/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx                           # Landing page redirect/structure
+│   │   ├── products/                          # Public product catalog
+│   │   └── admin/products/                    # Admin product manager
+│   └── components/
+│       ├── landing/                           # Landing page sections
+│       └── admin/                             # Admin product editor (Image upload)
 ```
 
-**Structure Decision**: Follows existing monorepo pattern — NestJS modules under `apps/backend/src/`, Next.js pages under `apps/web-base/src/app/`, Admin components under `apps/web-base/src/components/admin/`.
+**Structure Decision**: Code changes are isolated to the `apps/web-base` presentation layer and `apps/backend/src/products` for the entity update.
 
 ## Complexity Tracking
 
-No constitution violations detected. No justification needed.
+*No violations of the constitution.*

@@ -12,14 +12,16 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageGalleryUpload } from "./image-gallery-upload";
 
 type FieldConfig = {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "select";
+  type?: "text" | "number" | "textarea" | "select" | "image-gallery";
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
+  uploadPath?: string;
 };
 
 type CrudDialogProps = {
@@ -98,6 +100,12 @@ export function CrudDialog({
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              ) : field.type === "image-gallery" ? (
+                <ImageGalleryUpload
+                  value={formData[field.name] || []}
+                  onChange={(urls: string[]) => setFormData({ ...formData, [field.name]: urls })}
+                  uploadPath={field.uploadPath || "/products/admin/upload"}
+                />
               ) : (
                 <Input
                   type={field.type || "text"}

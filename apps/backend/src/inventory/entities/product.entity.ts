@@ -50,6 +50,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ name: 'image_urls', type: 'text', array: true, nullable: true })
+  imageUrls: string[];
+
   @Column({ name: 'barcode_ean13', unique: true, nullable: true })
   barcodeEan13: string;
 

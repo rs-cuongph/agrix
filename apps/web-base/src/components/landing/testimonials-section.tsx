@@ -12,7 +12,7 @@ async function getTestimonials(): Promise<TestimonialItem[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/public/testimonials`,
-      { next: { revalidate: 300 } },
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return [];
     return res.json();

@@ -32,6 +32,7 @@ export function ProductsClient({
     { name: "baseUnit", label: "Đơn vị gốc", type: "select" as const, required: true,
       options: units.map(u => ({ value: u.name, label: u.abbreviation ? `${u.name} (${u.abbreviation})` : u.name })) },
     { name: "baseSellPrice", label: "Giá bán lẻ (đ)", type: "number" as const, required: true },
+    { name: "imageUrls", label: "Thư viện ảnh sản phẩm", type: "image-gallery" as const, uploadPath: "/products/admin/upload" },
     { name: "barcodeEan13", label: "Barcode EAN-13", placeholder: "13 số hoặc để trống tự sinh" },
     { name: "description", label: "Mô tả", type: "textarea" as const },
   ];
