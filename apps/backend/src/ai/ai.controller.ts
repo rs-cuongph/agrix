@@ -171,6 +171,13 @@ export class AIController {
 
   // --- Config ---
 
+  /** Public endpoint: only returns enabled status (no auth needed) */
+  @Get('config/status')
+  async getConfigStatus() {
+    const config = await this.configService.getConfig();
+    return { enabled: config.enabled };
+  }
+
   @Get('admin/config')
   @UseGuards(AuthGuard('jwt'))
   async getConfig() {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MessageCircle, Eye, ChevronLeft, ChevronRight, User, Bot } from 'lucide-react';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 
 interface Session {
   id: string;
@@ -113,7 +114,13 @@ export default function SessionHistory() {
                         : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md shadow-sm'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    ) : (
+                      <div className="break-words [&_p]:mb-1.5 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:mb-1.5 [&_ul]:space-y-0.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:mb-1.5 [&_ol]:space-y-0.5 [&_code]:bg-gray-100 [&_code]:text-gray-800 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_blockquote]:border-l-2 [&_blockquote]:border-gray-300 [&_blockquote]:pl-2 [&_blockquote]:my-1.5 [&_blockquote]:text-gray-500 [&_blockquote]:italic [&_a]:text-emerald-600 [&_a]:underline">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                   <span
                     className={`block text-[10px] text-gray-400 mt-1 ${

@@ -72,10 +72,11 @@ export class ChatConfigService {
         if (!response.ok) return { valid: false, error: `OpenAI: ${response.status} ${response.statusText}` };
         return { valid: true };
       } else if (provider === 'gemini') {
-        const { GoogleGenerativeAI } = await import('@google/generative-ai');
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-        await model.generateContent('test');
+        // Use list models endpoint — lightweight, doesn't consume generation quota
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+        );
+        if (!res.ok) return { valid: false, error: `Gemini: ${res.status} ${res.statusText}` };
         return { valid: true };
       }
       return { valid: false, error: 'Unknown provider' };
