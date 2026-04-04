@@ -6,7 +6,7 @@ interface BlogPost {
   title: string;
   slug: string;
   excerpt?: string;
-  thumbnailUrl?: string;
+  coverImageUrl?: string;
   publishedAt?: string;
 }
 
@@ -14,7 +14,7 @@ async function getPosts(): Promise<BlogPost[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/v1/blog/posts?limit=6`,
-      { next: { revalidate: 60 } },
+      { next: { revalidate: 0 } },
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -60,9 +60,9 @@ export default async function BlogSection() {
                 className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
               >
                 <div className="h-44 bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center overflow-hidden">
-                  {post.thumbnailUrl ? (
+                  {post.coverImageUrl ? (
                     <img
-                      src={post.thumbnailUrl}
+                      src={post.coverImageUrl}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
