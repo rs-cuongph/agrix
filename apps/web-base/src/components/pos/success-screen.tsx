@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Printer } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { printReceipt, PrintJobData } from "./receipt-printer";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN").format(n) + "đ";
@@ -11,14 +12,17 @@ function formatPrice(n: number) {
 type Props = {
   change: number;
   onDone: () => void;
+  printData?: PrintJobData;
 };
 
-export function SuccessScreen({ change, onDone }: Props) {
-  // Auto-dismiss after 4 seconds
+export function SuccessScreen({ change, onDone, printData }: Props) {
+  // Auto-dismiss after 4 seconds only if no printData available to allow them to manually print
   useEffect(() => {
-    const t = setTimeout(onDone, 4000);
-    return () => clearTimeout(t);
-  }, [onDone]);
+    if (!printData) {
+      const t = setTimeout(onDone, 4000);
+      return () => clearTimeout(t);
+    }
+  }, [onDone, printData]);
 
   return (
     <div className="flex flex-col items-center justify-center py-12 px-8 text-center">
@@ -39,13 +43,23 @@ export function SuccessScreen({ change, onDone }: Props) {
         </div>
       )}
 
-      <button
-        onClick={onDone}
-        className="w-full h-16 rounded-2xl bg-emerald-500 text-white text-xl font-bold hover:bg-emerald-400 active:scale-[0.98] transition-all"
-      >
-        Đơn hàng mới
-      </button>
-      <p className="text-gray-300 text-sm mt-3">Tự động chuyển sau 4 giây</p>
+      <div className="w-full flex justify-between items-center bg-gray-50 p-2 rounded-2xl gap-2 mt-2">
+        <button
+          onClick={onDone}
+          className="flex-1 h-14 rounded-xl bg-gray-200 text-gray-700 text-lg font-bold hover:bg-gray-300 active:scale-[0.98] transition-all"
+        >
+          Đơn mới
+        </button>
+        {printData && (
+          <button
+            onClick={() => printReceipt(printData)}
+            className="flex-1 h-14 rounded-xl bg-emerald-500 text-white text-lg font-bold hover:bg-emerald-400 active:scale-[0.98] transition-all flex justify-center items-center gap-2"
+          >
+            <Printer className="w-5 h-5" /> In hóa đơn
+          </button>
+        )}
+      </div>
+      {!printData && <p className="text-gray-300 text-sm mt-3">Tự động chuyển sau 4 giây</p>}
     </div>
   );
 }

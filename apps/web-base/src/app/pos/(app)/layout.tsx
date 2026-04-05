@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import { OfflineIndicator } from "@/components/pos/offline-indicator";
+import { PosSettingsDrawer } from "@/components/pos/pos-settings-drawer";
 import Link from "next/link";
 import { ClockIcon, Package } from "lucide-react";
 
@@ -47,6 +48,7 @@ export default async function PosLayout({ children }: { children: React.ReactNod
               <ClockIcon className="w-5 h-5" />
               <span className="hidden sm:inline">Lịch sử</span>
             </Link>
+            <PosSettingsDrawer />
             {user && (
               <div className="flex items-center gap-2 pl-1 pr-3 py-1 bg-emerald-900/50 rounded-full border border-emerald-800/50">
                 <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-sm font-semibold text-white shadow-sm">

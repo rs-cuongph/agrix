@@ -10,6 +10,7 @@ import { submitOrder, CreateOrderPayload } from "@/lib/pos/pos-api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Banknote, QrCode, X } from "lucide-react";
+import { PrintJobData } from "./receipt-printer";
 
 type PaymentMethod = "CASH" | "BANK_TRANSFER";
 
@@ -24,6 +25,7 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [orderCode, setOrderCode] = useState<string | undefined>();
+  const [printData, setPrintData] = useState<PrintJobData | undefined>();
 
   const changeAmount = paidAmount - state.totalAmount;
   const canConfirm = method === "BANK_TRANSFER" || paidAmount >= state.totalAmount;
@@ -53,6 +55,20 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
       };
       const result = await submitOrder(payload);
       setOrderCode(result.orderCode);
+      setPrintData({
+        orderId: result.orderCode,
+        storeName: "Agrix Store",
+        items: state.items.map(i => ({
+          name: i.productName + (i.soldUnit ? ` (${i.soldUnit})` : ''),
+          quantity: i.quantity,
+          price: i.unitPrice,
+          total: i.lineTotal
+        })),
+        total: state.totalAmount,
+        paymentMethod: method === "CASH" ? "Tiền mặt" : "Chuyển khoản",
+        date: new Date(),
+        cashierName: "Thu Ngân", // Default fallback if no user info
+      });
       setSuccess(true);
     } catch (err) {
       toast.error("Lỗi khi tạo đơn hàng. Vui lòng thử lại.");
@@ -74,7 +90,7 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
       <DialogContent className="max-w-2xl sm:max-w-2xl md:max-w-[700px] w-[90vw] md:w-[700px] rounded-2xl p-0 overflow-hidden bg-white max-h-[calc(100vh-20px)] flex flex-col gap-0" showCloseButton={false}>
         <DialogTitle className="sr-only">Thanh toán</DialogTitle>
         {success ? (
-          <SuccessScreen change={changeAmount > 0 ? changeAmount : 0} onDone={handleSuccessDone} />
+          <SuccessScreen change={changeAmount > 0 ? changeAmount : 0} onDone={handleSuccessDone} printData={printData} />
         ) : (
           <>
             {/* Header */}

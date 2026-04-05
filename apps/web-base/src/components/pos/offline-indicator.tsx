@@ -6,8 +6,8 @@ import { toast } from "sonner";
 
 type NetworkStatus = "online" | "slow" | "offline";
 
-const SLOW_THRESHOLD_MS = 400; // >400ms round-trip = slow
-const PING_INTERVAL_MS = 5_000; // check every 5s
+const SLOW_THRESHOLD_MS = 1500; // >400ms round-trip = slow
+const PING_INTERVAL_MS = 60_000; // check every 5s
 
 async function measureLatency(): Promise<number | null> {
   try {
