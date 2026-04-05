@@ -13,14 +13,18 @@ type Order = {
   items?: OrderItem[];
 };
 
-export default async function OrdersPage() {
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ search?: string }> }) {
   let orders: Order[] = [];
+  const params = await searchParams;
+  const search = params.search || "";
+  
   try {
-    const res = await apiGet<PaginatedResponse<Order>>("/orders");
+    const url = search ? `/orders?search=${encodeURIComponent(search)}` : "/orders";
+    const res = await apiGet<PaginatedResponse<Order>>(url);
     orders = res.data;
   } catch (e) {
     console.error("Orders fetch error:", e);
   }
 
-  return <OrdersClient orders={orders} />;
+  return <OrdersClient orders={orders} initialSearch={search} />;
 }

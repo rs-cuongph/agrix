@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, RotateCcw, Minimize2, Bot } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import ChatMessageBubble from './chat-message';
 import ChatInput from './chat-input';
 import { useChatContext } from '@/lib/chat-context';
@@ -11,6 +12,8 @@ export default function ChatWidget() {
   const [showTooltip, setShowTooltip] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading, sendMessage, clearChat } = useChatContext();
+  const pathname = usePathname();
+  const isPosRoute = pathname?.startsWith('/pos');
 
   // Show tooltip after 2 seconds
   useEffect(() => {
@@ -39,8 +42,9 @@ export default function ChatWidget() {
   }, []);
 
   if (!isOpen) {
+    const positionClass = isPosRoute && !isMobile ? 'right-[440px]' : 'right-6';
     return (
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center justify-end chat-bubble-enter">
+      <div className={`fixed bottom-6 ${positionClass} z-50 flex flex-col items-center justify-end chat-bubble-enter`}>
         {/* Tooltip Thought Bubble */}
         <div 
           className={`absolute bottom-[88px] right-2 transition-all duration-500 origin-bottom-right ${
@@ -113,12 +117,14 @@ export default function ChatWidget() {
     );
   }
 
+  const windowPositionClass = isPosRoute && !isMobile ? 'right-[440px]' : 'right-5';
+
   return (
     <div
       className={`fixed z-50 flex flex-col chat-window-enter overflow-hidden ${
         isMobile
           ? 'inset-0 bg-white'
-          : 'bottom-5 right-5 w-[380px] h-[540px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-gray-200/60'
+          : `bottom-5 ${windowPositionClass} w-[380px] h-[540px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.15)] border border-gray-200/60`
       }`}
     >
       {/* Header */}

@@ -1,6 +1,6 @@
 # agrix Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-21
+Auto-generated from all feature plans. Last updated: 2026-04-04
 
 ## Active Technologies
 - TypeScript 5.x, React 18, Next.js 14 (App Router) + next, react, shadcn/ui, tailwindcss, lucide-reac (001-agrix-core-platform)
@@ -15,6 +15,9 @@ Auto-generated from all feature plans. Last updated: 2026-03-21
 - PostgreSQL (via TypeORM) (004-landing-page-redesign)
 - TypeScript (Node 20+) + Next.js 14 (App Router), NestJS, TypeORM, Tailwind CSS v4, shadcn/ui. (004-landing-page-redesign)
 - PostgreSQL (via TypeORM), MinIO for image uploads. (004-landing-page-redesign)
+- Next.js (app router), React, TypeScrip + shadcn/ui, `lucide-react` (005-group-menus)
+- Next.js 15 (App Router), React 19, TypeScrip + shadcn/ui, lucide-react, sonner (toast), existing `adminApiCall` proxy pattern (006-pos-cashier-tablet)
+- IndexedDB (offline cart/orders), Service Worker (caching) (006-pos-cashier-tablet)
 
 - Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+) (001-agrix-core-platform)
 
@@ -35,9 +38,9 @@ npm test && npm run lint
 Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+): Follow standard conventions
 
 ## Recent Changes
+- 006-pos-cashier-tablet: Added Next.js 15 (App Router), React 19, TypeScrip + shadcn/ui, lucide-react, sonner (toast), existing `adminApiCall` proxy pattern
+- 005-group-menus: Added Next.js (app router), React, TypeScrip + shadcn/ui, `lucide-react`
 - 004-landing-page-redesign: Added TypeScript (Node 20+) + Next.js 14 (App Router), NestJS, TypeORM, Tailwind CSS v4, shadcn/ui.
-- 004-landing-page-redesign: Added TypeScript 5.x (Node.js 20+) + Next.js 15 (App Router, RSC), NestJS, shadcn/ui, Tailwind CSS v4, TypeORM, lucide-reac
-- 003-ai-chatbot-assistant: Added TypeScript (Node.js 18+) + NestJS (backend), Next.js 14 (web), OpenAI SDK, Google Generative AI SDK, pgvector
 
 
 <!-- MANUAL ADDITIONS START -->

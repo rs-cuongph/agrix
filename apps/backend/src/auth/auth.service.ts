@@ -1,9 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +41,68 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  async posLogin(pin: string) {
+    const now = new Date();
+
+    // Find all eligible POS users (ADMIN or CASHIER)
+    const users = await this.userRepository.find({
+      where: [{ role: UserRole.ADMIN }, { role: UserRole.CASHIER }],
+    });
+
+    const user = users.find((u) => u.posPin === pin && u.isActive);
+
+    if (!user) {
+      throw new UnauthorizedException('Mã PIN không đúng');
+    }
+
+    // Check lockout
+    if (user.pinLockedUntil && user.pinLockedUntil > now) {
+      const minutesLeft = Math.ceil(
+        (user.pinLockedUntil.getTime() - now.getTime()) / 60000,
+      );
+      throw new ForbiddenException(
+        `Tài khoản bị khoá tạm thời. Thử lại sau ${minutesLeft} phút.`,
+      );
+    }
+
+    // Reset failed attempts on success
+    await this.userRepository.update(user.id, {
+      pinFailedAttempts: 0,
+      pinLockedUntil: null,
+    });
+
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+      isPosSession: true,
+    };
+    return {
+      accessToken: this.jwtService.sign(payload, { expiresIn: '16h' }),
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role,
+      },
+    };
+  }
+
+  async recordPinFailure(pin: string) {
+    const users = await this.userRepository.find({
+      where: [{ role: UserRole.ADMIN }, { role: UserRole.CASHIER }],
+    });
+    const user = users.find((u) => u.posPin === pin && u.isActive);
+    if (!user) return;
+    const attempts = (user.pinFailedAttempts || 0) + 1;
+    const update: Partial<User> = { pinFailedAttempts: attempts };
+    if (attempts >= 5) {
+      update.pinLockedUntil = new Date(Date.now() + 5 * 60 * 1000);
+      update.pinFailedAttempts = 0;
+    }
+    await this.userRepository.update(user.id, update);
   }
 
   async createUser(

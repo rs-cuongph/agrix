@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, Length } from 'class-validator';
 import { AuthGuard } from '@nestjs/passport';
 import { PermissionsService } from './permissions.service';
 
@@ -14,6 +14,13 @@ export class LoginDto {
   password: string;
 }
 
+export class PosLoginDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(4, 6)
+  pin: string;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -24,6 +31,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.username, loginDto.password);
+  }
+
+  @Post('pos-login')
+  async posLogin(@Body() dto: PosLoginDto) {
+    return this.authService.posLogin(dto.pin);
   }
 
   @Get('me')

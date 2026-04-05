@@ -33,18 +33,18 @@ async function seed() {
   // 1. Create admin user
   const passwordHash = await bcrypt.hash('admin123', 10);
   await ds.query(
-    `INSERT INTO users (id, username, password_hash, full_name, role, is_active)
-     VALUES (gen_random_uuid(), 'admin', $1, 'Quản trị viên', 'ADMIN', true)
-     ON CONFLICT (username) DO NOTHING`,
+    `INSERT INTO users (id, username, password_hash, full_name, role, is_active, pos_pin, pin_failed_attempts)
+     VALUES (gen_random_uuid(), 'admin', $1, 'Quản trị viên', 'ADMIN', true, '1234', 0)
+     ON CONFLICT (username) DO UPDATE SET pos_pin = '1234'`,
     [passwordHash],
   );
 
   // Create cashier user
   const cashierHash = await bcrypt.hash('cashier123', 10);
   await ds.query(
-    `INSERT INTO users (id, username, password_hash, full_name, role, is_active)
-     VALUES (gen_random_uuid(), 'thungan', $1, 'Thu Ngân', 'CASHIER', true)
-     ON CONFLICT (username) DO NOTHING`,
+    `INSERT INTO users (id, username, password_hash, full_name, role, is_active, pos_pin, pin_failed_attempts)
+     VALUES (gen_random_uuid(), 'thungan', $1, 'Thu Ngân', 'CASHIER', true, '5678', 0)
+     ON CONFLICT (username) DO UPDATE SET pos_pin = '5678'`,
     [cashierHash],
   );
   console.log('✅ Users seeded');
@@ -195,6 +195,9 @@ async function seed() {
   console.log('\n🎉 Seed complete! You can login with:');
   console.log('   Admin: admin / admin123');
   console.log('   Cashier: thungan / cashier123');
+  console.log('\n🔑 POS PIN login:');
+  console.log('   Admin PIN: 1234');
+  console.log('   Thu ngân PIN: 5678');
 
   await ds.destroy();
 }

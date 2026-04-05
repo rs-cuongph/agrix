@@ -32,6 +32,15 @@ export class User {
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
+  @Column({ name: 'pos_pin', type: 'varchar', length: 6, nullable: true })
+  posPin: string | null;
+
+  @Column({ name: 'pin_failed_attempts', type: 'int', default: 0 })
+  pinFailedAttempts: number;
+
+  @Column({ name: 'pin_locked_until', type: 'timestamp with time zone', nullable: true })
+  pinLockedUntil: Date | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

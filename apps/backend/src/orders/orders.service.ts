@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { InventoryService } from '../inventory/inventory.service';
@@ -51,9 +51,8 @@ export class OrderService {
         });
       }
 
-      if (dto.paidAmount > totalAmount) {
-        throw new BadRequestException('Paid amount exceeds total');
-      }
+      // The settled amount should logically not exceed total order amount in accounting
+      const actualPaidAmount = Math.min(dto.paidAmount, totalAmount);
 
       // Create order
       const order = manager.create(Order, {
@@ -61,7 +60,7 @@ export class OrderService {
         idempotencyKey: dto.idempotencyKey,
         customerId: dto.customerId ?? undefined,
         totalAmount,
-        paidAmount: dto.paidAmount,
+        paidAmount: actualPaidAmount,
         paymentMethod: dto.paymentMethod as any,
         createdBy: userId,
         items: items as OrderItem[],
@@ -80,8 +79,8 @@ export class OrderService {
       }
 
       // Update customer debt if partial payment
-      if (dto.customerId && dto.paidAmount < totalAmount) {
-        const debtAmount = totalAmount - dto.paidAmount;
+      if (dto.customerId && actualPaidAmount < totalAmount) {
+        const debtAmount = totalAmount - actualPaidAmount;
         await manager.increment(Customer, { id: dto.customerId }, 'outstandingDebt', debtAmount);
       }
 
@@ -89,10 +88,11 @@ export class OrderService {
     });
   }
 
-  async findOrders(from?: string, to?: string, page = 1, limit = 20) {
+  async findOrders(from?: string, to?: string, search?: string, page = 1, limit = 20) {
     const qb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
       .leftJoinAndSelect('order.customer', 'customer')
       .orderBy('order.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -100,6 +100,12 @@ export class OrderService {
 
     if (from) qb.andWhere('order.createdAt >= :from', { from });
     if (to) qb.andWhere('order.createdAt <= :to', { to });
+    if (search) {
+      qb.andWhere(new Brackets(qb => {
+        qb.where('CAST(order.id AS VARCHAR) LIKE :search', { search: `%${search}%` })
+          .orWhere('LOWER(customer.name) LIKE LOWER(:search)', { search: `%${search}%` });
+      }));
+    }
 
     const [data, total] = await qb.getManyAndCount();
     return { data, meta: { total, page, limit } };
@@ -108,9 +114,39 @@ export class OrderService {
   async findById(id: string): Promise<Order> {
     const order = await this.orderRepo.findOne({
       where: { id },
-      relations: ['items', 'customer'],
+      relations: ['items', 'items.product', 'customer'],
     });
     if (!order) throw new BadRequestException(`Order ${id} not found`);
     return order;
+  }
+
+  async deleteOrder(id: string, userId: string): Promise<void> {
+    return this.dataSource.transaction(async (manager) => {
+      const order = await manager.findOne(Order, {
+        where: { id },
+        relations: ['items'],
+      });
+
+      if (!order) throw new BadRequestException(`Order ${id} not found`);
+
+      // 1. Revert debt if applicable
+      if (order.customerId && order.paidAmount < order.totalAmount) {
+        const debtAmount = order.totalAmount - order.paidAmount;
+        await manager.decrement(Customer, { id: order.customerId }, 'outstandingDebt', debtAmount);
+      }
+
+      // 2. Revert stock via Inventory Service
+      for (const item of order.items) {
+        await this.inventoryService.addStock(
+          item.productId,
+          item.quantityBase,
+          order.id, // Using the order's ID as reference for the RETURN
+          userId,
+        );
+      }
+
+      // 3. Remove order (and cascaded items)
+      await manager.remove(Order, order);
+    });
   }
 }

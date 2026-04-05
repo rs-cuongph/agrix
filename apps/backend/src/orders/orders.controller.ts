@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Body,
   Param,
   Query,
@@ -30,15 +31,22 @@ export class OrdersController {
   async findAll(
     @Query('from') from?: string,
     @Query('to') to?: string,
+    @Query('search') search?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
   ) {
-    return this.orderService.findOrders(from, to, +page, +limit);
+    return this.orderService.findOrders(from, to, search, +page, +limit);
   }
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.CASHIER)
   async findOne(@Param('id') id: string) {
     return this.orderService.findById(id);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  async remove(@Param('id') id: string, @Req() req: any) {
+    return this.orderService.deleteOrder(id, req.user.id);
   }
 }

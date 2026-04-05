@@ -79,4 +79,26 @@ export class InventoryService {
     });
     await this.stockEntryRepo.save(entry);
   }
+
+  /**
+   * Add stock in base units (e.g. for return/cancellation).
+   * Creates a RETURN ledger entry.
+   */
+  async addStock(
+    productId: string,
+    quantityBase: number,
+    referenceId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.productRepo.increment({ id: productId }, 'currentStockBase', quantityBase);
+
+    const entry = this.stockEntryRepo.create({
+      productId,
+      quantityBase: quantityBase,
+      type: StockEntryType.RETURN,
+      referenceId,
+      createdBy: userId,
+    });
+    await this.stockEntryRepo.save(entry);
+  }
 }
