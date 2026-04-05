@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { PosProduct } from "@/lib/pos/pos-api";
 import { cn } from "@/lib/utils";
-import { Package } from "lucide-react";
+import { Package, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 function formatPrice(n: number) {
@@ -13,9 +13,10 @@ function formatPrice(n: number) {
 type Props = {
   product: PosProduct;
   onClick: (product: PosProduct) => void;
+  onViewDetails?: (product: PosProduct) => void;
 };
 
-export function ProductCard({ product, onClick }: Props) {
+export function ProductCard({ product, onClick, onViewDetails }: Props) {
   const outOfStock = product.currentStockBase <= 0;
   const imageUrl = product.imageUrls?.[0] ?? null;
 
@@ -50,6 +51,20 @@ export function ProductCard({ product, onClick }: Props) {
               Hết hàng
             </Badge>
           </div>
+        )}
+        
+        {/* Info button */}
+        {onViewDetails && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(product);
+            }}
+            className="absolute top-2 right-2 bg-white/90 shadow-sm p-1.5 rounded-full text-gray-500 hover:text-emerald-600 hover:bg-white z-10 hover:scale-110 active:scale-95 transition-all"
+            aria-label="Xem chi tiết"
+          >
+            <Info className="w-5 h-5 opacity-80" />
+          </button>
         )}
       </div>
 

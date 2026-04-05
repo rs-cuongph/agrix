@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { CartProvider } from "@/lib/pos/cart-store";
 import { PosProduct } from "@/lib/pos/pos-api";
 import { PosSearchBar } from "@/components/pos/search-bar";
@@ -20,6 +20,14 @@ export default function PosPage() {
 
   const handleResults = useCallback((results: PosProduct[]) => setProducts(results), []);
   const handleLoading = useCallback((l: boolean) => setLoading(l), []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("agrix-pos-cart-toggle", { detail: cartOpen }));
+    return () => {
+      // Revert when unmounting
+      window.dispatchEvent(new CustomEvent("agrix-pos-cart-toggle", { detail: false }));
+    };
+  }, [cartOpen]);
 
   return (
     <CartProvider>

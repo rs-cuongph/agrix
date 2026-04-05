@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getCategories, PosCategory } from "@/lib/pos/pos-api";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useHorizontalScroll } from "@/hooks/use-horizontal-scroll";
 
 type Props = {
   selectedId: string | undefined;
@@ -12,6 +13,7 @@ type Props = {
 
 export function CategoryTabs({ selectedId, onSelect }: Props) {
   const [categories, setCategories] = useState<PosCategory[]>([]);
+  const scrollRef = useHorizontalScroll<HTMLDivElement>();
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => setCategories([]));
@@ -23,7 +25,10 @@ export function CategoryTabs({ selectedId, onSelect }: Props) {
   if (topLevel.length === 0) return null;
 
   return (
-    <div className="overflow-x-auto flex gap-2 py-1 px-1 scrollbar-none shrink-0">
+    <div 
+      ref={scrollRef}
+      className="overflow-x-auto flex gap-2 py-1 px-1 scrollbar-none no-scrollbar shrink-0"
+    >
       <button
         onClick={() => onSelect(undefined)}
         className={cn(

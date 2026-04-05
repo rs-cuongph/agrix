@@ -8,6 +8,7 @@ import { CheckoutScreen } from "./checkout-screen";
 
 import { ShoppingCart, UserRound, PanelRightClose } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CartSwitcher } from "./cart-switcher";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN").format(n) + "đ";
@@ -22,17 +23,20 @@ export function CartPanel({ onClose }: { onClose?: () => void }) {
   return (
     <>
       <div className="flex flex-col h-full bg-white border-l border-gray-100 shadow-sm relative">
-        {/* Header to collapse */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-emerald-50 shrink-0">
-           <div className="flex items-center gap-2">
-             <ShoppingCart className="w-5 h-5 text-emerald-600" />
-             <span className="font-bold text-emerald-800">Giỏ hàng hiện tại</span>
-           </div>
-           {onClose && (
-             <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-emerald-200/50 text-emerald-700 transition">
-               <PanelRightClose className="w-5 h-5" />
-             </button>
-           )}
+        {/* Header to collapse & Cart Tabs */}
+        <div className="flex flex-col border-b border-gray-100 bg-emerald-50 shrink-0">
+          <div className="flex items-center justify-between px-5 py-2">
+             <div className="flex items-center gap-2">
+               <span className="font-bold text-emerald-800 text-lg">Quản lý Đơn</span>
+             </div>
+             {onClose && (
+               <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-emerald-200/50 text-emerald-700 transition">
+                 <PanelRightClose className="w-5 h-5" />
+               </button>
+             )}
+          </div>
+          {/* Cart Switcher inserted here */}
+          <CartSwitcher />
         </div>
         {/* Customer Area */}
         <button
@@ -66,7 +70,7 @@ export function CartPanel({ onClose }: { onClose?: () => void }) {
             <p className="text-center text-lg font-medium text-gray-400">Chạm hoặc quét sản phẩm để bắt đầu</p>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-4 min-h-0">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 min-h-0">
             <div className="py-2">
               {state.items.map((item) => (
                 <CartItemRow key={`${item.productId}-${item.soldUnit}`} item={item} />

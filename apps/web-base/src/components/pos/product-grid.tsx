@@ -6,6 +6,7 @@ import { useCart } from "@/lib/pos/cart-store";
 import { toast } from "sonner";
 import { ProductCard } from "./product-card";
 import { UnitPickerDialog } from "./unit-picker-dialog";
+import { ProductDetailsDialog } from "./product-details-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 
@@ -17,6 +18,7 @@ type Props = {
 export function ProductGrid({ products, loading }: Props) {
   const { dispatch } = useCart();
   const [unitPickerProduct, setUnitPickerProduct] = useState<PosProduct | null>(null);
+  const [detailsProduct, setDetailsProduct] = useState<PosProduct | null>(null);
 
   const handleProductTap = (product: PosProduct) => {
     const hasMultipleUnits = product.units && product.units.length > 0;
@@ -63,7 +65,12 @@ export function ProductGrid({ products, loading }: Props) {
       <ScrollArea className="flex-1 h-full">
         <div className="grid grid-cols-3 xl:grid-cols-4 gap-4 p-4">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onClick={handleProductTap} />
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onClick={handleProductTap} 
+              onViewDetails={setDetailsProduct}
+            />
           ))}
         </div>
       </ScrollArea>
@@ -72,6 +79,12 @@ export function ProductGrid({ products, loading }: Props) {
         product={unitPickerProduct}
         open={!!unitPickerProduct}
         onClose={() => setUnitPickerProduct(null)}
+      />
+
+      <ProductDetailsDialog
+        product={detailsProduct}
+        open={!!detailsProduct}
+        onClose={() => setDetailsProduct(null)}
       />
     </>
   );

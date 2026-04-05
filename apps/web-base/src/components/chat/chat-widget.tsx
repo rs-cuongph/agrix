@@ -14,6 +14,17 @@ export default function ChatWidget() {
   const { messages, isLoading, sendMessage, clearChat } = useChatContext();
   const pathname = usePathname();
   const isPosRoute = pathname?.startsWith('/pos');
+  const [posCartOpen, setPosCartOpen] = useState(true);
+
+  // Listen to POS Cart Toggle
+  useEffect(() => {
+    const handleToggle = (e: Event) => {
+      const customEvent = e as CustomEvent<boolean>;
+      setPosCartOpen(customEvent.detail);
+    };
+    window.addEventListener('agrix-pos-cart-toggle', handleToggle);
+    return () => window.removeEventListener('agrix-pos-cart-toggle', handleToggle);
+  }, []);
 
   // Show tooltip after 2 seconds
   useEffect(() => {
@@ -42,9 +53,11 @@ export default function ChatWidget() {
   }, []);
 
   if (!isOpen) {
-    const positionClass = isPosRoute && !isMobile ? 'right-[440px]' : 'right-6';
+    const positionClass = isPosRoute && !isMobile 
+      ? (posCartOpen ? 'right-[444px]' : 'right-28') 
+      : 'right-6';
     return (
-      <div className={`fixed bottom-6 ${positionClass} z-50 flex flex-col items-center justify-end chat-bubble-enter`}>
+      <div className={`fixed bottom-6 ${positionClass} z-50 flex flex-col items-center justify-end chat-bubble-enter transition-all duration-300`}>
         {/* Tooltip Thought Bubble */}
         <div 
           className={`absolute bottom-[88px] right-2 transition-all duration-500 origin-bottom-right ${
@@ -117,7 +130,9 @@ export default function ChatWidget() {
     );
   }
 
-  const windowPositionClass = isPosRoute && !isMobile ? 'right-[440px]' : 'right-5';
+  const windowPositionClass = isPosRoute && !isMobile 
+    ? (posCartOpen ? 'right-[444px]' : 'right-28') 
+    : 'right-5';
 
   return (
     <div
