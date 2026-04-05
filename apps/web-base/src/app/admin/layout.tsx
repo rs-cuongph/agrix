@@ -42,7 +42,7 @@ export default async function AdminLayout({
     return (
       <div className="admin-scope">
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" toastOptions={{ style: { fontSize: '16px', padding: '10px' } }} />
       </div>
     );
   }

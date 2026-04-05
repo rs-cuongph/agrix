@@ -59,7 +59,7 @@ export default async function PosLayout({ children }: { children: React.ReactNod
         {children}
       </main>
 
-      <Toaster richColors position="top-center" />
+      <Toaster richColors position="top-center" toastOptions={{ style: { fontSize: '16px', padding: '10px' } }} />
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function ProductsClient({
     { name: "baseSellPrice", label: "Giá bán lẻ (đ)", type: "number" as const, required: true },
     { name: "imageUrls", label: "Thư viện ảnh sản phẩm", type: "image-gallery" as const, uploadPath: "/products/admin/upload" },
     { name: "barcodeEan13", label: "Barcode EAN-13", placeholder: "13 số hoặc để trống tự sinh" },
-    { name: "description", label: "Mô tả", type: "textarea" as const },
+    { name: "description", label: "Mô tả", type: "rich-text" as const },
   ];
 
   const handleCreate = async (data: Record<string, any>) => {

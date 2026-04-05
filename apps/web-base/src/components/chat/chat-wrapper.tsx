@@ -13,7 +13,7 @@ export default function ChatWrapper() {
   const pathname = usePathname();
   const [enabled, setEnabled] = useState<boolean | null>(null);
 
-let statusPromise: Promise<boolean> | null = null;
+  let statusPromise: Promise<boolean> | null = null;
 
   useEffect(() => {
     if (!statusPromise) {

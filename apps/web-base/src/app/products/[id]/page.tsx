@@ -129,9 +129,10 @@ export default async function ProductDetailPage({
           {product.description && (
             <div className="mt-8 border-t border-gray-100 pt-6">
               <h2 className="text-base font-bold text-gray-900 mb-2">Mô tả sản phẩm</h2>
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
+              <div 
+                className="text-sm text-gray-600 leading-relaxed [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-2 [&>h2]:text-lg [&>h2]:font-bold [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-base [&>h3]:font-bold [&>h3]:mt-3 [&>h3]:mb-1 [&_a]:text-emerald-600 [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
             </div>
           )}
         </div>

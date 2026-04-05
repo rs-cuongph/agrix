@@ -182,8 +182,8 @@ export class OrderService {
     if (search) {
       qb.andWhere(new Brackets(qb => {
         qb.where('CAST(order.id AS VARCHAR) LIKE :search', { search: `%${search}%` })
-          .orWhere('LOWER(customer.name) LIKE LOWER(:search)', { search: `%${search}%` })
-          .orWhere('LOWER(order.orderCode) LIKE LOWER(:search)', { search: `%${search}%` });
+          .orWhere('LOWER(order.orderCode) LIKE LOWER(:search)', { search: `%${search}%` })
+          .orWhere('customer.phone LIKE :search', { search: `%${search}%` });
       }));
     }
 

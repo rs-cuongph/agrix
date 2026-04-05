@@ -53,7 +53,8 @@ export default function ChatWidget() {
   }, []);
 
   if (!isOpen) {
-    const positionClass = isPosRoute && !isMobile 
+    const isPosHome = isPosRoute && !pathname?.includes('/history');
+    const positionClass = isPosHome && !isMobile 
       ? (posCartOpen ? 'right-[444px]' : 'right-28') 
       : 'right-6';
     return (
@@ -130,7 +131,8 @@ export default function ChatWidget() {
     );
   }
 
-  const windowPositionClass = isPosRoute && !isMobile 
+  const isPosHome = isPosRoute && !pathname?.includes('/history');
+  const windowPositionClass = isPosHome && !isMobile 
     ? (posCartOpen ? 'right-[444px]' : 'right-28') 
     : 'right-5';
 

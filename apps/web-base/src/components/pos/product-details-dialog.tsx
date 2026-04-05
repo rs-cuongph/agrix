@@ -24,7 +24,7 @@ export function ProductDetailsDialog({ product, open, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none">
+      <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none bg-white">
         <DialogHeader className="p-5 pb-0">
           <DialogTitle className="text-xl font-bold text-gray-800 leading-tight">
             Chi tiết sản phẩm
@@ -76,11 +76,16 @@ export function ProductDetailsDialog({ product, open, onClose }: Props) {
             <div className="space-y-4 text-sm mt-2">
               <div>
                 <h4 className="font-bold text-gray-800 mb-1">Thông tin bổ sung</h4>
-                <p className="text-gray-600 leading-relaxed text-sm">
-                  {/* Mocked description as per user request to show details/manual */}
-                  Sản phẩm chính hãng, đảm bảo chất lượng. Vui lòng đọc kỹ hướng dẫn sử dụng in trên bao bì trước khi dùng. 
-                  Bảo quản nơi khô ráo, thoáng mát. Tránh xa tầm tay trẻ em.
-                </p>
+                {product.description ? (
+                  <div
+                    className="text-gray-600 leading-relaxed text-sm [&>p]:mb-1 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mt-2 [&>h3]:font-semibold [&>h3]:mt-1 [&_a]:text-emerald-600"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                ) : (
+                  <p className="text-gray-500 italic text-sm">
+                    Chưa có thông tin bổ sung.
+                  </p>
+                )}
               </div>
 
               {product.units && product.units.length > 0 && (

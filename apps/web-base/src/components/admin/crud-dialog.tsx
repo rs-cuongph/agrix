@@ -13,11 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageGalleryUpload } from "./image-gallery-upload";
+import { RichTextEditor } from "./rich-text-editor";
 
 type FieldConfig = {
   name: string;
   label: string;
-  type?: "text" | "number" | "textarea" | "select" | "image-gallery";
+  type?: "text" | "number" | "textarea" | "select" | "image-gallery" | "rich-text";
   required?: boolean;
   options?: { value: string; label: string }[];
   placeholder?: string;
@@ -62,19 +63,26 @@ export function CrudDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-bold">
             {mode === "create" ? `Tạo ${title}` : `Sửa ${title}`}
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
+            <div className="md:col-span-2 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
           )}
           {fields.map((field) => (
-            <div key={field.name} className="space-y-1">
+            <div 
+              key={field.name} 
+              className={`space-y-1 ${
+                field.type === "textarea" || field.type === "rich-text" || field.type === "image-gallery" 
+                  ? "md:col-span-2" 
+                  : ""
+              }`}
+            >
               <label className="text-sm font-medium text-gray-700">{field.label}</label>
               {field.type === "textarea" ? (
                 <Textarea
@@ -106,6 +114,12 @@ export function CrudDialog({
                   onChange={(urls: string[]) => setFormData({ ...formData, [field.name]: urls })}
                   uploadPath={field.uploadPath || "/products/admin/upload"}
                 />
+              ) : field.type === "rich-text" ? (
+                <RichTextEditor
+                  value={formData[field.name] || ""}
+                  onChange={(val) => setFormData({ ...formData, [field.name]: val })}
+                  placeholder={field.placeholder}
+                />
               ) : (
                 <Input
                   type={field.type || "text"}
@@ -120,16 +134,20 @@ export function CrudDialog({
               )}
             </div>
           ))}
-          <div className="flex gap-3 pt-2">
+          <div className="md:col-span-2 flex justify-end gap-3 pt-4 border-t mt-2">
+            <button
+              type="button" 
+              onClick={onClose} 
+              className="px-6 py-2.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-emerald-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-medium text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {loading ? "Đang xử lý..." : mode === "create" ? "Tạo mới" : "Cập nhật"}
-            </button>
-            <button type="button" onClick={onClose} className="px-4 py-2.5 border rounded-lg text-sm hover:bg-gray-50 transition-colors">
-              Hủy
             </button>
           </div>
         </form>

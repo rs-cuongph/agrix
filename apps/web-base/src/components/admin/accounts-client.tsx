@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import { Shield, Plus, Pencil, Power, Key, Users as UsersIcon, Lightbulb, KeyRound, Trash2 } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,66 +60,6 @@ const ROLE_LABELS: Record<string, string> = {
   ADMIN: "Quản trị viên", CASHIER: "Thu ngân", INVENTORY: "Kho",
 };
 
-// ── PIN Input Component (4 separate boxes) ────────────────────────────────────
-function PinInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const refs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
-
-  const handleInput = useCallback((idx: number, char: string) => {
-    const digit = char.replace(/\D/g, "").slice(-1);
-    const arr = value.padEnd(4, " ").split("");
-    arr[idx] = digit || " ";
-    const next = arr.join("").trimEnd();
-    onChange(next);
-    if (digit && idx < 3) refs[idx + 1].current?.focus();
-  }, [value, onChange, refs]);
-
-  const handleKey = useCallback((idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      const arr = value.padEnd(4, " ").split("");
-      if (arr[idx].trim()) {
-        arr[idx] = " ";
-        onChange(arr.join("").trimEnd());
-      } else if (idx > 0) {
-        refs[idx - 1].current?.focus();
-        const prev = value.padEnd(4, " ").split("");
-        prev[idx - 1] = " ";
-        onChange(prev.join("").trimEnd());
-      }
-    }
-  }, [value, onChange, refs]);
-
-  return (
-    <div className="flex gap-3 justify-center py-4">
-      {[0, 1, 2, 3].map((idx) => {
-        const filled = idx < value.length;
-        return (
-          <input
-            key={idx}
-            ref={refs[idx]}
-            type="password"
-            inputMode="numeric"
-            maxLength={1}
-            value={filled ? "\u2022" : ""}
-            onFocus={(e) => e.target.select()}
-            onChange={(e) => handleInput(idx, e.target.value)}
-            onKeyDown={(e) => handleKey(idx, e)}
-            onPaste={(e) => {
-              e.preventDefault();
-              const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
-              onChange(pasted);
-              refs[Math.min(pasted.length, 3)].current?.focus();
-            }}
-            className={`w-14 h-16 text-center text-3xl rounded-xl border-2 font-bold outline-none transition-all duration-150 select-none caret-transparent ${filled
-                ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-100"
-                : "border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300"
-              } focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:bg-white`}
-            autoComplete="off"
-          />
-        );
-      })}
-    </div>
-  );
-}
 
 export function AccountsClient({ users, permissions }: { users: AdminUser[]; permissions: Permission[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: AdminUser } | null>(null);
@@ -142,21 +82,18 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
     router.refresh();
   };
 
-  const handleSetPin = async () => {
+  const handleGeneratePin = async () => {
     if (!pinDialog) return;
-    if (!/^\d{4}$/.test(pinValue)) {
-      toast.error("Mã PIN phải là đúng 4 chữ số");
-      return;
-    }
     setPinSaving(true);
     try {
-      await adminApiCall(`/admin-users/${pinDialog.userId}/pin`, "PUT", { pin: pinValue });
-      toast.success("Cập nhật PIN thành công");
-      setPinDialog(null);
-      setPinValue("");
-      router.refresh();
+      const res = await adminApiCall(`/admin-users/${pinDialog.userId}/random-pin`, "POST");
+      if (res.pin) {
+        setPinValue(res.pin);
+        toast.success("Tạo mã PIN thành công");
+        router.refresh();
+      }
     } catch {
-      toast.error("Lưu PIN thất bại");
+      toast.error("Tạo PIN thất bại");
     } finally {
       setPinSaving(false);
     }
@@ -384,28 +321,33 @@ export function AccountsClient({ users, permissions }: { users: AdminUser[]; per
                 Nhập mã PIN 4 chữ số để đăng nhập POS
               </DialogDescription>
             </DialogHeader>
-
-            <PinInput value={pinValue} onChange={setPinValue} />
-
-            {/* Dots progress */}
-            <div className="flex justify-center gap-2 -mt-2 mb-2">
-              {[0, 1, 2, 3].map(i => (
-                <div key={i} className={`w-2 h-2 rounded-full transition-all duration-200 ${i < pinValue.length ? "bg-emerald-500 scale-110" : "bg-gray-200"
-                  }`} />
-              ))}
-            </div>
+            {pinValue ? (
+              <div className="text-center py-4">
+                 <p className="text-sm text-gray-500 mb-2">Mã PIN mới của tài khoản là:</p>
+                 <div className="text-4xl font-mono tracking-widest text-emerald-600 font-bold bg-emerald-50 py-3 rounded-lg border-2 border-emerald-200">
+                    {pinValue}
+                 </div>
+                 <p className="text-xs text-amber-600 mt-3 font-medium">Lưu ý: Hãy sao chép và gửi mã này cho nhân viên. Mã này sẽ không hiển thị lại!</p>
+              </div>
+            ) : (
+               <div className="text-center py-6 text-gray-600 text-sm px-4">
+                 Hệ thống sẽ tạo ngẫu nhiên một mã PIN gồm 4 chữ số và kiểm tra tính duy nhất trên toàn hệ thống.
+               </div>
+            )}
 
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => { setPinDialog(null); setPinValue(""); }}>
-                Hủy
+                Đóng
               </Button>
-              <Button
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-                disabled={pinSaving || pinValue.length < 4}
-                onClick={handleSetPin}
-              >
-                {pinSaving ? "Đang lưu..." : "Xác nhận"}
-              </Button>
+              {!pinValue && (
+                <Button
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  disabled={pinSaving}
+                  onClick={handleGeneratePin}
+                >
+                  {pinSaving ? "Đang tạo..." : "Tạo mã PIN"}
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>

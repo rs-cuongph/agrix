@@ -22,6 +22,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-05
 - PostgreSQL (UUID primary keys) (006-pos-cashier-tablet)
 - TypeScript / React 18 / Next.js 14 + `@tiptap/react`, `@tiptap/starter-kit`, `lucide-react`, `shadcn/ui` (008-product-description-editor)
 - PostgreSQL (Prisma) - storing HTML payload in `Product.description` (currently mapped as String, usually boundless in Postgres). (008-product-description-editor)
+- TypeScript (Next.js 15 + React 19) + Next.js App Router, shadcn/ui, Lucide React, Sonner (009-pos-history)
+- PostgreSQL (qua NestJS backend, sử dụng TypeORM) (009-pos-history)
 
 - Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+) (001-agrix-core-platform)
 
@@ -42,9 +44,9 @@ npm test && npm run lint
 Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+): Follow standard conventions
 
 ## Recent Changes
+- 009-pos-history: Added TypeScript (Next.js 15 + React 19) + Next.js App Router, shadcn/ui, Lucide React, Sonner
 - 008-product-description-editor: Added TypeScript / React 18 / Next.js 14 + `@tiptap/react`, `@tiptap/starter-kit`, `lucide-react`, `shadcn/ui`
 - 007-pos-multi-cart: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 006-pos-cashier-tablet: Added TypeScript (Node.js 20+, React 19) + NestJS 10, Next.js 15 (App Router), TypeORM, shadcn/ui, qrcode.reac
 
 
 <!-- MANUAL ADDITIONS START -->

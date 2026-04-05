@@ -100,6 +100,35 @@ export class AdminUsersController {
     return { success: true, message: 'Đã cập nhật mã PIN thành công' };
   }
 
+  @Post(':id/random-pin')
+  async setRandomPin(@Param('id') id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new Error(`User ${id} not found`);
+
+    let newPin = '';
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 100) {
+      newPin = Math.floor(1000 + Math.random() * 9000).toString(); // always 4 digits
+      const existing = await this.userRepo.findOne({ where: { posPin: newPin } });
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    if (!isUnique) {
+      throw new Error('Cannot generate a unique PIN at this time');
+    }
+
+    user.posPin = newPin;
+    user.pinFailedAttempts = 0;
+    user.pinLockedUntil = null;
+    await this.userRepo.save(user);
+
+    return { success: true, pin: newPin, message: 'Đã cấp mã PIN ngẫu nhiên thành công' };
+  }
+
   @Delete(':id/pin')
   async clearPin(@Param('id') id: string) {
     const user = await this.userRepo.findOne({ where: { id } });

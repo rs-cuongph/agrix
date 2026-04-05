@@ -9,7 +9,8 @@ export type PosProduct = {
   currentStockBase: number;
   imageUrls: string[] | null;
   barcodeEan13: string | null;
-  categoryId: string;
+  categoryId?: string | null;
+  description?: string;
   units: Array<{
     id: string;
     unitName: string;
@@ -142,6 +143,21 @@ export async function getTodayOrders(): Promise<PosOrder[]> {
   const today = new Date().toISOString().slice(0, 10);
   const data = await posProxyGet<{ data: PosOrder[] } | PosOrder[]>(`/orders?date=${today}&limit=100`);
   return Array.isArray(data) ? data : data.data;
+}
+
+export async function getOrderHistory(
+  search?: string,
+  page: number = 1,
+  limit: number = 20
+): Promise<{ data: PosOrder[]; meta: { total: number; page: number; limit: number } }> {
+  const params: Record<string, string> = { page: page.toString(), limit: limit.toString() };
+  if (search) params.search = search;
+  const queryString = new URLSearchParams(params).toString();
+  return posProxyGet<{ data: PosOrder[]; meta: { total: number; page: number; limit: number } }>(`/orders?${queryString}`);
+}
+
+export async function getOrderDetail(id: string): Promise<PosOrder> {
+  return posProxyGet<PosOrder>(`/orders/${id}`);
 }
 
 // ---- Store Settings ----
