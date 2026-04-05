@@ -17,6 +17,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response, Request } from 'express';
 import { ChatbotService } from './chatbot.service';
@@ -33,6 +34,7 @@ export class AIController {
     private readonly knowledgeService: KnowledgeService,
     private readonly sessionService: ChatSessionService,
     private readonly configService: ChatConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   // ===================== PUBLIC ENDPOINTS =====================
@@ -54,6 +56,20 @@ export class AIController {
 
     const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
 
+    // Determine if this is an internal (authenticated) user by verifying JWT.
+    // This is server-side verification — cannot be spoofed by the client.
+    let isInternalUser = false;
+    const authHeader = req.headers?.authorization as string | undefined;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.slice(7);
+        this.jwtService.verify(token);
+        isInternalUser = true;
+      } catch {
+        // Invalid/expired token — treat as public user
+      }
+    }
+
     // Get or create session
     const session = await this.sessionService.getOrCreateSession(
       body.sessionId,
@@ -62,8 +78,8 @@ export class AIController {
       ipAddress,
     );
 
-    // Add user message
-    await this.sessionService.addUserMessage(session.id, body.question, ipAddress);
+    // Add user message. Internal (JWT-authenticated) users bypass the session limit.
+    await this.sessionService.addUserMessage(session.id, body.question, ipAddress, isInternalUser);
 
     // Set SSE headers
     res.setHeader('Content-Type', 'text/event-stream');

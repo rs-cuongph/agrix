@@ -41,18 +41,21 @@ export class ChatSessionService {
 
   /**
    * Add a user message to the session. Enforces rate limit and session limit.
+   * @param isInternalUser - If true (JWT-verified), skip the per-session message limit.
    */
-  async addUserMessage(sessionId: string, content: string, ipAddress?: string): Promise<ChatMessage> {
+  async addUserMessage(sessionId: string, content: string, ipAddress?: string, isInternalUser = false): Promise<ChatMessage> {
     const config = await this.configService.getConfig();
 
-    // Check session message limit
+    // Check session message limit — skipped for authenticated internal users (POS / Admin)
     const session = await this.sessionRepo.findOne({ where: { id: sessionId } });
     if (!session) throw new BadRequestException('Session not found');
 
-    if (session.messageCount >= config.maxMessagesPerSession * 2) {
-      throw new BadRequestException(
-        `Đã đạt giới hạn ${config.maxMessagesPerSession} tin nhắn cho phiên này. Vui lòng mở phiên mới.`,
-      );
+    if (!isInternalUser) {
+      if (session.messageCount >= config.maxMessagesPerSession * 2) {
+        throw new BadRequestException(
+          `Đã đạt giới hạn ${config.maxMessagesPerSession} tin nhắn cho phiên này. Vui lòng mở phiên mới.`,
+        );
+      }
     }
 
     // Rate limit check: max 10 user messages per minute per IP

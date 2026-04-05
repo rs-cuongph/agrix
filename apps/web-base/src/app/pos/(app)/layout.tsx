@@ -28,38 +28,46 @@ export default async function PosLayout({ children }: { children: React.ReactNod
   const user = await getPosUser();
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
-      {/* POS Header */}
-      <header className="flex items-center justify-between px-5 py-3 bg-emerald-950 text-white shrink-0 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-bold tracking-tight">Agrix POS</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <OfflineIndicator />
-          <Link
-            href="/pos/history"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm"
-          >
-            <ClockIcon className="w-5 h-5" />
-            <span className="hidden sm:inline">Lịch sử</span>
-          </Link>
-          {user && (
-            <div className="text-sm text-white/60">
-              {user.fullName || user.username}
+    <>
+      <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+        {/* POS Header */}
+        <header className="flex items-center justify-between px-5 py-3 bg-emerald-950 text-white shrink-0 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Package className="w-5 h-5 text-white" />
             </div>
-          )}
-        </div>
-      </header>
+            <span className="text-lg font-bold tracking-tight">Agrix POS</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <OfflineIndicator />
+            <Link
+              href="/pos/history"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm"
+            >
+              <ClockIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Lịch sử</span>
+            </Link>
+            {user && (
+              <div className="flex items-center gap-2 pl-1 pr-3 py-1 bg-emerald-900/50 rounded-full border border-emerald-800/50">
+                <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-sm font-semibold text-white shadow-sm">
+                  {(user.fullName || user.username).charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm font-medium text-emerald-50">
+                  {user.fullName || user.username}
+                </span>
+              </div>
+            )}
+          </div>
+        </header>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-hidden">
-        {children}
-      </main>
+        {/* Main content */}
+        <main className="flex-1 overflow-hidden">
+          {children}
+        </main>
+      </div>
 
+      {/* Toaster must be OUTSIDE overflow-hidden container */}
       <Toaster richColors position="top-center" toastOptions={{ style: { fontSize: '16px', padding: '10px' } }} />
-    </div>
+    </>
   );
 }

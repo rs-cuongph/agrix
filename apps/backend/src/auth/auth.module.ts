@@ -30,7 +30,7 @@ import { PermissionsService } from './permissions.service';
   ],
   controllers: [AuthController, AdminUsersController],
   providers: [AuthService, PermissionsService, JwtStrategy, RolesGuard, PermissionsGuard],
-  exports: [AuthService, PermissionsService, JwtStrategy, RolesGuard, PermissionsGuard],
+  exports: [AuthService, PermissionsService, JwtStrategy, RolesGuard, PermissionsGuard, JwtModule],
 })
 export class AuthModule {}
 

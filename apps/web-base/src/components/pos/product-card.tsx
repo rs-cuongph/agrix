@@ -21,9 +21,17 @@ export function ProductCard({ product, onClick, onViewDetails }: Props) {
   const imageUrl = product.imageUrls?.[0] ?? null;
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={outOfStock ? -1 : 0}
       onClick={() => !outOfStock && onClick(product)}
-      disabled={outOfStock}
+      onKeyDown={(e) => {
+        if (!outOfStock && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick(product);
+        }
+      }}
+      aria-disabled={outOfStock}
       className={cn(
         "relative flex flex-col bg-white rounded-2xl border-2 overflow-hidden transition-all duration-200 text-left w-full",
         "min-h-[180px] active:scale-[0.97]",
@@ -80,6 +88,6 @@ export function ProductCard({ product, onClick, onViewDetails }: Props) {
           <p className="text-xs text-gray-400">{product.units.length + 1} đơn vị</p>
         )}
       </div>
-    </button>
+    </div>
   );
 }

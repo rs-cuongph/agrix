@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatbotConfig } from './entities/chatbot-config.entity';
@@ -11,7 +12,12 @@ export class ChatConfigService implements OnModuleInit {
   constructor(
     @InjectRepository(ChatbotConfig)
     private readonly configRepo: Repository<ChatbotConfig>,
+    private readonly configService: ConfigService,
   ) {}
+
+  private getAesKey(): string {
+    return this.configService.get<string>('AES_ENCRYPTION_KEY') as string;
+  }
 
   /**
    * On module init, migrate any existing plain text keys to encrypted format.
@@ -24,13 +30,13 @@ export class ChatConfigService implements OnModuleInit {
       let needsSave = false;
 
       if (config.primaryApiKey && !isEncrypted(config.primaryApiKey)) {
-        config.primaryApiKey = encrypt(config.primaryApiKey);
+        config.primaryApiKey = encrypt(config.primaryApiKey, this.getAesKey());
         needsSave = true;
         this.logger.log('Migrated primary API key to encrypted format');
       }
 
       if (config.secondaryApiKey && !isEncrypted(config.secondaryApiKey)) {
-        config.secondaryApiKey = encrypt(config.secondaryApiKey);
+        config.secondaryApiKey = encrypt(config.secondaryApiKey, this.getAesKey());
         needsSave = true;
         this.logger.log('Migrated secondary API key to encrypted format');
       }
@@ -96,10 +102,10 @@ export class ChatConfigService implements OnModuleInit {
 
     // Encrypt API keys before saving
     if (updates.primaryApiKey !== undefined) {
-      config.primaryApiKey = updates.primaryApiKey ? encrypt(updates.primaryApiKey) : updates.primaryApiKey;
+      config.primaryApiKey = updates.primaryApiKey ? encrypt(updates.primaryApiKey, this.getAesKey()) : updates.primaryApiKey;
     }
     if (updates.secondaryApiKey !== undefined) {
-      config.secondaryApiKey = updates.secondaryApiKey ? encrypt(updates.secondaryApiKey) : updates.secondaryApiKey;
+      config.secondaryApiKey = updates.secondaryApiKey ? encrypt(updates.secondaryApiKey, this.getAesKey()) : updates.secondaryApiKey;
     }
 
     const saved = await this.configRepo.save(config);
@@ -139,10 +145,10 @@ export class ChatConfigService implements OnModuleInit {
     const decrypted = { ...config } as ChatbotConfig;
     try {
       if (decrypted.primaryApiKey && isEncrypted(decrypted.primaryApiKey)) {
-        decrypted.primaryApiKey = decrypt(decrypted.primaryApiKey);
+        decrypted.primaryApiKey = decrypt(decrypted.primaryApiKey, this.getAesKey());
       }
       if (decrypted.secondaryApiKey && isEncrypted(decrypted.secondaryApiKey)) {
-        decrypted.secondaryApiKey = decrypt(decrypted.secondaryApiKey);
+        decrypted.secondaryApiKey = decrypt(decrypted.secondaryApiKey, this.getAesKey());
       }
     } catch (error) {
       this.logger.error('Failed to decrypt API keys', error);

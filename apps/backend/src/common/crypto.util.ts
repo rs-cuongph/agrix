@@ -8,10 +8,9 @@ const ENCODING: BufferEncoding = 'hex';
  * Get AES key from environment.
  * Must be 32 bytes (64 hex characters) for AES-256.
  */
-function getKey(): Buffer {
-  const key = process.env.AES_ENCRYPTION_KEY;
+function getKey(key: string): Buffer {
   if (!key) {
-    throw new Error('AES_ENCRYPTION_KEY environment variable is not set. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+    throw new Error('AES encryption key string not provided. Must be 32 bytes (64 hex characters) for AES-256.');
   }
   return Buffer.from(key, 'hex');
 }
@@ -20,8 +19,8 @@ function getKey(): Buffer {
  * Encrypt a plaintext string using AES-256-GCM.
  * Returns: iv:authTag:ciphertext (all hex-encoded)
  */
-export function encrypt(plaintext: string): string {
-  const key = getKey();
+export function encrypt(plaintext: string, keyStr: string): string {
+  const key = getKey(keyStr);
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
@@ -38,8 +37,8 @@ export function encrypt(plaintext: string): string {
  * Decrypt a string encrypted by encrypt().
  * Input format: iv:authTag:ciphertext (all hex-encoded)
  */
-export function decrypt(encryptedData: string): string {
-  const key = getKey();
+export function decrypt(encryptedData: string, keyStr: string): string {
+  const key = getKey(keyStr);
   const parts = encryptedData.split(':');
 
   if (parts.length !== 3) {

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { KnowledgeService } from './knowledge.service';
 import { ChatConfigService } from './chat-config.service';
 
@@ -19,6 +20,7 @@ export class ChatbotService {
   constructor(
     private readonly knowledgeService: KnowledgeService,
     private readonly configService: ChatConfigService,
+    private readonly nestConfigService: ConfigService,
   ) {}
 
   /**
@@ -164,7 +166,7 @@ export class ChatbotService {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
         messages,
         max_tokens: 1024,
         temperature: 0.3,
@@ -190,7 +192,7 @@ export class ChatbotService {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
         messages,
         max_tokens: 1024,
         temperature: 0.3,
@@ -235,7 +237,7 @@ export class ChatbotService {
   private async callGemini(messages: LLMMessage[], apiKey: string): Promise<string> {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: this.nestConfigService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash' });
 
     // Convert messages to Gemini format
     const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
@@ -255,7 +257,7 @@ export class ChatbotService {
   ): AsyncGenerator<{ type: 'token' | 'done'; data: string }> {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: this.nestConfigService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash' });
 
     const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
     const userMessage = messages.find((m) => m.role === 'user')?.content || '';

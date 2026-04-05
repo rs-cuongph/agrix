@@ -10,6 +10,7 @@ import { ChatbotService } from './chatbot.service';
 import { ChatSessionService } from './chat-session.service';
 import { ChatConfigService } from './chat-config.service';
 import { AIController } from './ai.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AIController } from './ai.controller';
       ChatMessage,
       ChatbotConfig,
     ]),
+    AuthModule,
   ],
   controllers: [AIController],
   providers: [KnowledgeService, ChatbotService, ChatSessionService, ChatConfigService],
