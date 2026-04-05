@@ -10,16 +10,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 export function PosUserMenu({ user }: { user: { fullName?: string; username: string } }) {
@@ -68,28 +67,30 @@ export function PosUserMenu({ user }: { user: { fullName?: string; username: str
             Tài khoản
           </div>
           
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="w-full flex items-center gap-2 px-2 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors text-left">
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="w-full flex items-center gap-2 px-2 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors text-left outline-none focus:outline-none">
                 <LogOut className="w-4 h-4" />
                 Đăng xuất POS
               </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Xác nhận đăng xuất</AlertDialogTitle>
-                <AlertDialogDescription>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Xác nhận đăng xuất</DialogTitle>
+                <DialogDescription>
                   Bạn sắp đăng xuất khỏi ca làm việc hiện tại trên máy POS này. Bạn có chắc chắn muốn tiếp tục không?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700">
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-2 sm:justify-end">
+                <DialogClose asChild>
+                  <Button variant="outline">Hủy</Button>
+                </DialogClose>
+                <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700">
                   {loading ? "Đang xử lý..." : "Đăng xuất"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </PopoverContent>
     </Popover>

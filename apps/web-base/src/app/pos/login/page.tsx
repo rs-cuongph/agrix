@@ -122,7 +122,7 @@ export default function PosLoginPage() {
           )}
         </div>
       ) : (
-        <div className="w-250 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-300 outline-none">
+        <div className="w-full max-w-sm flex flex-col items-center">
           <button
             onClick={() => { setSelectedUser(null); setPin(""); }}
             className="mb-8 flex items-center gap-2 text-white/60 hover:text-white transition-colors outline-none focus:outline-none"
@@ -131,7 +131,7 @@ export default function PosLoginPage() {
           </button>
 
           <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center text-white text-3xl font-bold uppercase tracking-wider mb-4 border-4 border-emerald-500/30 shadow-xl">
+            <div className="w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center text-white text-3xl font-bold uppercase tracking-wider mb-4 ring-0 outline-none">
               {selectedUser.fullName?.charAt(0) || selectedUser.username.charAt(0)}
             </div>
             <p className="text-white text-xl font-medium">{selectedUser.fullName}</p>
@@ -159,7 +159,7 @@ export default function PosLoginPage() {
                 }}
                 disabled={loading || (!d && d !== "0")}
                 className={cn(
-                  "aspect-square flex items-center justify-center rounded-xl text-white text-3xl font-semibold transition-all duration-150 active:scale-95 select-none bg-white/10 hover:bg-white/20 border border-white/5 outline-none focus:outline-none appearance-none cursor-pointer",
+                  "aspect-square flex items-center justify-center rounded-xl text-white text-3xl font-semibold transition-all duration-150 active:scale-95 select-none bg-white/10 hover:bg-white/20 outline-none focus:outline-none appearance-none cursor-pointer",
                   d === "⌫" ? "" : d ? "shadow-sm" : "invisible"
                 )}
               >
