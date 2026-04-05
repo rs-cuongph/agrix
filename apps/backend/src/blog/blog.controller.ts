@@ -20,6 +20,9 @@ import { UserRole } from '../auth/entities/user.entity';
 import { BlogService } from './blog.service';
 import { StorageService } from '../storage/storage.service';
 import { v4 as uuidv4 } from 'uuid';
+import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/create-category.dto';
+import { CreateTagDto, UpdateTagDto } from './dto/create-tag.dto';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
@@ -95,14 +98,14 @@ export class BlogController {
   @Post('admin/posts')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async create(@Body() body: any, @Req() req: any) {
+  async create(@Body() body: CreatePostDto, @Req() req: any) {
     return this.blogService.create(body, req.user.id);
   }
 
   @Put('admin/posts/:id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async update(@Param('id') id: string, @Body() body: any) {
+  async update(@Param('id') id: string, @Body() body: UpdatePostDto) {
     return this.blogService.update(id, body);
   }
 
@@ -148,14 +151,14 @@ export class BlogController {
   @Post('admin/categories')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createCategory(@Body() body: { name: string; slug?: string; description?: string }) {
+  async createCategory(@Body() body: CreateCategoryDto) {
     return this.blogService.createCategory(body);
   }
 
   @Put('admin/categories/:id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async updateCategory(@Param('id') id: string, @Body() body: any) {
+  async updateCategory(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
     return this.blogService.updateCategory(id, body);
   }
 
@@ -178,14 +181,14 @@ export class BlogController {
   @Post('admin/tags')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createTag(@Body() body: { name: string; slug?: string }) {
+  async createTag(@Body() body: CreateTagDto) {
     return this.blogService.createTag(body);
   }
 
   @Put('admin/tags/:id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async updateTag(@Param('id') id: string, @Body() body: any) {
+  async updateTag(@Param('id') id: string, @Body() body: UpdateTagDto) {
     return this.blogService.updateTag(id, body);
   }
 

@@ -20,12 +20,18 @@ import { PermissionsService } from './permissions.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'fallback-secret',
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRATION', '24h') as any,
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        if (!secret && process.env.NODE_ENV === 'production') {
+          throw new Error('JWT_SECRET environment variable is required in production');
+        }
+        return {
+          secret: secret || 'dev-only-secret',
+          signOptions: {
+            expiresIn: configService.get<string>('JWT_EXPIRATION', '24h') as any,
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController, AdminUsersController],

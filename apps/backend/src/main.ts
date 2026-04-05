@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -15,7 +16,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.enableCors();
+  app.use(helmet());
+  app.enableCors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3002',
+    credentials: true,
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('APP_PORT') || 3000;

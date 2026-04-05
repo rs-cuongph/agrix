@@ -25,8 +25,8 @@ export default function ChatWrapper() {
     statusPromise.then(setEnabled);
   }, []);
 
-  // Don't render chat widget on admin pages
-  if (pathname.startsWith('/admin')) {
+  // Don't render chat widget on admin or POS pages
+  if (pathname.startsWith('/admin') || pathname.startsWith('/pos/login')) {
     return null;
   }
 

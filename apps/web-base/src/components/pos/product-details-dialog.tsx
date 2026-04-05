@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import { Package } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import DOMPurify from "isomorphic-dompurify";
 
 type Props = {
   product: PosProduct | null;
@@ -79,7 +80,7 @@ export function ProductDetailsDialog({ product, open, onClose }: Props) {
                 {product.description ? (
                   <div
                     className="text-gray-600 leading-relaxed text-sm [&>p]:mb-1 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5 [&>h2]:text-base [&>h2]:font-bold [&>h2]:mt-2 [&>h3]:font-semibold [&>h3]:mt-1 [&_a]:text-emerald-600"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
                   />
                 ) : (
                   <p className="text-gray-500 italic text-sm">

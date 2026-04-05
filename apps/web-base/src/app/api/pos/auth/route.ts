@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE = process.env.API_BASE_URL || "http://localhost:3000/api/v1";
 
 export async function POST(req: NextRequest) {
-  const { pin } = await req.json();
-  if (!pin) return NextResponse.json({ error: "PIN required" }, { status: 400 });
+  const { pin, username } = await req.json();
+  if (!pin || !username) return NextResponse.json({ error: "PIN and Username required" }, { status: 400 });
 
   const res = await fetch(`${API_BASE}/auth/pos-login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pin }),
+    body: JSON.stringify({ pin, username }),
   });
 
   const data = await res.json();

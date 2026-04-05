@@ -17,6 +17,10 @@ export class LoginDto {
 export class PosLoginDto {
   @IsString()
   @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
   @Length(4, 6)
   pin: string;
 }
@@ -33,9 +37,14 @@ export class AuthController {
     return this.authService.login(loginDto.username, loginDto.password);
   }
 
+  @Get('pos-users')
+  async getPosUsers() {
+    return this.authService.getPosUsers();
+  }
+
   @Post('pos-login')
   async posLogin(@Body() dto: PosLoginDto) {
-    return this.authService.posLogin(dto.pin);
+    return this.authService.posLogin(dto.username, dto.pin);
   }
 
   @Get('me')

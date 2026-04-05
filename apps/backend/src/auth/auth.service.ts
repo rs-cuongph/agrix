@@ -43,21 +43,25 @@ export class AuthService {
     };
   }
 
-  async posLogin(pin: string) {
-    const now = new Date();
-
-    // Find all eligible POS users (ADMIN or CASHIER)
+  async getPosUsers() {
     const users = await this.userRepository.find({
       where: [{ role: UserRole.ADMIN }, { role: UserRole.CASHIER }],
+      select: ['id', 'username', 'fullName', 'role', 'isActive'],
+    });
+    return users.filter(u => u.isActive);
+  }
+
+  async posLogin(username: string, pin: string) {
+    const now = new Date();
+
+    const user = await this.userRepository.findOne({
+      where: { username },
     });
 
-    const user = users.find((u) => u.posPin === pin && u.isActive);
-
-    if (!user) {
-      throw new UnauthorizedException('Mã PIN không đúng');
+    if (!user || (![UserRole.ADMIN, UserRole.CASHIER].includes(user.role)) || !user.isActive) {
+      throw new UnauthorizedException('Tài khoản không hợp lệ');
     }
 
-    // Check lockout
     if (user.pinLockedUntil && user.pinLockedUntil > now) {
       const minutesLeft = Math.ceil(
         (user.pinLockedUntil.getTime() - now.getTime()) / 60000,
@@ -65,6 +69,17 @@ export class AuthService {
       throw new ForbiddenException(
         `Tài khoản bị khoá tạm thời. Thử lại sau ${minutesLeft} phút.`,
       );
+    }
+
+    if (user.posPin !== pin) {
+      const attempts = (user.pinFailedAttempts || 0) + 1;
+      const update: Partial<User> = { pinFailedAttempts: attempts };
+      if (attempts >= 5) {
+        update.pinLockedUntil = new Date(Date.now() + 5 * 60 * 1000); // lock 5 mins
+        update.pinFailedAttempts = 0;
+      }
+      await this.userRepository.update(user.id, update);
+      throw new UnauthorizedException('Mã PIN không đúng');
     }
 
     // Reset failed attempts on success
@@ -88,21 +103,6 @@ export class AuthService {
         role: user.role,
       },
     };
-  }
-
-  async recordPinFailure(pin: string) {
-    const users = await this.userRepository.find({
-      where: [{ role: UserRole.ADMIN }, { role: UserRole.CASHIER }],
-    });
-    const user = users.find((u) => u.posPin === pin && u.isActive);
-    if (!user) return;
-    const attempts = (user.pinFailedAttempts || 0) + 1;
-    const update: Partial<User> = { pinFailedAttempts: attempts };
-    if (attempts >= 5) {
-      update.pinLockedUntil = new Date(Date.now() + 5 * 60 * 1000);
-      update.pinFailedAttempts = 0;
-    }
-    await this.userRepository.update(user.id, update);
   }
 
   async createUser(

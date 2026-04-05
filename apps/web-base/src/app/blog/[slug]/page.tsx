@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ArrowUpRight, BookOpen, Calendar, User, Tag, Package, Clock, Share2, Facebook, Twitter, Linkedin, ChevronRight } from 'lucide-react';
 import Navbar from '@/components/landing/navbar';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface Product {
   id: string;
@@ -198,7 +199,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   [&>img]:w-full [&>img]:rounded-2xl [&>img]:shadow-lg [&>img]:my-12
                   [&_a]:text-emerald-600 [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-emerald-700 [&_a]:font-medium
                   [&_strong]:font-semibold [&_strong]:text-gray-900"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
               />
             </div>
 
