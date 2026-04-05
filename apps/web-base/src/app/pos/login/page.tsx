@@ -122,7 +122,7 @@ export default function PosLoginPage() {
           )}
         </div>
       ) : (
-        <div className="w-full max-w-sm flex flex-col items-center">
+        <div className="w-full max-w-sm flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500 transform-gpu" style={{ WebkitBackfaceVisibility: "hidden", outline: "none" }}>
           <button
             onClick={() => { setSelectedUser(null); setPin(""); }}
             className="mb-8 flex items-center gap-2 text-white/60 hover:text-white transition-colors outline-none focus:outline-none"
