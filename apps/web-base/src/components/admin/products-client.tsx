@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Power, RefreshCw } from "lucide-react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { ExportBarcodeButton } from "./export-barcode-button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -60,6 +61,7 @@ export function ProductsClient({
           className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
           <Plus className="w-4 h-4" /> Tạo sản phẩm
         </button>
+        <ExportBarcodeButton />
         <button onClick={() => router.refresh()}
           className="inline-flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors">
           <RefreshCw className="w-4 h-4" /> Làm mới
