@@ -13,11 +13,16 @@ export default function ChatWrapper() {
   const pathname = usePathname();
   const [enabled, setEnabled] = useState<boolean | null>(null);
 
+let statusPromise: Promise<boolean> | null = null;
+
   useEffect(() => {
-    fetch('/api/chat/status')
-      .then((res) => res.json())
-      .then((data) => setEnabled(data.enabled))
-      .catch(() => setEnabled(false));
+    if (!statusPromise) {
+      statusPromise = fetch('/api/chat/status')
+        .then((res) => res.json())
+        .then((data) => data.enabled)
+        .catch(() => false);
+    }
+    statusPromise.then(setEnabled);
   }, []);
 
   // Don't render chat widget on admin pages

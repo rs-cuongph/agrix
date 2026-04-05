@@ -1,36 +1,33 @@
-# Implementation Plan: POS Cashier Tablet App
+# Implementation Plan: POS Enhancements — orderCode, PIN Management, Bank Config & Webhook
 
-**Branch**: `006-pos-cashier-tablet` | **Date**: 2026-04-04 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/006-pos-cashier-tablet/spec.md`
+**Branch**: `006-pos-cashier-tablet` | **Date**: 2026-04-05 | **Spec**: [spec.md](file:///Users/cuongph/Workspace/agrix/specs/006-pos-cashier-tablet/spec.md)
 
 ## Summary
 
-Build a tablet-optimized POS (Point of Sale) cashier interface as a PWA within the existing Next.js `apps/web-base` codebase. The app features a split-view layout (product grid | cart + checkout), large touch targets for elderly users, barcode scanner support, VietQR payment, offline-first capability, and thermal printer integration. Leverages existing backend APIs, shadcn/ui, and Agrix Emerald design system.
+Implement 4 new sub-features decided during the clarification sessions:
+
+1. **`orderCode` — Mã đơn hàng ngắn gọn**: Thêm cột `orderCode` (auto-generated, VD: `DH839124`) vào bảng `orders`. Dùng thay UUID trên VietQR memo, giao diện POS, và Admin Order Detail.
+2. **PIN Management UI**: Thêm API endpoint và UI trên Admin Settings để Admin xem/cấp/đổi mã PIN cho nhân viên. (Entity `posPin` đã có sẵn trên User).
+3. **Bank Config trong StoreSettings**: Thêm 3 cột bank info (`bankBin`, `bankAccountNo`, `bankAccountName`) vào entity `StoreSettings`. Cập nhật Admin Settings UI để nhập vào. VietQR component sẽ tự đọc từ DB thay vì `.env`.
+4. **Webhook Bank Transfer**: Endpoint public `POST /api/v1/orders/webhook/bank-transfer` để Google App Script gọi khi phát hiện chuyển khoản thành công. Tự động cập nhật status Order → `COMPLETED`.
 
 ## Technical Context
 
-**Language/Version**: Next.js 15 (App Router), React 19, TypeScript
-**Primary Dependencies**: shadcn/ui, lucide-react, sonner (toast), existing `adminApiCall` proxy pattern
-**Storage**: IndexedDB (offline cart/orders), Service Worker (caching)
-**Testing**: Manual browser testing on tablet Chrome
-**Target Platform**: PWA on Chrome Android tablet (≥ 10 inch, landscape)
-**Project Type**: Next.js Web App (new route group within existing `apps/web-base`)
-**Performance Goals**: Search results < 0.5s, checkout flow < 30s for 3-item order
-**Constraints**: Min touch target 48x48px, min text 16px, offline-capable
-**Scale/Scope**: ~10 new pages/components, reusing existing API infrastructure
+**Language/Version**: TypeScript (Node.js 20+, React 19)
+**Primary Dependencies**: NestJS 10, Next.js 15 (App Router), TypeORM, shadcn/ui, qrcode.react
+**Storage**: PostgreSQL (UUID primary keys)
+**Target Platform**: Web (PWA on Chrome Android tablet)
+**Project Type**: Fullstack web application (monorepo)
 
 ## Constitution Check
 
-*GATE: Passed*
-
 | Gate | Status | Notes |
 |------|--------|-------|
-| V. Simple & Intuitive UI | ✅ | Tablet POS with large targets, Emerald palette, no emoji |
-| shadcn/ui Priority | ✅ | Using shadcn Button, Input, Dialog, Tabs as base primitives |
-| CRUD Toast Notifications | ✅ | Sonner toast on every add-to-cart, checkout, error |
-| No Emoji Icons | ✅ | Lucide-react icons only |
-| I. Offline-First | ✅ | IndexedDB + Service Worker for offline checkout |
-| III. Modular Monolith | ✅ | POS routes scoped to `/pos/*`, decoupled from admin |
+| Modular Monolith | ✅ PASS | Changes stay within existing `orders`, `auth`, `common` modules |
+| No Emoji Icons | ✅ PASS | All icons from Lucide-react |
+| CRUD Toast | ✅ PASS | PIN update & settings save show toasts |
+| shadcn/ui Priority | ✅ PASS | PIN & bank settings UI use shadcn Input, Button, Dialog |
+| Traceability | ✅ PASS | Webhook logs via `transactionRef` field |
 
 ## Project Structure
 
@@ -39,79 +36,173 @@ Build a tablet-optimized POS (Point of Sale) cashier interface as a PWA within t
 ```text
 specs/006-pos-cashier-tablet/
 ├── plan.md              # This file
-├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-└── tasks.md             # Phase 2 output (/speckit.tasks)
+├── spec.md              # Feature spec with clarifications
+├── research.md          # Phase 0 research
+├── data-model.md        # Phase 1 data model (to be updated)
+└── tasks.md             # Phase 2 task breakdown
 ```
 
-### Source Code (repository root)
+### Source Code Changes
 
 ```text
+apps/backend/src/
+├── orders/
+│   ├── entities/order.entity.ts        # [MODIFY] Add orderCode + status fields
+│   ├── orders.service.ts               # [MODIFY] Auto-generate orderCode on create, add webhook handler
+│   ├── orders.controller.ts            # [MODIFY] Add webhook endpoint
+│   └── orders.module.ts                # [MODIFY] Import ConfigModule
+├── auth/
+│   ├── admin-users.controller.ts       # [MODIFY] Add PUT :id/pin endpoint
+│   └── entities/user.entity.ts         # (no changes, posPin already exists)
+└── common/
+    ├── entities/store-settings.entity.ts  # [MODIFY] Add 3 bank columns
+    └── store-settings.service.ts          # (no changes needed, upsert is generic)
+
 apps/web-base/src/
-├── app/
-│   └── pos/                        # NEW: POS route group
-│       ├── layout.tsx              # POS layout (full-screen, no admin sidebar)
-│       ├── page.tsx                # Main POS sale screen (split-view)
-│       ├── login/
-│       │   └── page.tsx            # POS login (PIN-based or simple auth)
-│       └── history/
-│           └── page.tsx            # Order history within shift
 ├── components/
-│   ├── pos/                        # NEW: POS-specific components
-│   │   ├── product-grid.tsx        # Left panel: product grid/list with category tabs
-│   │   ├── product-card.tsx        # Single product card (large, touchable)
-│   │   ├── search-bar.tsx          # Top search bar with barcode listener
-│   │   ├── category-tabs.tsx       # Horizontal category filter tabs
-│   │   ├── cart-panel.tsx          # Right panel: cart + totals
-│   │   ├── cart-item.tsx           # Single cart item row (+/- buttons)
-│   │   ├── customer-picker.tsx     # Customer search/attach popup
-│   │   ├── unit-picker-dialog.tsx  # Unit selection dialog (Thùng/Chai)
-│   │   ├── checkout-screen.tsx     # Full-screen checkout overlay
-│   │   ├── payment-cash.tsx        # Cash payment: numpad + change calc
-│   │   ├── payment-qr.tsx          # Bank transfer: VietQR display
-│   │   ├── success-screen.tsx      # Order success animation
-│   │   ├── offline-indicator.tsx   # Header offline status badge
-│   │   └── order-detail-sheet.tsx  # Bottom sheet for order history detail
-│   └── ui/                         # Existing shadcn/ui (may add Dialog, Sheet, Badge)
-├── lib/
-│   ├── pos/                        # NEW: POS business logic
-│   │   ├── cart-store.ts           # Cart state management (React context or zustand)
-│   │   ├── offline-store.ts        # IndexedDB wrapper for offline orders
-│   │   ├── barcode-listener.ts     # Keyboard-emulation barcode hook
-│   │   └── pos-api.ts             # POS-specific API calls (via adminApiCall proxy)
-│   └── api.ts                     # Existing (reuse)
-└── public/
-    └── manifest.json              # PWA manifest (update if needed)
+│   ├── admin/
+│   │   ├── settings-client.tsx         # [MODIFY] Add PIN mgmt tab + Bank info tab
+│   │   └── orders-client.tsx           # [MODIFY] Show orderCode instead of UUID
+│   └── pos/
+│       ├── payment-qr.tsx              # [MODIFY] Include orderCode in VietQR memo
+│       └── checkout-screen.tsx         # [MODIFY] Pass orderCode to PaymentQR
+└── lib/pos/pos-api.ts                  # [MODIFY] Accept orderCode in create order flow
 ```
 
-**Structure Decision**: POS lives as a separate route group (`/pos/*`) within web-base, sharing shadcn/ui components and API infrastructure but having its own layout (no admin sidebar — full-screen POS interface). POS components are isolated in `components/pos/` to avoid polluting admin components.
+---
 
-## Key Design Decisions
+## Proposed Changes
 
-### 1. Cart State Management
-Use **React Context + useReducer** for cart state (no additional library needed). Cart is ephemeral — lives only in memory during the sale session. If offline, pending orders are persisted to IndexedDB.
+### Component 1: Order Entity — `orderCode` field
 
-### 2. Barcode Scanner Integration
-A custom React hook `useBarcodeListener` that listens for rapid keyboard input (scanner emits characters quickly) and auto-triggers product search when a complete barcode is detected (terminated by Enter key).
+#### [MODIFY] [order.entity.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/orders/entities/order.entity.ts)
 
-### 3. Offline Strategy (Phase 2+)
-- **Product catalog**: Cached via Service Worker on first load, refreshed when online.
-- **Pending orders**: Stored in IndexedDB with idempotency key.
-- **Background sync**: When online, iterate pending orders and POST to backend API.
-- **Indicator**: `offline-indicator.tsx` shows real-time connection status in header.
+- Add `orderCode` column: `VARCHAR(10)`, unique, NOT NULL
+- Add `OrderStatus` enum: `PENDING`, `COMPLETED`, `CANCELLED`
+- Add `status` column with default `COMPLETED` (Cash) or `PENDING` (Bank Transfer)
+- Auto-generate `orderCode` format: `DH` + 6 random digits (e.g., `DH839124`)
 
-### 4. Layout: Split-View
-- CSS Grid: `grid-template-columns: 1fr 400px` (product area flexible, cart fixed width).
-- Cart panel sticks to viewport height with `overflow-y-auto` for scrollable items.
-- Total amount pinned at bottom of cart panel (always visible).
+#### [MODIFY] [orders.service.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/orders/orders.service.ts)
 
-### 5. New shadcn/ui Components Needed
-- **Dialog** (already have) — for unit picker, customer picker
-- **Sheet** (need to add) — for order history detail bottom sheet
-- **Badge** (need to add) — for stock status, offline indicator
-- **Separator** (nice to have) — visual dividers
+- Generate `orderCode` in `createOrder()` before saving
+- Set `status` based on `paymentMethod`: CASH → `COMPLETED`, BANK_TRANSFER → `PENDING`
+- Add `confirmBankTransfer(orderCode, amountPaid, transactionRef)` method
+- Update `findOrders()` search to also match on `orderCode`
 
-## Complexity Tracking
+#### [MODIFY] [orders.controller.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/orders/orders.controller.ts)
 
-No constitution violations needing tracking.
+- Add `POST webhook/bank-transfer` endpoint (NO AuthGuard — uses webhook secret instead)
+- Validate `x-webhook-secret` header against env var `WEBHOOK_SECRET`
+- Return structured response: `{ success: boolean, orderCode, newStatus }`
+
+#### [MODIFY] [orders.module.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/orders/orders.module.ts)
+
+- Import `ConfigModule` for webhook secret env access
+
+---
+
+### Component 2: Admin PIN Management
+
+#### [MODIFY] [admin-users.controller.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/auth/admin-users.controller.ts)
+
+- Add `PUT :id/pin` endpoint: accepts `{ pin: string }`, validates 4-6 digits, saves to `user.posPin`
+- Add `DELETE :id/pin` endpoint: clears PIN (sets `posPin = null`)
+
+#### [MODIFY] [settings-client.tsx](file:///Users/cuongph/Workspace/agrix/apps/web-base/src/components/admin/settings-client.tsx)
+
+- In "Tài khoản" (Accounts) tab, add a "Set PIN" / "Change PIN" button per user row
+- Dialog with PIN input (masked, 4-6 digits) + confirm button
+- Show "Đã cấp PIN" badge on users who have one
+
+---
+
+### Component 3: Bank Config in StoreSettings
+
+#### [MODIFY] [store-settings.entity.ts](file:///Users/cuongph/Workspace/agrix/apps/backend/src/common/entities/store-settings.entity.ts)
+
+- Add 3 nullable columns:
+  - `bankBin` (VARCHAR 20) — Mã BIN ngân hàng (VD: `970422` = MBBank)
+  - `bankAccountNo` (VARCHAR 30)
+  - `bankAccountName` (VARCHAR 100)
+
+#### [MODIFY] [settings-client.tsx](file:///Users/cuongph/Workspace/agrix/apps/web-base/src/components/admin/settings-client.tsx)
+
+- Add "Thanh toán" (Payment) tab or section in existing Settings page
+- 3 input fields: Bank BIN, Số tài khoản, Tên chủ tài khoản
+- Save via existing `PUT /admin/settings` endpoint (generic upsert)
+
+---
+
+### Component 4: Frontend Updates
+
+#### [MODIFY] [payment-qr.tsx](file:///Users/cuongph/Workspace/agrix/apps/web-base/src/components/pos/payment-qr.tsx)
+
+- Accept `orderCode` prop
+- Use `orderCode` in VietQR memo: `addInfo=DH839124` instead of generic text
+
+#### [MODIFY] [orders-client.tsx](file:///Users/cuongph/Workspace/agrix/apps/web-base/src/components/admin/orders-client.tsx)
+
+- Display `orderCode` (e.g., `DH839124`) in "Mã đơn" column instead of truncated UUID
+- Show Order `status` badge (PENDING/COMPLETED) alongside payment method badge
+
+---
+
+## Environment Variables (additions to `.env`)
+
+```env
+# Webhook Security
+WEBHOOK_SECRET=change-this-to-a-random-secret-string
+```
+
+## Database Migration Summary
+
+| Table | Column | Type | Notes |
+|-------|--------|------|-------|
+| `orders` | `order_code` | VARCHAR(10) UNIQUE NOT NULL | Auto-generated `DH` + 6 digits |
+| `orders` | `status` | ENUM('PENDING','COMPLETED','CANCELLED') | Default: COMPLETED |
+| `store_settings` | `bank_bin` | VARCHAR(20) NULL | VietQR bank BIN |
+| `store_settings` | `bank_account_no` | VARCHAR(30) NULL | Số tài khoản |
+| `store_settings` | `bank_account_name` | VARCHAR(100) NULL | Tên chủ TK |
+
+## Webhook API Contract
+
+```
+POST /api/v1/orders/webhook/bank-transfer
+Headers:
+  x-webhook-secret: <WEBHOOK_SECRET from .env>
+  Content-Type: application/json
+
+Body:
+{
+  "orderCode": "DH839124",          // Required - parsed from transfer content
+  "amountPaid": 120000,             // Required - actual amount received
+  "transactionRef": "FT26040512345", // Optional - bank transaction ref
+  "rawContent": "NGUYEN VAN A TT DH839124", // Optional - raw transfer memo
+  "paymentDate": "2026-04-05T12:00:00Z"     // Optional
+}
+
+Response (200):
+{
+  "success": true,
+  "orderCode": "DH839124",
+  "newStatus": "COMPLETED"
+}
+
+Response (401): { "message": "Invalid webhook secret" }
+Response (404): { "message": "Order not found" }
+Response (409): { "message": "Order already completed" }
+```
+
+## Verification Plan
+
+### Automated Tests
+1. `curl` the webhook endpoint with valid/invalid secrets → verify 401 vs 200
+2. Create a BANK_TRANSFER order → verify status is PENDING
+3. Call webhook with matching orderCode → verify status changes to COMPLETED
+4. Call webhook with duplicate transactionRef → verify 409
+
+### Manual Verification
+1. Open Admin Settings → verify PIN set/change works for each user
+2. Open Admin Settings → verify Bank config saves and reflects on POS QR
+3. Create an order with Bank Transfer on POS → verify QR shows orderCode in memo
+4. Open Admin Orders → verify orderCode displayed and searchable

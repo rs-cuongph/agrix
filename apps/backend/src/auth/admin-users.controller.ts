@@ -85,6 +85,32 @@ export class AdminUsersController {
     return { deactivated: true };
   }
 
+  @Put(':id/pin')
+  async setPin(@Param('id') id: string, @Body() body: { pin: string }) {
+    const { pin } = body;
+    if (!pin || !/^\d{4}$/.test(pin)) {
+      throw new Error('Mã PIN phải là đúng 4 chữ số');
+    }
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new Error(`User ${id} not found`);
+    user.posPin = pin;
+    user.pinFailedAttempts = 0;
+    user.pinLockedUntil = null;
+    await this.userRepo.save(user);
+    return { success: true, message: 'Đã cập nhật mã PIN thành công' };
+  }
+
+  @Delete(':id/pin')
+  async clearPin(@Param('id') id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) throw new Error(`User ${id} not found`);
+    user.posPin = null;
+    user.pinFailedAttempts = 0;
+    user.pinLockedUntil = null;
+    await this.userRepo.save(user);
+    return { success: true, message: 'Đã xóa mã PIN' };
+  }
+
   // --- Permissions ---
 
   @Get('permissions')

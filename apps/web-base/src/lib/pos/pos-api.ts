@@ -33,6 +33,8 @@ export type PosCustomer = {
 
 export type PosOrder = {
   id: string;
+  orderCode: string;
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
   customerId: string | null;
   customer?: PosCustomer;
   totalAmount: number;
@@ -84,7 +86,7 @@ async function posProxyGet<T>(path: string): Promise<T> {
 
 export async function searchProducts(query: string, categoryId?: string): Promise<PosProduct[]> {
   const params: Record<string, string> = { search: query, isActive: "true", limit: "50" };
-  if (categoryId) params.categoryId = categoryId;
+  if (categoryId) params.category = categoryId;
   const queryString = new URLSearchParams(params).toString();
   const data = await posProxyGet<{ data: PosProduct[] } | PosProduct[]>(`/products?${queryString}`);
   return Array.isArray(data) ? data : data.data;
@@ -152,5 +154,5 @@ export type StoreSettings = {
 };
 
 export async function getStoreSettings(): Promise<StoreSettings> {
-  return posProxyGet<StoreSettings>("/settings");
+  return posProxyGet<StoreSettings>("/public/settings");
 }

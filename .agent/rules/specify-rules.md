@@ -1,6 +1,6 @@
 # agrix Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-04
+Auto-generated from all feature plans. Last updated: 2026-04-05
 
 ## Active Technologies
 - TypeScript 5.x, React 18, Next.js 14 (App Router) + next, react, shadcn/ui, tailwindcss, lucide-reac (001-agrix-core-platform)
@@ -18,6 +18,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-04
 - Next.js (app router), React, TypeScrip + shadcn/ui, `lucide-react` (005-group-menus)
 - Next.js 15 (App Router), React 19, TypeScrip + shadcn/ui, lucide-react, sonner (toast), existing `adminApiCall` proxy pattern (006-pos-cashier-tablet)
 - IndexedDB (offline cart/orders), Service Worker (caching) (006-pos-cashier-tablet)
+- TypeScript (Node.js 20+, React 19) + NestJS 10, Next.js 15 (App Router), TypeORM, shadcn/ui, qrcode.reac (006-pos-cashier-tablet)
+- PostgreSQL (UUID primary keys) (006-pos-cashier-tablet)
 
 - Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+) (001-agrix-core-platform)
 
@@ -38,9 +40,9 @@ npm test && npm run lint
 Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+): Follow standard conventions
 
 ## Recent Changes
+- 006-pos-cashier-tablet: Added TypeScript (Node.js 20+, React 19) + NestJS 10, Next.js 15 (App Router), TypeORM, shadcn/ui, qrcode.reac
 - 006-pos-cashier-tablet: Added Next.js 15 (App Router), React 19, TypeScrip + shadcn/ui, lucide-react, sonner (toast), existing `adminApiCall` proxy pattern
 - 005-group-menus: Added Next.js (app router), React, TypeScrip + shadcn/ui, `lucide-react`
-- 004-landing-page-redesign: Added TypeScript (Node 20+) + Next.js 14 (App Router), NestJS, TypeORM, Tailwind CSS v4, shadcn/ui.
 
 
 <!-- MANUAL ADDITIONS START -->

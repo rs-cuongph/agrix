@@ -1,22 +1,41 @@
-# Data Model: POS Cashier Tablet App
+# Data Model: POS Cashier Tablet App (Updated 2026-04-05)
 
 ## Overview
 
-No new database entities are needed. POS reuses all existing backend entities. This document defines the **client-side TypeScript interfaces** used by the POS frontend.
+This document defines the backend schema changes and client-side TypeScript interfaces for the POS system. Changes from the Session 2026-04-05 clarification include: `orderCode`, `status` on Order entity, bank config on StoreSettings, and webhook payload structures.
 
-## Existing Backend Entities (Reused)
+## Backend Entity Changes
+
+### Order (Modified)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `order_code` | VARCHAR(10) UNIQUE NOT NULL | Auto-generated: `DH` + 6 random digits. Used in VietQR memo, receipts, search. |
+| `status` | ENUM('PENDING','COMPLETED','CANCELLED') DEFAULT 'COMPLETED' | CASH → COMPLETED immediately. BANK_TRANSFER → PENDING until webhook confirms. |
+
+### StoreSettings (Modified)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `bank_bin` | VARCHAR(20) NULL | Mã BIN ngân hàng VietQR (VD: 970422 = MBBank) |
+| `bank_account_no` | VARCHAR(30) NULL | Số tài khoản ngân hàng |
+| `bank_account_name` | VARCHAR(100) NULL | Tên chủ tài khoản |
+
+### User (No changes needed)
+
+The `posPin`, `pinFailedAttempts`, and `pinLockedUntil` columns already exist. Only need backend API + Admin UI for management.
+
+## Existing Backend Entities (Reused, no changes)
 
 | Entity | Table | Key Fields |
 |--------|-------|------------|
 | Product | products | id, sku, name, baseSellPrice, currentStockBase, baseUnit, barcodeEan13, imageUrls, isActive |
 | Category | categories | id, name, parentId |
 | ProductUnitConversion | product_unit_conversions | id, unitName, conversionFactor, sellPrice |
-| Order | orders | id, customerId, totalAmount, paidAmount, paymentMethod, syncStatus, idempotencyKey, createdBy |
 | OrderItem | order_items | id, orderId, productId, quantityBase, soldUnit, unitPrice, lineTotal |
 | Customer | customers | id, name, phone, address, outstandingDebt |
-| StoreSettings | store_settings | (bank info for VietQR) |
 
-## Client-Side Interfaces (New)
+## Client-Side Interfaces
 
 ```typescript
 // ---- Cart State (ephemeral, in-memory) ----
@@ -90,6 +109,37 @@ interface PosProduct {
     sellPrice: number | null;
   }>;
 }
+
+// ---- Order with orderCode (returned from API) ----
+
+interface PosOrder {
+  id: string;
+  orderCode: string;           // NEW: "DH839124"
+  status: "PENDING" | "COMPLETED" | "CANCELLED";  // NEW
+  customerId: string | null;
+  totalAmount: number;
+  paidAmount: number;
+  paymentMethod: string;
+  createdAt: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    quantityBase: number;
+    soldUnit: string;
+    unitPrice: number;
+    lineTotal: number;
+  }>;
+}
+
+// ---- Webhook Payload (sent by Google App Script → Backend) ----
+
+interface BankTransferWebhookPayload {
+  orderCode: string;          // Required: "DH839124"
+  amountPaid: number;         // Required: 120000
+  transactionRef?: string;    // Optional: "FT26040512345"
+  rawContent?: string;        // Optional: "NGUYEN VAN A TT DH839124"
+  paymentDate?: string;       // Optional: ISO 8601
+}
 ```
 
 ## Relationships
@@ -99,4 +149,6 @@ CartState 1──* CartItem (in-memory)
 CartState *──1 Customer (optional, via API)
 PendingOrder → maps to → Order + OrderItem[] (backend, on sync)
 PosProduct → maps from → Product + ProductUnitConversion[] (backend)
+Order.orderCode → referenced by → BankTransferWebhookPayload.orderCode
+StoreSettings.bankBin/bankAccountNo → used by → VietQR generation (client)
 ```

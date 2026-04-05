@@ -35,6 +35,16 @@ export class StoreSettings {
   @Column({ name: 'hero_image_url', type: 'text', nullable: true })
   heroImageUrl: string;
 
+  // ── Bank / VietQR Config ──────────────────────────────────────────────────
+  @Column({ name: 'bank_bin', length: 20, nullable: true })
+  bankBin: string;
+
+  @Column({ name: 'bank_account_no', length: 30, nullable: true })
+  bankAccountNo: string;
+
+  @Column({ name: 'bank_account_name', length: 100, nullable: true })
+  bankAccountName: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

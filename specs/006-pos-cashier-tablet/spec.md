@@ -13,6 +13,38 @@
 - Q: Vai trò nào được phép truy cập POS? → A: Chỉ ADMIN và Nhân viên bán hàng. Thủ kho không được truy cập POS.
 - Q: Hiển thị sản phẩm dạng Grid hay List? → A: Grid thẻ lớn (3-4 cột) với hình ảnh, tên, giá mỗi thẻ — giúp nhận diện nhanh bằng mắt.
 
+### Session 2026-04-05
+
+- Q: Quy định về cài đặt tài khoản PIN (4-6 số) cho thu ngân sẽ hoạt động như thế nào? → A: Option A - Admin là người duy nhất được quyền xem, cấp hoặc đổi mã PIN cho nhân viên trên trang Quản lý User ở Admin Panel.
+- Q: Format nội dung chuyển khoản (VietQR) nên thiết kế thế nào do UUID quá dài và chứa chứa dấu gạch ngang? → A: Option A - Thêm thuộc tính `orderCode` (VD: `DH123456`) vào entity Order. UUID giữ nguyên làm khóa hệ thống. `orderCode` được in lên VietQR và giao diện thay thế UUID.
+- Q: Câu hình tài khoản nhận tiền (Bank ID, Tên, Số tài khoản) để sinh QRCode được lấy từ đâu? → A: Option B - Cấu hình tĩnh qua biến môi trường (`.env`). Chưa cần thiết kế UI Cài đặt phức tạp ở giai đoạn này.
+- Q: Cơ chế bảo vệ và payload của Webhook xử lý Bank Transfer là gì? → A: Option A - Dùng Header `x-webhook-secret` (cấu hình trong `.env`) để bảo mật. Payload nhận JSON chứa `orderCode` và `amount` từ Google Apps Script.
+
+## Webhook: Bank Transfer Integration (Auto-Payment)
+
+Hệ thống sẽ cung cấp một Endpoint để External Service (Google App Script) báo cáo kết quả nhận tiền. Payload được định nghĩa khắt khe như sau để đảm bảo Google App Script có template chuẩn để forward:
+
+**Endpoint**: `POST /api/v1/orders/webhook/bank-transfer`
+**Header Auth**: `x-webhook-secret: <Giá_trị_từ_.env>` (Bắt buộc)
+
+**Request Body (JSON)**:
+```json
+{
+  "orderCode": "VD: DH123456",     // Mã đơn hàng bóc tách được từ nội dung chuyển khoản. (Bắt buộc)
+  "amount Paid": 120000,          // Số tiền thực tế ngân hàng ghi có. (Bắt buộc)
+  "transactionRef": "MB12345678", // Mã giao dịch của Ngân hàng (Dùng để log chống trùng lặp, optional nhưng rất nên có)
+  "rawContent": "NGUYEN VAN A TT DH123456", // Nôi dung chuyển khoản nguyên bản (Dùng để tra soát nếu fail)
+  "paymentDate": "2026-04-05T12:00:00Z"     // Giờ giao dịch
+}
+```
+**Luồng xử lý (Backend)**:
+1. Backend kiểm tra `x-webhook-secret`.
+2. Truy xuất Database tìm Order có `orderCode` khớp.
+3. So sánh `amount Paid` với `order.totalAmount` (hoặc nợ).
+4. Nếu hợp lệ, tự động cập nhật trạng thái đơn (sang `COMPLETED` / `PAID`) và giảm trừ công nợ.
+5. Sinh `BankTransferRecord` để lưu log (`transactionRef`).
+
+
 ## Design Pattern: Agrix POS (Tablet-First, Elderly-Accessible)
 
 Ứng dụng POS PHẢI tuân thủ phong cách thiết kế đã được thiết lập cho hệ thống Agrix, đồng thời tối ưu cho đối tượng người dùng lớn tuổi và vận hành trên tablet:

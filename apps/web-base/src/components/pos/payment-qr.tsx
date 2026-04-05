@@ -9,14 +9,13 @@ function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN").format(n) + "đ";
 }
 
-function buildVietQR(settings: StoreSettings, amount: number): string {
+function buildVietQR(settings: StoreSettings, amount: number, orderCode: string): string {
   if (!settings.bankBin || !settings.bankAccountNo) return "";
-  // VietQR EMVCo format (simplified static QR with amount)
-  const memo = encodeURIComponent(`Thanh toan ${amount}`);
-  return `https://img.vietqr.io/image/${settings.bankBin}-${settings.bankAccountNo}-compact2.png?amount=${amount}&addInfo=${memo}&accountName=${encodeURIComponent(settings.bankAccountName || "")}`;
+  // VietQR EMVCo format — use orderCode as memo so GAS can parse it
+  return `https://img.vietqr.io/image/${settings.bankBin}-${settings.bankAccountNo}-qr_only.png?amount=${amount}&addInfo=${encodeURIComponent(orderCode)}&accountName=${encodeURIComponent(settings.bankAccountName || "")}`;
 }
 
-export function PaymentQR({ total }: { total: number }) {
+export function PaymentQR({ total, orderCode }: { total: number; orderCode?: string }) {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,14 +44,14 @@ export function PaymentQR({ total }: { total: number }) {
     );
   }
 
-  const qrUrl = buildVietQR(settings, total);
+  const qrUrl = buildVietQR(settings, total, orderCode || "THANH TOAN");
 
   return (
     <div className="flex flex-col items-center py-4 gap-4">
       <div className="bg-white p-4 rounded-2xl shadow-md border-2 border-gray-100">
         {/* Use VietQR image URL for rich QR that includes bank branding */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={qrUrl} alt="VietQR" className="w-56 h-56 object-contain" />
+        <img src={qrUrl} alt="VietQR" className="w-80 h-80 object-contain" />
       </div>
       <div className="text-center">
         <p className="text-gray-500 text-base">{settings.bankAccountName}</p>

@@ -12,6 +12,12 @@ type Product = { id: string; name: string; baseUnit: string; baseSellPrice: numb
 type AdminUser = {
   id: string; username: string; fullName: string;
   role: string; isActive: boolean; createdAt: string;
+  posPin?: string | null;
+};
+type StoreSettings = {
+  bankBin?: string | null;
+  bankAccountNo?: string | null;
+  bankAccountName?: string | null;
 };
 type Permission = {
   id: string; role: string; module: string;
@@ -26,6 +32,7 @@ export default async function SettingsPage() {
   let users: AdminUser[] = [];
   let permissions: Permission[] = [];
   let userRole = "";
+  let storeSettings: StoreSettings = {};
 
   try {
     const [catRes, unitRes, convRes, prodRes, meRes] = await Promise.all([
@@ -41,14 +48,15 @@ export default async function SettingsPage() {
     products = prodRes.data;
     userRole = meRes.role;
 
-    // Only fetch accounts if ADMIN
     if (userRole === "ADMIN") {
-      const [userRes, permRes] = await Promise.all([
+      const [userRes, permRes, settingsRes] = await Promise.all([
         apiGet<AdminUser[]>("/admin-users"),
         apiGet<Permission[]>("/admin-users/permissions"),
+        apiGet<StoreSettings>("/admin/settings"),
       ]);
       users = userRes;
       permissions = permRes;
+      storeSettings = settingsRes ?? {};
     }
   } catch (e) {
     console.error("Settings data fetch error:", e);
@@ -63,6 +71,7 @@ export default async function SettingsPage() {
       users={users}
       permissions={permissions}
       userRole={userRole}
+      storeSettings={storeSettings}
     />
   );
 }

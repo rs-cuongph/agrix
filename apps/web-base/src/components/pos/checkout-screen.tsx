@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/lib/pos/cart-store";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { PaymentCash } from "./payment-cash";
 import { PaymentQR } from "./payment-qr";
@@ -23,6 +23,7 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
   const [paidAmount, setPaidAmount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [orderCode, setOrderCode] = useState<string | undefined>();
 
   const changeAmount = paidAmount - state.totalAmount;
   const canConfirm = method === "BANK_TRANSFER" || paidAmount >= state.totalAmount;
@@ -50,7 +51,8 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
           lineTotal: item.lineTotal,
         })),
       };
-      await submitOrder(payload);
+      const result = await submitOrder(payload);
+      setOrderCode(result.orderCode);
       setSuccess(true);
     } catch (err) {
       toast.error("Lỗi khi tạo đơn hàng. Vui lòng thử lại.");
@@ -69,7 +71,8 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
 
   return (
     <Dialog open={open} onOpenChange={(v: boolean) => { if (!v && !submitting) onClose(); }}>
-      <DialogContent className="max-w-2xl sm:max-w-2xl md:max-w-[700px] w-[90vw] md:w-[700px] rounded-2xl p-0 overflow-hidden bg-white max-h-[calc(100vh-20px)] flex flex-col gap-0">
+      <DialogContent className="max-w-2xl sm:max-w-2xl md:max-w-[700px] w-[90vw] md:w-[700px] rounded-2xl p-0 overflow-hidden bg-white max-h-[calc(100vh-20px)] flex flex-col gap-0" showCloseButton={false}>
+        <DialogTitle className="sr-only">Thanh toán</DialogTitle>
         {success ? (
           <SuccessScreen change={changeAmount > 0 ? changeAmount : 0} onDone={handleSuccessDone} />
         ) : (
@@ -111,7 +114,7 @@ export function CheckoutScreen({ open, onClose }: { open: boolean; onClose: () =
                   onChange={setPaidAmount}
                 />
               ) : (
-                <PaymentQR total={state.totalAmount} />
+                <PaymentQR total={state.totalAmount} orderCode={orderCode} />
               )}
             </div>
 

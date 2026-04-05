@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 function formatPrice(n: number) {
   return new Intl.NumberFormat("vi-VN").format(n) + "đ";
@@ -63,10 +64,13 @@ export function UnitPickerDialog({ product, open, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(v: boolean) => !v && onClose()}>
-      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden bg-white">
-        <DialogHeader className="px-6 pt-6 pb-4 bg-emerald-950 text-white">
+      <DialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden bg-white" showCloseButton={false}>
+        <DialogHeader className="px-6 pt-6 pb-4 bg-emerald-950 text-white relative">
           <DialogTitle className="text-xl font-bold">Chọn đơn vị bán</DialogTitle>
           <p className="text-white/60 text-sm mt-1 truncate">{product.name}</p>
+          <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
         </DialogHeader>
         <div className="p-4 space-y-3">
           {allUnits.map((unit) => (

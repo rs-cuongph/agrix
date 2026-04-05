@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/lib/pos/cart-store";
 import { searchCustomers, createCustomer, PosCustomer } from "@/lib/pos/pos-api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { UserRound, Plus, Search, Loader2 } from "lucide-react";
+import { UserRound, Plus, Search, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -60,9 +60,12 @@ export function CustomerPicker({ open, onClose }: { open: boolean; onClose: () =
 
   return (
     <Dialog open={open} onOpenChange={(v: boolean) => { if (!v) { onClose(); reset(); } }}>
-      <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden bg-white">
-        <DialogHeader className="px-6 pt-6 pb-4 bg-emerald-950 text-white">
+      <DialogContent className="max-w-md rounded-2xl p-0 overflow-hidden bg-white" showCloseButton={false}>
+        <DialogHeader className="px-6 pt-6 pb-4 bg-emerald-950 text-white relative">
           <DialogTitle className="text-xl font-bold">Chọn khách hàng</DialogTitle>
+          <button onClick={() => { onClose(); reset(); }} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
         </DialogHeader>
         <div className="p-4">
           {!showCreateForm ? (

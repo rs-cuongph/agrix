@@ -22,10 +22,27 @@ export enum SyncStatus {
   PENDING = 'PENDING',
 }
 
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ name: 'order_code', length: 10, unique: true, nullable: true })
+  orderCode: string;
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: OrderStatus,
+    default: OrderStatus.COMPLETED,
+  })
+  status: OrderStatus;
 
   @Column({ name: 'customer_id', nullable: true })
   customerId: string;

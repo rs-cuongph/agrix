@@ -1,4 +1,4 @@
-# Research: POS Cashier Tablet App
+# Research: POS Cashier Tablet App (Updated 2026-04-05)
 
 ## Findings
 
@@ -9,9 +9,11 @@ The NestJS backend already provides all the APIs needed for POS:
 | Domain | Entities | API Endpoints (assumed RESTful) |
 |--------|----------|-------------------------------|
 | Products | Product, Category, ProductUnitConversion | GET /products, GET /products?search=, GET /categories |
-| Orders | Order, OrderItem | POST /orders, GET /orders |
+| Orders | Order, OrderItem | POST /orders, GET /orders, DELETE /orders/:id |
 | Customers | Customer, DebtLedgerEntry | GET /customers?search=, POST /customers |
-| Auth | User, RolePermission | POST /auth/login, GET /auth/me |
+| Auth | User, RolePermission | POST /auth/login, POST /auth/pos-login, GET /auth/me |
+| Settings | StoreSettings | GET /settings, PUT /admin/settings |
+| Admin Users | User | GET /admin-users, POST /admin-users, PUT /admin-users/:id |
 
 **Decision**: Reuse all existing backend endpoints via the `adminApiCall` proxy pattern already established (`/api/admin/proxy`).
 **Rationale**: No backend changes required for MVP. The proxy handles auth token injection server-side.
@@ -50,16 +52,35 @@ USB/Bluetooth barcode scanners in "HID keyboard emulation" mode work seamlessly 
 
 ### 7. VietQR Payment
 
-**Decision**: Generate QR code client-side using a QR code library (e.g., `qrcode.react`) with VietQR format string.
-**Rationale**: VietQR is a standard string format: `{bankBin}|{accountNo}|{amount}|{memo}`. No external API call needed. The store's bank info comes from StoreSettings entity (already exists in backend).
+**Decision**: Generate QR code client-side using VietQR image URL format. Bank info stored in `StoreSettings` entity (DB, managed via Admin Settings page). VietQR memo uses `orderCode` (e.g., `DH839124`) instead of UUID.
+**Rationale**: VietQR image URL format: `https://img.vietqr.io/image/{bankBin}-{accountNo}-compact2.png?amount={amount}&addInfo={orderCode}`. `orderCode` is short alphanumeric (no dashes) compatible with bank transfer content restrictions.
+**Alternatives considered**: `.env` for bank config — user chose DB-based via StoreSettings for easier admin management. Sepay/external webhook service — rejected in favor of self-hosted Google Apps Script approach.
 
-### 8. New shadcn/ui Components
+### 8. Order Code Generation
+
+**Decision**: `DH` prefix + 6 random digits (e.g., `DH839124`). Generated server-side at order creation.
+**Rationale**: Short, memorable, no special characters. `DH` prefix identifies it as a Đơn Hàng (order) code. 6 digits = 1M possible codes, sufficient for years of operation at a single store. Collision check with retry loop ensures uniqueness.
+**Alternatives considered**: Sequential integer (1, 2, 3...) — rejected because it leaks business volume. UUID without dashes — still too long for bank transfers.
+
+### 9. Bank Transfer Webhook
+
+**Decision**: Self-hosted webhook endpoint `POST /api/v1/orders/webhook/bank-transfer` secured with `x-webhook-secret` header. Called by Google Apps Script that monitors bank notification emails.
+**Rationale**: Zero cost (no Sepay subscription), full control, simple implementation. GAS reads bank email → extracts orderCode & amount → POSTs to webhook → Backend confirms payment.
+**Alternatives considered**: Sepay.vn (paid, adds external dependency), manual admin confirmation (too slow, error-prone).
+
+### 10. Order Status Lifecycle
+
+**Decision**: Add `status` enum to Order: `PENDING` → `COMPLETED` (or `CANCELLED`).
+**Rationale**: CASH orders are immediately `COMPLETED`. BANK_TRANSFER orders start as `PENDING` and transition to `COMPLETED` when webhook confirms payment. This enables real-time tracking of unpaid transfer orders.
+
+### 11. New shadcn/ui Components
 
 Need to install via shadcn CLI:
 - `sheet` — bottom sheet for order detail
-- `badge` — stock status, offline indicator
+- `badge` — stock status, offline indicator, order status
 - `separator` — visual dividers
 - `scroll-area` — smooth scrolling in product grid
 - `dialog` — already installed
+- `alert-dialog` — already installed
 
 All existing components (button, input, tabs, etc.) are already available.
