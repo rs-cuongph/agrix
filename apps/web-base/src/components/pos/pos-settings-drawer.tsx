@@ -15,13 +15,12 @@ export function PosSettingsDrawer() {
           <Settings className="w-5 h-5" />
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white border-l-0 shadow-2xl flex flex-col gap-6">
-        <SheetHeader>
+      <SheetContent side="right" className="w-[400px] sm:w-[540px] bg-white border-l-0 shadow-2xl flex flex-col gap-0 p-0">
+        <SheetHeader className="px-6 pt-6 pb-5 border-b border-gray-100">
           <SheetTitle className="text-xl font-bold text-gray-800">Cài đặt thiết bị</SheetTitle>
         </SheetHeader>
         
-        {/* Placeholder for Bluetooth printer settings */}
-        <div className="flex-1 overflow-y-auto pr-2">
+        <div className="flex-1 overflow-y-auto p-6">
           <BluetoothPrinterSettings />
         </div>
       </SheetContent>

@@ -56,9 +56,9 @@ export function ImageGalleryUpload({ value = [], onChange, uploadPath }: Props) 
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="flex flex-wrap gap-3">
         {value.map((url, i) => (
-          <div key={i} className="relative aspect-square rounded-lg border bg-gray-50 overflow-hidden group">
+          <div key={i} className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-lg border bg-gray-50 overflow-hidden group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
             <button
@@ -77,7 +77,7 @@ export function ImageGalleryUpload({ value = [], onChange, uploadPath }: Props) 
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="relative aspect-square flex flex-col justify-center items-center gap-2 rounded-lg border-2 border-dashed hover:border-emerald-500 hover:bg-emerald-50 text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+          className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 flex flex-col justify-center items-center gap-2 rounded-lg border-2 border-dashed hover:border-emerald-500 hover:bg-emerald-50 text-gray-500 hover:text-emerald-600 transition-colors disabled:opacity-50 disabled:pointer-events-none"
         >
           {isUploading ? (
             <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
