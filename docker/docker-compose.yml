@@ -1,35 +1,123 @@
 services:
+  # ---------------------------------------------
+  # REVERSE PROXY & SSL
+  # ---------------------------------------------
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: agrix-nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - agrix-net
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: agrix-acme-companion
+    restart: always
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL:-admin@agrix.vn}
+    networks:
+      - agrix-net
+    depends_on:
+      - nginx-proxy
+
+  # ---------------------------------------------
+  # APPLICATION SERVERS
+  # ---------------------------------------------
+  web-base:
+    build:
+      context: ..
+      dockerfile: docker/web.Dockerfile
+    container_name: agrix-web
+    restart: always
+    environment:
+      - VIRTUAL_HOST=${DOMAIN:-agrix.vn}
+      - VIRTUAL_PORT=3002
+      - LETSENCRYPT_HOST=${DOMAIN:-agrix.vn}
+      - NEXT_PUBLIC_API_URL=https://api.${DOMAIN:-agrix.vn}
+    networks:
+      - agrix-net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: agrix-backend
+    restart: always
+    environment:
+      - VIRTUAL_HOST=api.${DOMAIN:-agrix.vn}
+      - VIRTUAL_PORT=3001
+      - LETSENCRYPT_HOST=api.${DOMAIN:-agrix.vn}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - REDIS_URL=${REDIS_URL}
+      - NODE_ENV=production
+    networks:
+      - agrix-net
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------
+  # STATEFUL SERVICES (Databases)
+  # ---------------------------------------------
   postgres:
     image: pgvector/pgvector:pg15
     container_name: agrix-postgres
     restart: unless-stopped
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-agrix}
       POSTGRES_USER: ${POSTGRES_USER:-agrix}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agrix_secret}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - agrix-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agrix}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: agrix-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-agrix_secret}
+    volumes:
+      - redis-data:/data
+    networks:
+      - agrix-net
+
   minio:
     image: minio/minio:latest
     container_name: agrix-minio
     restart: unless-stopped
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - agrix-net
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 10s
@@ -37,5 +125,14 @@ services:
       retries: 5
 
 volumes:
+  certs:
+  vhost:
+  html:
+  acme:
   postgres-data:
+  redis-data:
   minio-data:
+
+networks:
+  agrix-net:
+    driver: bridge

@@ -1,6 +1,6 @@
 # agrix Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-05
+Auto-generated from all feature plans. Last updated: 2026-04-06
 
 ## Active Technologies
 - TypeScript 5.x, React 18, Next.js 14 (App Router) + next, react, shadcn/ui, tailwindcss, lucide-reac (001-agrix-core-platform)
@@ -29,6 +29,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-05
 - TypeScript / React (Next.js 15) + Web Bluetooth API (`navigator.bluetooth`), `esc-pos-encoder` (or similar package to generate ESC/POS byte arrays), `sonner` (for toasts), `lucide-react` (for icons) (011-bluetooth-device-setting)
 - `localStorage` (Zustand with persist middleware) (011-bluetooth-device-setting)
 - TypeScript / Next.js 14 + `jspdf` for document synthesis, `jsbarcode` for drawing accurate 1D barcodes. (012-export-barcode-pdf)
+- N/A (DevOps scope) + Docker Engine 24+, Docker Compose v2, `nginxproxy/nginx-proxy`, `nginxproxy/acme-companion` (013-docker-deployment)
+- PostgreSQL, Redis (013-docker-deployment)
 
 - Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+) (001-agrix-core-platform)
 
@@ -49,9 +51,9 @@ npm test && npm run lint
 Dart 3.x (Flutter 3.x), TypeScript 5.x (NestJS 10+, Next.js 14+): Follow standard conventions
 
 ## Recent Changes
+- 013-docker-deployment: Added N/A (DevOps scope) + Docker Engine 24+, Docker Compose v2, `nginxproxy/nginx-proxy`, `nginxproxy/acme-companion`
+- 013-docker-deployment: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 012-export-barcode-pdf: Added TypeScript / Next.js 14 + `jspdf` for document synthesis, `jsbarcode` for drawing accurate 1D barcodes.
-- 011-bluetooth-device-setting: Added TypeScript / React (Next.js 15) + Web Bluetooth API (`navigator.bluetooth`), `esc-pos-encoder` (or similar package to generate ESC/POS byte arrays), `sonner` (for toasts), `lucide-react` (for icons)
-- 010-bot-landing-only: Added TypeScript / Node.js 20 / NestJS (Backend), Next.js 14 (Frontend) + `class-validator` (DTO), `typeorm` (session queries), React Context (chat state)
 
 
 <!-- MANUAL ADDITIONS START -->
