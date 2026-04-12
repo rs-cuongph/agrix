@@ -72,7 +72,7 @@ describe("ReportingExportActions", () => {
 
     expect(downloadPdfReport).toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalled();
-    expect(screen.getByText(/lan xuat gan nhat/i)).toBeInTheDocument();
+    expect(screen.getByText(/lần xuất gần nhất/i)).toBeInTheDocument();
   });
 
   it("exports excel", async () => {

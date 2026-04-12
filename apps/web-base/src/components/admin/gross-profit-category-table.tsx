@@ -2,6 +2,21 @@
 
 import { AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CategoryGrossProfitRecord } from "@/lib/admin/reporting-types";
 
 type Props = {
@@ -10,56 +25,57 @@ type Props = {
 
 export function GrossProfitCategoryTable({ items }: Props) {
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">Loi nhuan gop theo danh muc</h2>
-        <p className="text-sm text-muted-foreground">
-          Tinh theo doanh thu tru gia von tren ky bao cao da chon
-        </p>
-      </div>
-
+    <Card className="border shadow-sm">
+      <CardHeader>
+        <CardTitle>Lợi nhuận gộp theo danh mục</CardTitle>
+        <CardDescription>
+          Tính theo doanh thu trừ giá vốn trên kỳ báo cáo đã chọn.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
       {items.length === 0 ? (
         <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-          Chua co du lieu danh muc trong ky nay
+          Chưa có dữ liệu danh mục trong kỳ này.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="py-2">Danh muc</th>
-                <th className="py-2 text-right">Doanh thu</th>
-                <th className="py-2 text-right">Gia von</th>
-                <th className="py-2 text-right">Loi nhuan gop</th>
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Danh mục</TableHead>
+              <TableHead className="text-right">Doanh thu</TableHead>
+              <TableHead className="text-right">Giá vốn</TableHead>
+              <TableHead className="text-right">Lợi nhuận gộp</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
               {items.map((item) => (
-                <tr key={item.categoryId || item.categoryName} className="border-b last:border-0">
-                  <td className="py-3">
+                <TableRow key={item.categoryId || item.categoryName}>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-foreground">{item.categoryName}</span>
                       {item.hasIncompleteCostData ? (
                         <Badge variant="outline" className="gap-1">
-                          <AlertCircle className="size-3" />
-                          Thieu gia von
+                          <AlertCircle />
+                          Thiếu giá vốn
                         </Badge>
                       ) : null}
                     </div>
-                  </td>
-                  <td className="py-3 text-right">{item.revenue.toLocaleString("vi-VN")}đ</td>
-                  <td className="py-3 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {item.revenue.toLocaleString("vi-VN")}đ
+                  </TableCell>
+                  <TableCell className="text-right">
                     {item.costOfGoodsSold.toLocaleString("vi-VN")}đ
-                  </td>
-                  <td className="py-3 text-right font-semibold text-emerald-600">
+                  </TableCell>
+                  <TableCell className="text-right font-semibold text-emerald-600">
                     {item.grossProfit.toLocaleString("vi-VN")}đ
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+          </TableBody>
+        </Table>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

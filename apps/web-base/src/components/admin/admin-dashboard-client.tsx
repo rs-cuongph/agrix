@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, BarChart3 } from "lucide-react";
 import { GrossProfitCategoryTable } from "@/components/admin/gross-profit-category-table";
 import { ReportingExportActions } from "@/components/admin/reporting-export-actions";
 import { ReportingFilterToolbar } from "@/components/admin/reporting-filter-toolbar";
@@ -9,6 +9,15 @@ import { RevenueSeriesChart } from "@/components/admin/revenue-series-chart";
 import { RevenueSummaryCards } from "@/components/admin/revenue-summary-cards";
 import { TopCustomersPanel } from "@/components/admin/top-customers-panel";
 import { TopProductsTable } from "@/components/admin/top-products-table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   getAlerts,
   getGrossProfitByCategory,
@@ -17,7 +26,7 @@ import {
   getTopCustomers,
   getTopProducts,
 } from "@/lib/admin/reporting-api";
-import { getDefaultFilter } from "@/lib/admin/reporting-filters";
+import { getDefaultFilter, getFilterLabel } from "@/lib/admin/reporting-filters";
 import {
   AlertsResponse,
   GrossProfitByCategoryResponse,
@@ -42,7 +51,7 @@ export function AdminDashboardClient() {
     totalOrders: 0,
     totalProducts: 0,
     totalCustomers: 0,
-    rangeLabel: "Hom nay",
+    rangeLabel: "Hôm nay",
   });
   const [revenueSeries, setRevenueSeries] = useState<RevenueSeriesResponse>({
     filter: {
@@ -90,7 +99,7 @@ export function AdminDashboardClient() {
           setError("");
         })
         .catch((loadError) => {
-          setError(loadError instanceof Error ? loadError.message : "Khong the tai dashboard");
+          setError(loadError instanceof Error ? loadError.message : "Không thể tải dashboard");
         });
     });
   };
@@ -100,73 +109,87 @@ export function AdminDashboardClient() {
   }, [filter]);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-          Bao cao nang cao
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Theo doi doanh thu, loi nhuan gop, san pham, khach hang va xuat so sach.
-        </p>
+    <div className="space-y-6">
+      <Card className="border shadow-sm">
+        <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-2xl font-extrabold text-gray-900">
+              <BarChart3 className="size-6 text-emerald-600" />
+              Báo cáo nâng cao
+            </CardTitle>
+            <CardDescription>
+              Theo dõi doanh thu, lợi nhuận gộp, sản phẩm bán chạy, khách hàng và báo cáo xuất ra.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <Separator />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
+        <ReportingFilterToolbar
+          filter={filter}
+          pending={isPending}
+          onChange={setFilter}
+          onRefresh={() => loadDashboard(filter)}
+        />
+        <ReportingExportActions filter={filter} />
       </div>
 
-      <ReportingFilterToolbar
-        filter={filter}
-        pending={isPending}
-        onChange={setFilter}
-        onRefresh={() => loadDashboard(filter)}
-      />
-
-      <ReportingExportActions filter={filter} />
-
       {error ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           {error}
         </div>
       ) : null}
 
       <RevenueSummaryCards summary={summary} />
 
-      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
         <RevenueSeriesChart points={revenueSeries.series} />
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <AlertTriangle className="size-5 text-amber-500" />
-            <div>
-              <h2 className="text-base font-semibold text-foreground">Canh bao ton kho</h2>
-              <p className="text-sm text-muted-foreground">
-                Danh sach san pham dang o muc ton thap
-              </p>
-            </div>
-          </div>
+        <Card className="border shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-amber-500" />
+              Cảnh báo tồn kho
+            </CardTitle>
+            <CardDescription>
+              Danh sách sản phẩm đang ở mức tồn thấp cần ưu tiên xử lý.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
 
-          {alerts.lowStock.length === 0 ? (
-            <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-              Khong co canh bao ton kho
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {alerts.lowStock.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.sku}</p>
+            {alerts.lowStock.length === 0 ? (
+              <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+                Không có cảnh báo tồn kho trong thời điểm hiện tại.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {alerts.lowStock.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border px-4 py-3"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.sku}</p>
+                    </div>
+                    <Badge variant="outline">
+                      {item.currentStock} {item.baseUnit}
+                    </Badge>
                   </div>
-                  <p className="text-sm font-semibold text-amber-600">
-                    {item.currentStock} {item.baseUnit}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <TopProductsTable items={topProducts.items} />
-      <GrossProfitCategoryTable items={grossProfit.items} />
+      <div className="grid gap-4 xl:grid-cols-2">
+        <TopProductsTable items={topProducts.items} />
+        <GrossProfitCategoryTable items={grossProfit.items} />
+      </div>
+
       <TopCustomersPanel
         topByPurchase={topCustomers.topByPurchase}
         topByDebt={topCustomers.topByDebt}

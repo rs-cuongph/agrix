@@ -87,5 +87,28 @@ export function buildFilterQuery(filter: ReportingFilter) {
 }
 
 export function getFilterLabel(filter: ReportingFilter) {
-  return `${filter.from} -> ${filter.to}`;
+  return `Từ ${formatDisplayDate(filter.from)} đến ${formatDisplayDate(filter.to)}`;
+}
+
+export function getGranularityLabel(granularity: ReportingGranularity) {
+  switch (granularity) {
+    case "week":
+      return "Theo tuần";
+    case "month":
+      return "Theo tháng";
+    case "year":
+      return "Theo năm";
+    case "day":
+    default:
+      return "Theo ngày";
+  }
+}
+
+export function formatDisplayDate(date: string) {
+  const [year, month, day] = date.split("-");
+  if (!year || !month || !day) {
+    return date;
+  }
+
+  return `${day}/${month}/${year}`;
 }

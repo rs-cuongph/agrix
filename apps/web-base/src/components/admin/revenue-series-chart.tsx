@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RevenueSeriesPoint } from "@/lib/admin/reporting-types";
 
 type Props = {
@@ -10,17 +17,17 @@ export function RevenueSeriesChart({ points }: Props) {
   const maxRevenue = Math.max(...points.map((point) => point.revenue), 0);
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">Doanh thu theo ky</h2>
-        <p className="text-sm text-muted-foreground">
-          Theo doi xu huong doanh thu tren cung bo loc bao cao
-        </p>
-      </div>
-
+    <Card className="border shadow-sm">
+      <CardHeader>
+        <CardTitle>Doanh thu theo kỳ</CardTitle>
+        <CardDescription>
+          Theo dõi xu hướng doanh thu trên cùng bộ lọc báo cáo.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
       {points.length === 0 ? (
         <div className="rounded-lg border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-          Chua co du lieu doanh thu cho ky da chon
+          Chưa có dữ liệu doanh thu cho kỳ đã chọn.
         </div>
       ) : (
         <div className="space-y-4">
@@ -48,7 +55,7 @@ export function RevenueSeriesChart({ points }: Props) {
                       {point.revenue.toLocaleString("vi-VN")}đ
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      {point.orderCount} don
+                      {point.orderCount} đơn
                     </p>
                   </div>
                 </div>
@@ -57,6 +64,7 @@ export function RevenueSeriesChart({ points }: Props) {
           </div>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

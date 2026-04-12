@@ -10,7 +10,7 @@ This document details how a developer can set up and run the code related to the
 
 ## Verifying Web Bluetooth API
 
-To quickly test if your browser environment supports the API, open the Developer Console (F12) while on `localhost:3000` and type:
+To quickly test if your browser environment supports the API, open the Developer Console (F12) while on `localhost:3002` and type:
 
 ```javascript
 !!navigator.bluetooth

@@ -20,7 +20,7 @@ describe("GrossProfitCategoryTable", () => {
     );
 
     expect(screen.getByText("Phan bon")).toBeInTheDocument();
-    expect(screen.getByText("Thieu gia von")).toBeInTheDocument();
+    expect(screen.getByText("Thiếu giá vốn")).toBeInTheDocument();
     expect(screen.getByText("180.000đ")).toBeInTheDocument();
   });
 });

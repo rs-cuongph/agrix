@@ -17,27 +17,31 @@ export function RevenueSummaryCards({ summary }: Props) {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       <StatCard
         icon={DollarSign}
-        label="Tong doanh thu"
+        label="Tổng doanh thu"
         value={`${summary.totalRevenue.toLocaleString("vi-VN")}đ`}
         color="text-emerald-600"
+        description="Doanh thu thuần từ các đơn đã hoàn tất trong kỳ."
       />
       <StatCard
         icon={ShoppingCart}
-        label="Tong don hang"
+        label="Tổng đơn hàng"
         value={summary.totalOrders}
         color="text-sky-600"
+        description="Số đơn hàng được tính vào báo cáo kinh doanh."
       />
       <StatCard
         icon={Package}
-        label="San pham dang kinh doanh"
+        label="Sản phẩm đang kinh doanh"
         value={summary.totalProducts}
         color="text-amber-600"
+        description="Tổng mặt hàng đang hoạt động trong hệ thống."
       />
       <StatCard
         icon={Users}
-        label="Tong khach hang"
+        label="Tổng khách hàng"
         value={summary.totalCustomers}
         color="text-rose-600"
+        description="Tệp khách hàng phục vụ theo dõi mua hàng và công nợ."
       />
     </div>
   );

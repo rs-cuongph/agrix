@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CustomerDebtRecord, CustomerPurchaseRecord } from "@/lib/admin/reporting-types";
 
 type Props = {
@@ -19,15 +26,15 @@ function CustomerList({
   renderValue: (item: CustomerPurchaseRecord | CustomerDebtRecord) => string;
 }) {
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-
+    <Card className="border shadow-sm">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
       {items.length === 0 ? (
         <div className="rounded-lg border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-          Khong co du lieu phu hop cho danh sach nay
+          Không có dữ liệu phù hợp cho danh sách này.
         </div>
       ) : (
         <div className="space-y-3">
@@ -41,7 +48,7 @@ function CustomerList({
                   #{item.rank} {item.customerName}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {item.phone || "Khong co so dien thoai"}
+                  {item.phone || "Không có số điện thoại"}
                 </p>
               </div>
               <p className="shrink-0 text-sm font-semibold text-foreground">
@@ -51,7 +58,8 @@ function CustomerList({
           ))}
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -59,16 +67,16 @@ export function TopCustomersPanel({ topByPurchase, topByDebt }: Props) {
   return (
     <div className="grid gap-4 xl:grid-cols-2">
       <CustomerList
-        title="Top khach hang mua nhieu"
-        description="Xep hang theo tong gia tri mua trong ky"
+        title="Top khách hàng mua nhiều"
+        description="Xếp hạng theo tổng giá trị mua trong kỳ."
         items={topByPurchase}
         renderValue={(item) =>
           `${(item as CustomerPurchaseRecord).totalPurchaseAmount.toLocaleString("vi-VN")}đ`
         }
       />
       <CustomerList
-        title="Top khach hang no nhieu"
-        description="Xep hang theo du no hien hanh"
+        title="Top khách hàng nợ nhiều"
+        description="Xếp hạng theo dư nợ hiện hành."
         items={topByDebt}
         renderValue={(item) =>
           `${(item as CustomerDebtRecord).outstandingDebt.toLocaleString("vi-VN")}đ`
