@@ -9,8 +9,8 @@ import {
 import { Customer } from './customer.entity';
 
 export enum DebtEntryType {
-  SALE = 'SALE',           // Debt created from a sale
-  PAYMENT = 'PAYMENT',     // Debt reduction from payment
+  SALE = 'SALE', // Debt created from a sale
+  PAYMENT = 'PAYMENT', // Debt reduction from payment
   ADJUSTMENT = 'ADJUSTMENT', // Manual adjustment
 }
 

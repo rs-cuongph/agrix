@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Customer } from './entities/customer.entity';
-import { DebtLedgerEntry, DebtEntryType } from './entities/debt-ledger-entry.entity';
+import {
+  DebtLedgerEntry,
+  DebtEntryType,
+} from './entities/debt-ledger-entry.entity';
 
 @Injectable()
 export class CustomersService {
@@ -63,7 +66,10 @@ export class CustomersService {
     const saved = await this.debtRepo.save(entry);
 
     // Update customer outstanding debt
-    customer.outstandingDebt = Math.max(0, customer.outstandingDebt - Math.abs(amount));
+    customer.outstandingDebt = Math.max(
+      0,
+      customer.outstandingDebt - Math.abs(amount),
+    );
     await this.customerRepo.save(customer);
 
     return saved;

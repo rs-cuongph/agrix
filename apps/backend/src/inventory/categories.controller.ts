@@ -58,13 +58,19 @@ export class CategoriesController {
 
   @Put(':id')
   @Roles(UserRole.ADMIN, UserRole.INVENTORY)
-  async update(@Param('id') id: string, @Body() dto: Partial<CreateCategoryDto>) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateCategoryDto>,
+  ) {
     await this.categoryRepo.update(id, {
       ...(dto.name !== undefined && { name: dto.name }),
       ...(dto.description !== undefined && { description: dto.description }),
       ...(dto.parentId !== undefined && { parentId: dto.parentId }),
     });
-    return this.categoryRepo.findOne({ where: { id }, relations: ['parent', 'children'] });
+    return this.categoryRepo.findOne({
+      where: { id },
+      relations: ['parent', 'children'],
+    });
   }
 
   @Delete(':id')

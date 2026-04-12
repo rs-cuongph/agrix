@@ -15,8 +15,10 @@ export const PERMISSIONS_KEY = 'permissions';
 /**
  * Usage: @RequirePermission(AclModule.PRODUCTS, 'canEdit')
  */
-export const RequirePermission = (module: AclModule, action: 'canRead' | 'canCreate' | 'canEdit' | 'canDelete') =>
-  SetMetadata(PERMISSIONS_KEY, { module, action });
+export const RequirePermission = (
+  module: AclModule,
+  action: 'canRead' | 'canCreate' | 'canEdit' | 'canDelete',
+) => SetMetadata(PERMISSIONS_KEY, { module, action });
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -26,10 +28,10 @@ export class PermissionsGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requirement = this.reflector.getAllAndOverride<{ module: AclModule; action: string }>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requirement = this.reflector.getAllAndOverride<{
+      module: AclModule;
+      action: string;
+    }>(PERMISSIONS_KEY, [context.getHandler(), context.getClass()]);
 
     // No permission requirement = allow
     if (!requirement) return true;

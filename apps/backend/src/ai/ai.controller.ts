@@ -43,15 +43,14 @@ export class AIController {
    * Public chat endpoint with SSE streaming (no auth required).
    */
   @Post('public/chat')
-  async publicChat(
-    @Body() body: AskDto,
-    @Req() req: any,
-    @Res() res: any,
-  ) {
+  async publicChat(@Body() body: AskDto, @Req() req: any, @Res() res: any) {
     // Check if chatbot is enabled
     const config = await this.configService.getConfig();
     if (!config.enabled) {
-      throw new HttpException('Chatbot đang tạm ngừng hoạt động.', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(
+        'Chatbot đang tạm ngừng hoạt động.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
 
     const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
@@ -79,7 +78,12 @@ export class AIController {
     );
 
     // Add user message. Internal (JWT-authenticated) users bypass the session limit.
-    await this.sessionService.addUserMessage(session.id, body.question, ipAddress, isInternalUser);
+    await this.sessionService.addUserMessage(
+      session.id,
+      body.question,
+      ipAddress,
+      isInternalUser,
+    );
 
     // Set SSE headers
     res.setHeader('Content-Type', 'text/event-stream');
@@ -98,22 +102,32 @@ export class AIController {
       )) {
         if (chunk.type === 'token') {
           fullAnswer += chunk.data;
-          res.write(`event: token\ndata: ${JSON.stringify({ token: chunk.data })}\n\n`);
+          res.write(
+            `event: token\ndata: ${JSON.stringify({ token: chunk.data })}\n\n`,
+          );
         } else if (chunk.type === 'done') {
           try {
             const parsed = JSON.parse(chunk.data);
             sources = parsed.sources || [];
           } catch {}
-          res.write(`event: done\ndata: ${JSON.stringify({ sessionId: session.id, sources })}\n\n`);
+          res.write(
+            `event: done\ndata: ${JSON.stringify({ sessionId: session.id, sources })}\n\n`,
+          );
         }
       }
     } catch (error: any) {
-      res.write(`event: error\ndata: ${JSON.stringify({ message: error.message })}\n\n`);
+      res.write(
+        `event: error\ndata: ${JSON.stringify({ message: error.message })}\n\n`,
+      );
     }
 
     // Save assistant message
     if (fullAnswer) {
-      await this.sessionService.addAssistantMessage(session.id, fullAnswer, sources);
+      await this.sessionService.addAssistantMessage(
+        session.id,
+        fullAnswer,
+        sources,
+      );
     }
 
     res.end();
@@ -141,10 +155,7 @@ export class AIController {
   @Post('admin/knowledge')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('file'))
-  async uploadKnowledge(
-    @UploadedFile() file: any,
-    @Req() req: any,
-  ) {
+  async uploadKnowledge(@UploadedFile() file: any, @Req() req: any) {
     if (!file) throw new BadRequestException('File is required');
 
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -205,15 +216,25 @@ export class AIController {
   async updateConfig(@Body() body: UpdateConfigDto) {
     // Validate API keys if provided
     if (body.primaryApiKey && body.primaryProvider) {
-      const validation = await this.configService.validateApiKey(body.primaryProvider, body.primaryApiKey);
+      const validation = await this.configService.validateApiKey(
+        body.primaryProvider,
+        body.primaryApiKey,
+      );
       if (!validation.valid) {
-        throw new BadRequestException('Primary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.');
+        throw new BadRequestException(
+          'Primary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.',
+        );
       }
     }
     if (body.secondaryApiKey && body.secondaryProvider) {
-      const validation = await this.configService.validateApiKey(body.secondaryProvider, body.secondaryApiKey);
+      const validation = await this.configService.validateApiKey(
+        body.secondaryProvider,
+        body.secondaryApiKey,
+      );
       if (!validation.valid) {
-        throw new BadRequestException('Secondary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.');
+        throw new BadRequestException(
+          'Secondary API key không hợp lệ hoặc đã hết quota. Vui lòng kiểm tra lại.',
+        );
       }
     }
 

@@ -62,14 +62,16 @@ export class ProductsController {
     @Query('page') page = 1,
     @Query('limit') limit = 20,
   ) {
-    return this.inventoryService.findProducts(search, categoryId, +page, +limit);
+    return this.inventoryService.findProducts(
+      search,
+      categoryId,
+      +page,
+      +limit,
+    );
   }
 
   @Get('lookup')
-  async lookup(
-    @Query('barcode') barcode?: string,
-    @Query('qr') qr?: string,
-  ) {
+  async lookup(@Query('barcode') barcode?: string, @Query('qr') qr?: string) {
     if (barcode) return this.inventoryService.lookupByBarcode(barcode);
     if (qr) return this.inventoryService.lookupByQr(qr);
     return { error: 'Provide barcode or qr parameter' };
@@ -90,14 +92,19 @@ export class ProductsController {
   @Roles(UserRole.ADMIN, UserRole.INVENTORY)
   @UseInterceptors(FilesInterceptor('files', 10))
   async upload(@UploadedFiles() files: Express.Multer.File[]) {
-    if (!files || files.length === 0) throw new BadRequestException('No files provided');
-    
-    const uploadPromises = files.map(file => {
+    if (!files || files.length === 0)
+      throw new BadRequestException('No files provided');
+
+    const uploadPromises = files.map((file) => {
       if (!ALLOWED_MIMES.includes(file.mimetype)) {
-        throw new BadRequestException(`File type not allowed for ${file.originalname}. Allowed: JPEG, PNG, WebP, GIF`);
+        throw new BadRequestException(
+          `File type not allowed for ${file.originalname}. Allowed: JPEG, PNG, WebP, GIF`,
+        );
       }
       if (file.size > MAX_SIZE) {
-        throw new BadRequestException(`File ${file.originalname} too large. Maximum 5MB`);
+        throw new BadRequestException(
+          `File ${file.originalname} too large. Maximum 5MB`,
+        );
       }
 
       const ext = file.originalname.split('.').pop() || 'jpg';
@@ -107,7 +114,7 @@ export class ProductsController {
 
     const results = await Promise.all(uploadPromises);
     // Assuming uploadFile returns an object { url: string } or a string directly based on Blog implementation
-    return { urls: results.map(r => (typeof r === 'string' ? r : r.url)) };
+    return { urls: results.map((r) => (typeof r === 'string' ? r : r.url)) };
   }
 
   @Post()
@@ -147,11 +154,22 @@ export class ProductsController {
   @Put(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.INVENTORY)
-  async update(@Param('id') id: string, @Body() dto: Partial<CreateProductDto>) {
-    const { unitConversions, units, category, createdAt, updatedAt, id: productId, ...productFields } = dto as any;
+  async update(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateProductDto>,
+  ) {
+    const {
+      unitConversions,
+      units,
+      category,
+      createdAt,
+      updatedAt,
+      id: productId,
+      ...productFields
+    } = dto as any;
 
     // Update product fields
-    await this.productRepo.update(id, productFields as any);
+    await this.productRepo.update(id, productFields);
 
     // Replace unit conversions if provided
     if (unitConversions) {

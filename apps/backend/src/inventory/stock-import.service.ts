@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { StockEntry, StockEntryType } from './entities/stock-entry.entity';
@@ -50,8 +54,11 @@ export class StockImportService {
    * Auto-generates batchNumber (YYYYMMDD-SKU-HHMM), sets remainingQuantity for batch tracking.
    */
   async importStock(dto: StockImportDto, userId: string): Promise<StockEntry> {
-    const product = await this.productRepo.findOne({ where: { id: dto.productId } });
-    if (!product) throw new NotFoundException(`Product ${dto.productId} not found`);
+    const product = await this.productRepo.findOne({
+      where: { id: dto.productId },
+    });
+    if (!product)
+      throw new NotFoundException(`Product ${dto.productId} not found`);
 
     if (dto.quantity <= 0) {
       throw new BadRequestException('Quantity must be positive');
@@ -65,7 +72,11 @@ export class StockImportService {
 
     const batchNumber = this.generateBatchNumber(product.sku);
 
-    await this.productRepo.increment({ id: dto.productId }, 'currentStockBase', baseQty);
+    await this.productRepo.increment(
+      { id: dto.productId },
+      'currentStockBase',
+      baseQty,
+    );
 
     const entry = this.stockEntryRepo.create({
       productId: dto.productId,
@@ -90,8 +101,11 @@ export class StockImportService {
     dto: StockAdjustDto,
     userId: string,
   ): Promise<{ entries: StockEntry[]; totalDeducted: number }> {
-    const product = await this.productRepo.findOne({ where: { id: dto.productId } });
-    if (!product) throw new NotFoundException(`Product ${dto.productId} not found`);
+    const product = await this.productRepo.findOne({
+      where: { id: dto.productId },
+    });
+    if (!product)
+      throw new NotFoundException(`Product ${dto.productId} not found`);
 
     if (dto.quantity <= 0) {
       throw new BadRequestException('Quantity must be positive');
@@ -202,7 +216,10 @@ export class StockImportService {
     type?: string,
     page = 1,
     limit = 20,
-  ): Promise<{ data: StockEntry[]; meta: { total: number; page: number; limit: number } }> {
+  ): Promise<{
+    data: StockEntry[];
+    meta: { total: number; page: number; limit: number };
+  }> {
     const qb = this.stockEntryRepo
       .createQueryBuilder('entry')
       .leftJoinAndSelect('entry.product', 'product')
@@ -253,7 +270,9 @@ export class StockImportService {
     return this.productRepo
       .createQueryBuilder('product')
       .where('product.expirationDate IS NOT NULL')
-      .andWhere('product.expirationDate <= :cutoff', { cutoff: cutoff.toISOString().split('T')[0] })
+      .andWhere('product.expirationDate <= :cutoff', {
+        cutoff: cutoff.toISOString().split('T')[0],
+      })
       .andWhere('product.isActive = :active', { active: true })
       .orderBy('product.expirationDate', 'ASC')
       .getMany();
@@ -262,7 +281,10 @@ export class StockImportService {
   /**
    * Get slow-moving products: no sales in X days AND stock > minStock.
    */
-  async getSlowMovingProducts(days: number = 30, minStock: number = 10): Promise<Product[]> {
+  async getSlowMovingProducts(
+    days: number = 30,
+    minStock: number = 10,
+  ): Promise<Product[]> {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
 

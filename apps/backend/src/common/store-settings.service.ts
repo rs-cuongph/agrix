@@ -41,7 +41,7 @@ export class StoreSettingsService implements OnModuleInit {
   }
 
   async upsertSettings(dto: Partial<StoreSettings>): Promise<StoreSettings> {
-    let settings = await this.repo.findOne({ where: {} });
+    const settings = await this.repo.findOne({ where: {} });
     if (settings) {
       Object.assign(settings, dto);
       return this.repo.save(settings);

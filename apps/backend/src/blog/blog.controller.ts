@@ -21,7 +21,10 @@ import { BlogService } from './blog.service';
 import { StorageService } from '../storage/storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/create-category.dto';
+import {
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from './dto/create-category.dto';
 import { CreateTagDto, UpdateTagDto } from './dto/create-tag.dto';
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -70,7 +73,9 @@ export class BlogController {
   async upload(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file provided');
     if (!ALLOWED_MIMES.includes(file.mimetype))
-      throw new BadRequestException('File type not allowed. Allowed: JPEG, PNG, WebP, GIF');
+      throw new BadRequestException(
+        'File type not allowed. Allowed: JPEG, PNG, WebP, GIF',
+      );
     if (file.size > MAX_SIZE)
       throw new BadRequestException('File too large. Maximum 5MB');
 
@@ -128,14 +133,20 @@ export class BlogController {
   @Post('admin/posts/:id/products')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async linkProducts(@Param('id') id: string, @Body() body: { productIds: string[] }) {
+  async linkProducts(
+    @Param('id') id: string,
+    @Body() body: { productIds: string[] },
+  ) {
     return this.blogService.linkProducts(id, body.productIds);
   }
 
   @Delete('admin/posts/:id/products/:productId')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async unlinkProduct(@Param('id') id: string, @Param('productId') productId: string) {
+  async unlinkProduct(
+    @Param('id') id: string,
+    @Param('productId') productId: string,
+  ) {
     return this.blogService.unlinkProduct(id, productId);
   }
 
@@ -158,7 +169,10 @@ export class BlogController {
   @Put('admin/categories/:id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
-  async updateCategory(@Param('id') id: string, @Body() body: UpdateCategoryDto) {
+  async updateCategory(
+    @Param('id') id: string,
+    @Body() body: UpdateCategoryDto,
+  ) {
     return this.blogService.updateCategory(id, body);
   }
 

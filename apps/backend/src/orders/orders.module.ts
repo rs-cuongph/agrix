@@ -20,4 +20,3 @@ import { Customer } from '../customers/entities/customer.entity';
   exports: [OrderService],
 })
 export class OrdersModule {}
-

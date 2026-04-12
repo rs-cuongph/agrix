@@ -10,7 +10,9 @@ const ENCODING: BufferEncoding = 'hex';
  */
 function getKey(key: string): Buffer {
   if (!key) {
-    throw new Error('AES encryption key string not provided. Must be 32 bytes (64 hex characters) for AES-256.');
+    throw new Error(
+      'AES encryption key string not provided. Must be 32 bytes (64 hex characters) for AES-256.',
+    );
   }
   return Buffer.from(key, 'hex');
 }

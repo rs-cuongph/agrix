@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Brackets } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -48,7 +53,9 @@ export class OrderService {
     for (let attempt = 0; attempt < 10; attempt++) {
       const digits = Math.floor(100000 + Math.random() * 900000).toString();
       const code = `DH${digits}`;
-      const existing = await this.orderRepo.findOne({ where: { orderCode: code } });
+      const existing = await this.orderRepo.findOne({
+        where: { orderCode: code },
+      });
       if (!existing) return code;
     }
     throw new Error('Failed to generate unique orderCode after 10 attempts');
@@ -112,37 +119,54 @@ export class OrderService {
       // Update customer debt if partial payment
       if (dto.customerId && actualPaidAmount < totalAmount) {
         const debtAmount = totalAmount - actualPaidAmount;
-        await manager.increment(Customer, { id: dto.customerId }, 'outstandingDebt', debtAmount);
+        await manager.increment(
+          Customer,
+          { id: dto.customerId },
+          'outstandingDebt',
+          debtAmount,
+        );
       }
 
       return saved;
     });
   }
 
-  async confirmBankTransfer(dto: BankTransferWebhookDto): Promise<{ orderCode: string; newStatus: OrderStatus }> {
+  async confirmBankTransfer(
+    dto: BankTransferWebhookDto,
+  ): Promise<{ orderCode: string; newStatus: OrderStatus }> {
     const order = await this.orderRepo.findOne({
       where: { orderCode: dto.orderCode },
       relations: ['customer'],
     });
 
     if (!order) {
-      throw new BadRequestException(`Không tìm thấy đơn hàng với mã: ${dto.orderCode}`);
+      throw new BadRequestException(
+        `Không tìm thấy đơn hàng với mã: ${dto.orderCode}`,
+      );
     }
 
     if (order.status === OrderStatus.COMPLETED) {
-      throw new ConflictException(`Đơn hàng ${dto.orderCode} đã được thanh toán trước đó`);
+      throw new ConflictException(
+        `Đơn hàng ${dto.orderCode} đã được thanh toán trước đó`,
+      );
     }
 
     if (order.status === OrderStatus.CANCELLED) {
-      throw new BadRequestException(`Đơn hàng ${dto.orderCode} đã bị hủy, không thể xác nhận`);
+      throw new BadRequestException(
+        `Đơn hàng ${dto.orderCode} đã bị hủy, không thể xác nhận`,
+      );
     }
 
     return this.dataSource.transaction(async (manager) => {
       // Update order status
-      await manager.update(Order, { id: order.id }, {
-        status: OrderStatus.COMPLETED,
-        paidAmount: order.totalAmount, // Mark as fully paid
-      });
+      await manager.update(
+        Order,
+        { id: order.id },
+        {
+          status: OrderStatus.COMPLETED,
+          paidAmount: order.totalAmount, // Mark as fully paid
+        },
+      );
 
       // Reduce customer debt if applicable
       if (order.customerId) {
@@ -167,7 +191,13 @@ export class OrderService {
     return receivedSecret === expected;
   }
 
-  async findOrders(from?: string, to?: string, search?: string, page = 1, limit = 20) {
+  async findOrders(
+    from?: string,
+    to?: string,
+    search?: string,
+    page = 1,
+    limit = 20,
+  ) {
     const qb = this.orderRepo
       .createQueryBuilder('order')
       .leftJoinAndSelect('order.items', 'items')
@@ -180,11 +210,17 @@ export class OrderService {
     if (from) qb.andWhere('order.createdAt >= :from', { from });
     if (to) qb.andWhere('order.createdAt <= :to', { to });
     if (search) {
-      qb.andWhere(new Brackets(qb => {
-        qb.where('CAST(order.id AS VARCHAR) LIKE :search', { search: `%${search}%` })
-          .orWhere('LOWER(order.orderCode) LIKE LOWER(:search)', { search: `%${search}%` })
-          .orWhere('customer.phone LIKE :search', { search: `%${search}%` });
-      }));
+      qb.andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(order.id AS VARCHAR) LIKE :search', {
+            search: `%${search}%`,
+          })
+            .orWhere('LOWER(order.orderCode) LIKE LOWER(:search)', {
+              search: `%${search}%`,
+            })
+            .orWhere('customer.phone LIKE :search', { search: `%${search}%` });
+        }),
+      );
     }
 
     const [data, total] = await qb.getManyAndCount();
@@ -212,7 +248,12 @@ export class OrderService {
       // 1. Revert debt if applicable
       if (order.customerId && order.paidAmount < order.totalAmount) {
         const debtAmount = order.totalAmount - order.paidAmount;
-        await manager.decrement(Customer, { id: order.customerId }, 'outstandingDebt', debtAmount);
+        await manager.decrement(
+          Customer,
+          { id: order.customerId },
+          'outstandingDebt',
+          debtAmount,
+        );
       }
 
       // 2. Revert stock via Inventory Service

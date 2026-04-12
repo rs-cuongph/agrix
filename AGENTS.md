@@ -99,3 +99,10 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+## Active Technologies
+- TypeScript 5.x trên Node.js cho backend NestJS và Next.js 14 cho web admin + NestJS 11, TypeORM 0.3, PostgreSQL, Next.js 14, React 18, shadcn/ui, Sonner, jsPDF (014-advanced-reporting-dashboard)
+- PostgreSQL cho dữ liệu nghiệp vụ; file xuất được tạo theo yêu cầu từ dữ liệu truy vấn thời gian thực (014-advanced-reporting-dashboard)
+
+## Recent Changes
+- 014-advanced-reporting-dashboard: Added TypeScript 5.x trên Node.js cho backend NestJS và Next.js 14 cho web admin + NestJS 11, TypeORM 0.3, PostgreSQL, Next.js 14, React 18, shadcn/ui, Sonner, jsPDF

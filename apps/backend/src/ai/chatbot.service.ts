@@ -30,7 +30,10 @@ export class ChatbotService {
     const config = await this.configService.getConfig();
 
     // Search for relevant knowledge chunks
-    const chunks = await this.knowledgeService.searchRelevantChunks(question, 5);
+    const chunks = await this.knowledgeService.searchRelevantChunks(
+      question,
+      5,
+    );
 
     // Build context from chunks
     const contextParts: string[] = [];
@@ -53,7 +56,8 @@ export class ChatbotService {
     const context = contextParts.join('\n\n---\n\n');
 
     // Build messages for LLM
-    const systemPrompt = config.systemPrompt || 'Bạn là chuyên gia nông nghiệp của Agrix.';
+    const systemPrompt =
+      config.systemPrompt || 'Bạn là chuyên gia nông nghiệp của Agrix.';
     const messages: LLMMessage[] = [
       {
         role: 'system',
@@ -77,7 +81,10 @@ export class ChatbotService {
   ): AsyncGenerator<{ type: 'token' | 'done'; data: string }> {
     const config = await this.configService.getConfig();
 
-    const chunks = await this.knowledgeService.searchRelevantChunks(question, 5);
+    const chunks = await this.knowledgeService.searchRelevantChunks(
+      question,
+      5,
+    );
     const contextParts: string[] = [];
     const sources: ChatResponse['sources'] = [];
 
@@ -95,7 +102,8 @@ export class ChatbotService {
     }
 
     const context = contextParts.join('\n\n---\n\n');
-    const systemPrompt = config.systemPrompt || 'Bạn là chuyên gia nông nghiệp của Agrix.';
+    const systemPrompt =
+      config.systemPrompt || 'Bạn là chuyên gia nông nghiệp của Agrix.';
 
     const messages: LLMMessage[] = [
       {
@@ -119,16 +127,24 @@ export class ChatbotService {
         yield { type: 'done', data: JSON.stringify({ sources }) };
         return;
       } catch (error: any) {
-        this.logger.warn(`Streaming with ${provider} failed: ${error.message}, trying next...`);
+        this.logger.warn(
+          `Streaming with ${provider} failed: ${error.message}, trying next...`,
+        );
       }
     }
 
     // All providers failed
-    yield { type: 'token', data: 'Lỗi: Không thể kết nối AI. Vui lòng liên hệ cửa hàng.' };
+    yield {
+      type: 'token',
+      data: 'Lỗi: Không thể kết nối AI. Vui lòng liên hệ cửa hàng.',
+    };
     yield { type: 'done', data: JSON.stringify({ sources: [] }) };
   }
 
-  private async callWithFallback(messages: LLMMessage[], config: any): Promise<string> {
+  private async callWithFallback(
+    messages: LLMMessage[],
+    config: any,
+  ): Promise<string> {
     const providers = this.getProviderOrder(config);
 
     for (const { provider, apiKey } of providers) {
@@ -150,15 +166,24 @@ export class ChatbotService {
   private getProviderOrder(config: any) {
     const providers: { provider: string; apiKey: string }[] = [];
     if (config.primaryProvider && config.primaryApiKey) {
-      providers.push({ provider: config.primaryProvider, apiKey: config.primaryApiKey });
+      providers.push({
+        provider: config.primaryProvider,
+        apiKey: config.primaryApiKey,
+      });
     }
     if (config.secondaryProvider && config.secondaryApiKey) {
-      providers.push({ provider: config.secondaryProvider, apiKey: config.secondaryApiKey });
+      providers.push({
+        provider: config.secondaryProvider,
+        apiKey: config.secondaryApiKey,
+      });
     }
     return providers;
   }
 
-  private async callOpenAI(messages: LLMMessage[], apiKey: string): Promise<string> {
+  private async callOpenAI(
+    messages: LLMMessage[],
+    apiKey: string,
+  ): Promise<string> {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -166,7 +191,8 @@ export class ChatbotService {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
+        model:
+          this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
         messages,
         max_tokens: 1024,
         temperature: 0.3,
@@ -174,10 +200,12 @@ export class ChatbotService {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `OpenAI API error: ${response.status} ${response.statusText}`,
+      );
     }
 
-    const data = (await response.json()) as any;
+    const data = await response.json();
     return data.choices?.[0]?.message?.content || 'Không thể xử lý câu hỏi.';
   }
 
@@ -192,7 +220,8 @@ export class ChatbotService {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
+        model:
+          this.nestConfigService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
         messages,
         max_tokens: 1024,
         temperature: 0.3,
@@ -234,13 +263,21 @@ export class ChatbotService {
     }
   }
 
-  private async callGemini(messages: LLMMessage[], apiKey: string): Promise<string> {
+  private async callGemini(
+    messages: LLMMessage[],
+    apiKey: string,
+  ): Promise<string> {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: this.nestConfigService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model:
+        this.nestConfigService.get<string>('GEMINI_MODEL') ||
+        'gemini-2.0-flash',
+    });
 
     // Convert messages to Gemini format
-    const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
+    const systemInstruction =
+      messages.find((m) => m.role === 'system')?.content || '';
     const userMessage = messages.find((m) => m.role === 'user')?.content || '';
 
     const result = await model.generateContent({
@@ -257,9 +294,14 @@ export class ChatbotService {
   ): AsyncGenerator<{ type: 'token' | 'done'; data: string }> {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: this.nestConfigService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({
+      model:
+        this.nestConfigService.get<string>('GEMINI_MODEL') ||
+        'gemini-2.0-flash',
+    });
 
-    const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
+    const systemInstruction =
+      messages.find((m) => m.role === 'system')?.content || '';
     const userMessage = messages.find((m) => m.role === 'user')?.content || '';
 
     const result = await model.generateContentStream({

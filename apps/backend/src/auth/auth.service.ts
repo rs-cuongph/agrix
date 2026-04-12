@@ -48,7 +48,7 @@ export class AuthService {
       where: [{ role: UserRole.ADMIN }, { role: UserRole.CASHIER }],
       select: ['id', 'username', 'fullName', 'role', 'isActive'],
     });
-    return users.filter(u => u.isActive);
+    return users.filter((u) => u.isActive);
   }
 
   async posLogin(username: string, pin: string) {
@@ -58,7 +58,11 @@ export class AuthService {
       where: { username },
     });
 
-    if (!user || (![UserRole.ADMIN, UserRole.CASHIER].includes(user.role)) || !user.isActive) {
+    if (
+      !user ||
+      ![UserRole.ADMIN, UserRole.CASHIER].includes(user.role) ||
+      !user.isActive
+    ) {
       throw new UnauthorizedException('Tài khoản không hợp lệ');
     }
 

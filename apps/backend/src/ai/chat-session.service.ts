@@ -27,7 +27,9 @@ export class ChatSessionService {
     ipAddress?: string,
   ): Promise<ChatSession> {
     if (sessionId) {
-      const existing = await this.sessionRepo.findOne({ where: { id: sessionId } });
+      const existing = await this.sessionRepo.findOne({
+        where: { id: sessionId },
+      });
       if (existing) return existing;
     }
 
@@ -43,11 +45,18 @@ export class ChatSessionService {
    * Add a user message to the session. Enforces rate limit and session limit.
    * @param isInternalUser - If true (JWT-verified), skip the per-session message limit.
    */
-  async addUserMessage(sessionId: string, content: string, ipAddress?: string, isInternalUser = false): Promise<ChatMessage> {
+  async addUserMessage(
+    sessionId: string,
+    content: string,
+    ipAddress?: string,
+    isInternalUser = false,
+  ): Promise<ChatMessage> {
     const config = await this.configService.getConfig();
 
     // Check session message limit — skipped for authenticated internal users (POS / Admin)
-    const session = await this.sessionRepo.findOne({ where: { id: sessionId } });
+    const session = await this.sessionRepo.findOne({
+      where: { id: sessionId },
+    });
     if (!session) throw new BadRequestException('Session not found');
 
     if (!isInternalUser) {
@@ -70,7 +79,9 @@ export class ChatSessionService {
         relations: ['session'],
       });
       if (recentCount >= 10) {
-        throw new BadRequestException('Bạn đang gửi quá nhanh. Vui lòng đợi 1 phút.');
+        throw new BadRequestException(
+          'Bạn đang gửi quá nhanh. Vui lòng đợi 1 phút.',
+        );
       }
     }
 

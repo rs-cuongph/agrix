@@ -24,7 +24,17 @@ import { AuthModule } from '../auth/auth.module';
     AuthModule,
   ],
   controllers: [AIController],
-  providers: [KnowledgeService, ChatbotService, ChatSessionService, ChatConfigService],
-  exports: [KnowledgeService, ChatbotService, ChatSessionService, ChatConfigService],
+  providers: [
+    KnowledgeService,
+    ChatbotService,
+    ChatSessionService,
+    ChatConfigService,
+  ],
+  exports: [
+    KnowledgeService,
+    ChatbotService,
+    ChatSessionService,
+    ChatConfigService,
+  ],
 })
 export class AIModule {}

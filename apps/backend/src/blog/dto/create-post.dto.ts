@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsNotEmpty, IsEnum, IsArray, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  IsEnum,
+  IsArray,
+  IsUUID,
+} from 'class-validator';
 import { BlogPostStatus } from '../entities/blog-post.entity';
 
 export class CreatePostDto {

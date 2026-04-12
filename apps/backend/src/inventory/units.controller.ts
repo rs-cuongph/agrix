@@ -31,7 +31,9 @@ export class UnitsController {
 
   @Post()
   @Roles(UserRole.ADMIN)
-  async create(@Body() body: { name: string; abbreviation?: string; description?: string }) {
+  async create(
+    @Body() body: { name: string; abbreviation?: string; description?: string },
+  ) {
     const unit = this.unitRepo.create(body);
     return this.unitRepo.save(unit);
   }
@@ -40,7 +42,8 @@ export class UnitsController {
   @Roles(UserRole.ADMIN)
   async update(
     @Param('id') id: string,
-    @Body() body: { name?: string; abbreviation?: string; description?: string },
+    @Body()
+    body: { name?: string; abbreviation?: string; description?: string },
   ) {
     await this.unitRepo.update(id, body);
     return this.unitRepo.findOneByOrFail({ id });

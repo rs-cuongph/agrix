@@ -23,10 +23,12 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
       isGlobal: true,
       envFilePath: ['.env', '../../docker/.env'],
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     DatabaseModule,
     AuthModule,
     InventoryModule,
@@ -53,4 +55,3 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
   ],
 })
 export class AppModule {}
-

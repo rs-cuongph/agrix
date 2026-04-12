@@ -23,20 +23,37 @@ import { PermissionsService } from './permissions.service';
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET');
         if (!secret && process.env.NODE_ENV === 'production') {
-          throw new Error('JWT_SECRET environment variable is required in production');
+          throw new Error(
+            'JWT_SECRET environment variable is required in production',
+          );
         }
         return {
           secret: secret || 'dev-only-secret',
           signOptions: {
-            expiresIn: configService.get<string>('JWT_EXPIRATION', '24h') as any,
+            expiresIn: configService.get<string>(
+              'JWT_EXPIRATION',
+              '24h',
+            ) as any,
           },
         };
       },
     }),
   ],
   controllers: [AuthController, AdminUsersController],
-  providers: [AuthService, PermissionsService, JwtStrategy, RolesGuard, PermissionsGuard],
-  exports: [AuthService, PermissionsService, JwtStrategy, RolesGuard, PermissionsGuard, JwtModule],
+  providers: [
+    AuthService,
+    PermissionsService,
+    JwtStrategy,
+    RolesGuard,
+    PermissionsGuard,
+  ],
+  exports: [
+    AuthService,
+    PermissionsService,
+    JwtStrategy,
+    RolesGuard,
+    PermissionsGuard,
+    JwtModule,
+  ],
 })
 export class AuthModule {}
-

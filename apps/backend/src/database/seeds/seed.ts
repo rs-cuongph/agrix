@@ -9,7 +9,9 @@ import * as path from 'path';
 async function seed() {
   const ds = new DataSource({
     type: 'postgres',
-    url: process.env.DATABASE_URL || 'postgres://agrix:agrix_secret@localhost:5432/agrix',
+    url:
+      process.env.DATABASE_URL ||
+      'postgres://agrix:agrix_secret@localhost:5432/agrix',
     entities: [path.join(__dirname, '../../**/*.entity.{ts,js}')],
     synchronize: false,
   });
@@ -24,9 +26,9 @@ async function seed() {
     { table: 'products', col: 'image_url' },
   ];
   for (const { table, col } of staleCols) {
-    await ds.query(
-      `ALTER TABLE ${table} DROP COLUMN IF EXISTS ${col}`,
-    ).catch(() => {});
+    await ds
+      .query(`ALTER TABLE ${table} DROP COLUMN IF EXISTS ${col}`)
+      .catch(() => {});
   }
   console.log('✅ Stale columns cleaned');
 
@@ -90,13 +92,69 @@ async function seed() {
 
   // 4. Create products (initial stock = 0, will be set via stock entries)
   const products = [
-    { sku: 'TTS-001', name: 'Thuốc trừ sâu Regent 800WG', category: 'Thuốc trừ sâu', baseUnit: 'Gói', sellPrice: 22000, stock: 500, costPrice: 15000 },
-    { sku: 'TTS-002', name: 'Thuốc diệt cỏ Gramaxone', category: 'Thuốc trừ sâu', baseUnit: 'Chai', sellPrice: 65000, stock: 200, costPrice: 45000 },
-    { sku: 'PB-001', name: 'Phân NPK 16-16-8 Đầu Trâu', category: 'Phân bón', baseUnit: 'Kg', sellPrice: 12000, stock: 2000, costPrice: 8000 },
-    { sku: 'PB-002', name: 'Phân hữu cơ vi sinh Sông Gianh', category: 'Phân bón', baseUnit: 'Kg', sellPrice: 8000, stock: 3000, costPrice: 5000 },
-    { sku: 'HG-001', name: 'Hạt giống dưa leo F1', category: 'Hạt giống', baseUnit: 'Gói', sellPrice: 40000, stock: 150, costPrice: 25000 },
-    { sku: 'HG-002', name: 'Hạt giống cà chua Savior', category: 'Hạt giống', baseUnit: 'Gói', sellPrice: 55000, stock: 100, costPrice: 35000 },
-    { sku: 'DC-001', name: 'Bình xịt điện 20L', category: 'Dụng cụ', baseUnit: 'Cái', sellPrice: 650000, stock: 20, costPrice: 450000 },
+    {
+      sku: 'TTS-001',
+      name: 'Thuốc trừ sâu Regent 800WG',
+      category: 'Thuốc trừ sâu',
+      baseUnit: 'Gói',
+      sellPrice: 22000,
+      stock: 500,
+      costPrice: 15000,
+    },
+    {
+      sku: 'TTS-002',
+      name: 'Thuốc diệt cỏ Gramaxone',
+      category: 'Thuốc trừ sâu',
+      baseUnit: 'Chai',
+      sellPrice: 65000,
+      stock: 200,
+      costPrice: 45000,
+    },
+    {
+      sku: 'PB-001',
+      name: 'Phân NPK 16-16-8 Đầu Trâu',
+      category: 'Phân bón',
+      baseUnit: 'Kg',
+      sellPrice: 12000,
+      stock: 2000,
+      costPrice: 8000,
+    },
+    {
+      sku: 'PB-002',
+      name: 'Phân hữu cơ vi sinh Sông Gianh',
+      category: 'Phân bón',
+      baseUnit: 'Kg',
+      sellPrice: 8000,
+      stock: 3000,
+      costPrice: 5000,
+    },
+    {
+      sku: 'HG-001',
+      name: 'Hạt giống dưa leo F1',
+      category: 'Hạt giống',
+      baseUnit: 'Gói',
+      sellPrice: 40000,
+      stock: 150,
+      costPrice: 25000,
+    },
+    {
+      sku: 'HG-002',
+      name: 'Hạt giống cà chua Savior',
+      category: 'Hạt giống',
+      baseUnit: 'Gói',
+      sellPrice: 55000,
+      stock: 100,
+      costPrice: 35000,
+    },
+    {
+      sku: 'DC-001',
+      name: 'Bình xịt điện 20L',
+      category: 'Dụng cụ',
+      baseUnit: 'Cái',
+      sellPrice: 650000,
+      stock: 20,
+      costPrice: 450000,
+    },
   ];
 
   for (const p of products) {
@@ -110,7 +168,9 @@ async function seed() {
   console.log('✅ Products seeded');
 
   // 4b. Create stock entry IMPORT records for initial stock (data consistency)
-  const adminRow = await ds.query(`SELECT id FROM users WHERE username = 'admin' LIMIT 1`);
+  const adminRow = await ds.query(
+    `SELECT id FROM users WHERE username = 'admin' LIMIT 1`,
+  );
   const adminId = adminRow[0]?.id;
   const prodRows = await ds.query(`SELECT id, sku FROM products`);
   const prodMap = Object.fromEntries(prodRows.map((r: any) => [r.sku, r.id]));
@@ -143,9 +203,21 @@ async function seed() {
 
   // 6. Create demo customers
   const customers = [
-    { name: 'Nguyễn Văn An', phone: '0901234567', address: 'Ấp 3, xã Tân Hiệp' },
-    { name: 'Trần Thị Bình', phone: '0912345678', address: 'Thôn 2, xã Hòa Bình' },
-    { name: 'Lê Minh Châu', phone: '0923456789', address: 'Ấp Long Thạnh, xã An Phú' },
+    {
+      name: 'Nguyễn Văn An',
+      phone: '0901234567',
+      address: 'Ấp 3, xã Tân Hiệp',
+    },
+    {
+      name: 'Trần Thị Bình',
+      phone: '0912345678',
+      address: 'Thôn 2, xã Hòa Bình',
+    },
+    {
+      name: 'Lê Minh Châu',
+      phone: '0923456789',
+      address: 'Ấp Long Thạnh, xã An Phú',
+    },
   ];
 
   for (const c of customers) {
@@ -159,9 +231,21 @@ async function seed() {
   console.log('✅ Customers seeded');
 
   // 7. Seed role permissions (ACL)
-  const modules = ['products', 'orders', 'customers', 'blog', 'settings', 'units'];
-  const permissionMatrix: Record<string, Record<string, [boolean, boolean, boolean, boolean]>> = {
-    ADMIN: Object.fromEntries(modules.map(m => [m, [true, true, true, true]])),
+  const modules = [
+    'products',
+    'orders',
+    'customers',
+    'blog',
+    'settings',
+    'units',
+  ];
+  const permissionMatrix: Record<
+    string,
+    Record<string, [boolean, boolean, boolean, boolean]>
+  > = {
+    ADMIN: Object.fromEntries(
+      modules.map((m) => [m, [true, true, true, true]]),
+    ),
     CASHIER: {
       products: [true, false, false, false],
       orders: [true, true, false, false],
@@ -181,7 +265,10 @@ async function seed() {
   };
 
   for (const [role, perms] of Object.entries(permissionMatrix)) {
-    for (const [mod, [canRead, canCreate, canEdit, canDelete]] of Object.entries(perms)) {
+    for (const [
+      mod,
+      [canRead, canCreate, canEdit, canDelete],
+    ] of Object.entries(perms)) {
       await ds.query(
         `INSERT INTO role_permissions (id, role, module, can_read, can_create, can_edit, can_delete)
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)

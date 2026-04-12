@@ -10,7 +10,12 @@ import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BlogPost, BlogCategory, BlogTag, BlogPostProduct]),
+    TypeOrmModule.forFeature([
+      BlogPost,
+      BlogCategory,
+      BlogTag,
+      BlogPostProduct,
+    ]),
     StorageModule,
   ],
   controllers: [BlogController],

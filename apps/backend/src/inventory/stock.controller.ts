@@ -39,7 +39,10 @@ export class StockController {
     @Query('limit') limit?: number,
   ) {
     return this.stockImportService.getStockHistory(
-      productId, type, page ? +page : 1, limit ? +limit : 20,
+      productId,
+      type,
+      page ? +page : 1,
+      limit ? +limit : 20,
     );
   }
 
@@ -78,7 +81,8 @@ export class StockController {
     @Query('minStock') minStock?: number,
   ) {
     return this.stockImportService.getSlowMovingProducts(
-      days ? +days : 30, minStock ? +minStock : 10,
+      days ? +days : 30,
+      minStock ? +minStock : 10,
     );
   }
 }

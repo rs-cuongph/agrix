@@ -22,12 +22,14 @@ export class StorageService {
     // Always ensure public read policy
     const policy = JSON.stringify({
       Version: '2012-10-17',
-      Statement: [{
-        Effect: 'Allow',
-        Principal: { AWS: ['*'] },
-        Action: ['s3:GetObject'],
-        Resource: [`arn:aws:s3:::${this.bucket}/*`],
-      }],
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: { AWS: ['*'] },
+          Action: ['s3:GetObject'],
+          Resource: [`arn:aws:s3:::${this.bucket}/*`],
+        },
+      ],
     });
     await this.minio.setBucketPolicy(this.bucket, policy);
   }
@@ -50,7 +52,10 @@ export class StorageService {
   }
 
   getPublicUrl(key: string): string {
-    const endpoint = this.configService.get<string>('MINIO_ENDPOINT', 'localhost');
+    const endpoint = this.configService.get<string>(
+      'MINIO_ENDPOINT',
+      'localhost',
+    );
     const port = this.configService.get<string>('MINIO_PORT', '9000');
     const useSSL = this.configService.get<string>('MINIO_USE_SSL') === 'true';
     const protocol = useSSL ? 'https' : 'http';

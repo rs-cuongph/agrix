@@ -15,8 +15,14 @@ import { MINIO_CLIENT } from './storage.constants';
           endPoint: configService.get<string>('MINIO_ENDPOINT', 'localhost'),
           port: parseInt(configService.get<string>('MINIO_PORT', '9000')),
           useSSL: configService.get<string>('MINIO_USE_SSL') === 'true',
-          accessKey: configService.get<string>('MINIO_ACCESS_KEY', 'minioadmin'),
-          secretKey: configService.get<string>('MINIO_SECRET_KEY', 'minioadmin'),
+          accessKey: configService.get<string>(
+            'MINIO_ACCESS_KEY',
+            'minioadmin',
+          ),
+          secretKey: configService.get<string>(
+            'MINIO_SECRET_KEY',
+            'minioadmin',
+          ),
         });
       },
     },

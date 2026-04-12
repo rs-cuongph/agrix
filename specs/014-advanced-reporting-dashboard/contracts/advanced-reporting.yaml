@@ -1,0 +1,345 @@
+openapi: 3.1.0
+info:
+  title: Advanced Reporting Dashboard API
+  version: 0.1.0
+  description: Contracts for advanced reporting widgets and export actions in the admin dashboard.
+servers:
+  - url: /api/v1
+paths:
+  /dashboard/revenue-series:
+    get:
+      summary: Get revenue series for the selected reporting window
+      parameters:
+        - $ref: '#/components/parameters/Granularity'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+      responses:
+        '200':
+          description: Revenue series response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevenueSeriesResponse'
+  /dashboard/top-products:
+    get:
+      summary: Get top selling products for the selected reporting window
+      parameters:
+        - $ref: '#/components/parameters/Granularity'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Ranked product list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopProductsResponse'
+  /dashboard/gross-profit-by-category:
+    get:
+      summary: Get gross profit by category for the selected reporting window
+      parameters:
+        - $ref: '#/components/parameters/Granularity'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+      responses:
+        '200':
+          description: Category gross profit response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GrossProfitByCategoryResponse'
+  /dashboard/top-customers:
+    get:
+      summary: Get customer rankings for purchase volume and outstanding debt
+      parameters:
+        - $ref: '#/components/parameters/Granularity'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - name: purchaseLimit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: debtLimit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Customer ranking response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopCustomersResponse'
+  /dashboard/exports:
+    post:
+      summary: Generate a printable/exportable reporting snapshot from the selected dashboard filter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportReportRequest'
+      responses:
+        '200':
+          description: Export generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportReportResponse'
+components:
+  parameters:
+    Granularity:
+      name: granularity
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [day, week, month, year]
+    From:
+      name: from
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date-time
+    To:
+      name: to
+      in: query
+      required: true
+      schema:
+        type: string
+        format: date-time
+  schemas:
+    ReportingFilter:
+      type: object
+      required: [granularity, from, to]
+      properties:
+        granularity:
+          type: string
+          enum: [day, week, month, year]
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+    RevenueSeriesPoint:
+      type: object
+      required: [bucketLabel, bucketStart, bucketEnd, revenue, orderCount]
+      properties:
+        bucketLabel:
+          type: string
+        bucketStart:
+          type: string
+          format: date-time
+        bucketEnd:
+          type: string
+          format: date-time
+        revenue:
+          type: integer
+        orderCount:
+          type: integer
+    RevenueSeriesResponse:
+      type: object
+      required: [filter, summary, series]
+      properties:
+        filter:
+          $ref: '#/components/schemas/ReportingFilter'
+        summary:
+          type: object
+          required: [totalRevenue, totalOrders]
+          properties:
+            totalRevenue:
+              type: integer
+            totalOrders:
+              type: integer
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/RevenueSeriesPoint'
+    TopProductRecord:
+      type: object
+      required: [rank, productId, sku, productName, quantitySold, revenueContribution]
+      properties:
+        rank:
+          type: integer
+        productId:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        productName:
+          type: string
+        categoryName:
+          type: string
+          nullable: true
+        quantitySold:
+          type: integer
+        revenueContribution:
+          type: integer
+    TopProductsResponse:
+      type: object
+      required: [filter, items]
+      properties:
+        filter:
+          $ref: '#/components/schemas/ReportingFilter'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopProductRecord'
+    CategoryGrossProfitRecord:
+      type: object
+      required: [categoryId, categoryName, revenue, costOfGoodsSold, grossProfit, hasIncompleteCostData]
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+        revenue:
+          type: integer
+        costOfGoodsSold:
+          type: integer
+        grossProfit:
+          type: integer
+        hasIncompleteCostData:
+          type: boolean
+        missingCostOrderCount:
+          type: integer
+    GrossProfitByCategoryResponse:
+      type: object
+      required: [filter, items]
+      properties:
+        filter:
+          $ref: '#/components/schemas/ReportingFilter'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryGrossProfitRecord'
+    CustomerPurchaseRecord:
+      type: object
+      required: [rank, customerId, customerName, orderCount, totalPurchaseAmount]
+      properties:
+        rank:
+          type: integer
+        customerId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        orderCount:
+          type: integer
+        totalPurchaseAmount:
+          type: integer
+    CustomerDebtRecord:
+      type: object
+      required: [rank, customerId, customerName, outstandingDebt]
+      properties:
+        rank:
+          type: integer
+        customerId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        outstandingDebt:
+          type: integer
+        lastDebtActivityAt:
+          type: string
+          format: date-time
+          nullable: true
+    TopCustomersResponse:
+      type: object
+      required: [filter, topByPurchase, topByDebt]
+      properties:
+        filter:
+          $ref: '#/components/schemas/ReportingFilter'
+        topByPurchase:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerPurchaseRecord'
+        topByDebt:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerDebtRecord'
+    ExportReportRequest:
+      type: object
+      required: [format, filter]
+      properties:
+        format:
+          type: string
+          enum: [pdf, xlsx]
+        filter:
+          $ref: '#/components/schemas/ReportingFilter'
+    ExportReportResponse:
+      type: object
+      required: [format, fileName, mimeType, generatedAt, report]
+      properties:
+        format:
+          type: string
+          enum: [pdf, xlsx]
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        report:
+          type: object
+          required:
+            [filter, summary, revenueSeries, topProducts, grossProfitByCategory, topCustomersByPurchase, topCustomersByDebt]
+          properties:
+            filter:
+              $ref: '#/components/schemas/ReportingFilter'
+            summary:
+              type: object
+              required: [totalRevenue, totalOrders, totalProducts, totalCustomers]
+              properties:
+                totalRevenue:
+                  type: integer
+                totalOrders:
+                  type: integer
+                totalProducts:
+                  type: integer
+                totalCustomers:
+                  type: integer
+            revenueSeries:
+              type: array
+              items:
+                $ref: '#/components/schemas/RevenueSeriesPoint'
+            topProducts:
+              type: array
+              items:
+                $ref: '#/components/schemas/TopProductRecord'
+            grossProfitByCategory:
+              type: array
+              items:
+                $ref: '#/components/schemas/CategoryGrossProfitRecord'
+            topCustomersByPurchase:
+              type: array
+              items:
+                $ref: '#/components/schemas/CustomerPurchaseRecord'
+            topCustomersByDebt:
+              type: array
+              items:
+                $ref: '#/components/schemas/CustomerDebtRecord'

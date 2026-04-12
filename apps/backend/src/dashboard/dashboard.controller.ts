@@ -1,59 +1,48 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Order } from '../orders/entities/order.entity';
 import { Product } from '../inventory/entities/product.entity';
-import { Customer } from '../customers/entities/customer.entity';
+import { AdvancedReportingService } from './advanced-reporting.service';
+import {
+  ExportReportDto,
+  RankingQueryDto,
+  ReportingFilterDto,
+  TopCustomersQueryDto,
+} from './dto/reporting-filter.dto';
 
 @Controller('dashboard')
 @UseGuards(AuthGuard('jwt'))
 export class DashboardController {
   constructor(
-    @InjectRepository(Order) private readonly orderRepo: Repository<Order>,
-    @InjectRepository(Product) private readonly productRepo: Repository<Product>,
-    @InjectRepository(Customer) private readonly customerRepo: Repository<Customer>,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
+    private readonly advancedReportingService: AdvancedReportingService,
   ) {}
 
   @Get('revenue')
-  async getRevenue() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  async getRevenue(@Query() filter: ReportingFilterDto) {
+    return this.advancedReportingService.getLegacyRevenueSummary(filter);
+  }
 
-    const result = await this.orderRepo
-      .createQueryBuilder('order')
-      .select('COALESCE(SUM(order.totalAmount), 0)', 'totalRevenue')
-      .addSelect('COUNT(order.id)', 'orderCount')
-      .where('order.createdAt >= :today', { today })
-      .getRawOne();
-
-    const totalProducts = await this.productRepo.count({ where: { isActive: true } });
-    const totalCustomers = await this.customerRepo.count();
-
-    return {
-      revenueToday: parseInt(result?.totalRevenue || '0', 10),
-      orderCountToday: parseInt(result?.orderCount || '0', 10),
-      totalProducts,
-      totalCustomers,
-    };
+  @Get('revenue-series')
+  async getRevenueSeries(@Query() filter: ReportingFilterDto) {
+    return this.advancedReportingService.getRevenueSeries(filter);
   }
 
   @Get('top-products')
-  async getTopProducts() {
-    const results = await this.orderRepo.manager.query(`
-      SELECT p.name, p.sku, COALESCE(SUM(oi.quantity_base), 0) as total_sold
-      FROM products p
-      LEFT JOIN order_items oi ON oi.product_id = p.id
-      GROUP BY p.id, p.name, p.sku
-      ORDER BY total_sold DESC
-      LIMIT 5
-    `);
+  async getTopProducts(@Query() query: RankingQueryDto) {
+    return this.advancedReportingService.getTopProducts(query);
+  }
 
-    return results.map((r: any) => ({
-      name: r.name,
-      sku: r.sku,
-      totalSold: parseInt(r.total_sold, 10),
-    }));
+  @Get('gross-profit-by-category')
+  async getGrossProfitByCategory(@Query() filter: ReportingFilterDto) {
+    return this.advancedReportingService.getGrossProfitByCategory(filter);
+  }
+
+  @Get('top-customers')
+  async getTopCustomers(@Query() query: TopCustomersQueryDto) {
+    return this.advancedReportingService.getTopCustomers(query);
   }
 
   @Get('alerts')
@@ -76,5 +65,10 @@ export class DashboardController {
         baseUnit: p.baseUnit,
       })),
     };
+  }
+
+  @Post('exports')
+  async exportReport(@Body() dto: ExportReportDto) {
+    return this.advancedReportingService.getReportExport(dto);
   }
 }

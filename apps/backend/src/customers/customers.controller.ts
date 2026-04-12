@@ -33,7 +33,9 @@ export class CustomersController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.CASHIER)
-  async create(@Body() body: { name: string; phone?: string; address?: string }) {
+  async create(
+    @Body() body: { name: string; phone?: string; address?: string },
+  ) {
     return this.customersService.create(body);
   }
 
@@ -61,7 +63,12 @@ export class CustomersController {
     @Body() body: { amount: number; note?: string },
     @Req() req: any,
   ) {
-    return this.customersService.recordPayment(id, body.amount, req.user.id, body.note);
+    return this.customersService.recordPayment(
+      id,
+      body.amount,
+      req.user.id,
+      body.note,
+    );
   }
 
   @Delete(':id')

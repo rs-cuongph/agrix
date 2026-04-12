@@ -25,7 +25,9 @@ export class ChatSession {
   @Column({ name: 'ip_address', nullable: true })
   ipAddress: string;
 
-  @OneToMany(() => ChatMessage, (msg: ChatMessage) => msg.session, { cascade: true })
+  @OneToMany(() => ChatMessage, (msg: ChatMessage) => msg.session, {
+    cascade: true,
+  })
   messages: ChatMessage[];
 
   @CreateDateColumn({ name: 'created_at' })

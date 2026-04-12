@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
 @Controller('public/products')
@@ -17,7 +12,12 @@ export class PublicProductsController {
     @Query('page') page = 1,
     @Query('limit') limit = 20,
   ) {
-    return this.inventoryService.findProducts(search, categoryId, +page, +limit);
+    return this.inventoryService.findProducts(
+      search,
+      categoryId,
+      +page,
+      +limit,
+    );
   }
 
   @Get(':id')

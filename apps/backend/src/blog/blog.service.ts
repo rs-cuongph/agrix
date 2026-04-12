@@ -130,10 +130,12 @@ export class BlogService {
     if (data.title !== undefined) post.title = data.title;
     if (data.content !== undefined) post.content = data.content;
     if (data.excerpt !== undefined) post.excerpt = data.excerpt;
-    if (data.coverImageUrl !== undefined) post.coverImageUrl = data.coverImageUrl;
+    if (data.coverImageUrl !== undefined)
+      post.coverImageUrl = data.coverImageUrl;
     if (data.categoryId !== undefined) post.categoryId = data.categoryId;
     if (data.metaTitle !== undefined) post.metaTitle = data.metaTitle;
-    if (data.metaDescription !== undefined) post.metaDescription = data.metaDescription;
+    if (data.metaDescription !== undefined)
+      post.metaDescription = data.metaDescription;
     if (data.ogImageUrl !== undefined) post.ogImageUrl = data.ogImageUrl;
 
     if (data.slug) {
@@ -165,7 +167,10 @@ export class BlogService {
     return this.blogRepo.findOne({ where: { id } });
   }
 
-  private async ensureUniqueSlug(slug: string, excludeId?: string): Promise<string> {
+  private async ensureUniqueSlug(
+    slug: string,
+    excludeId?: string,
+  ): Promise<string> {
     let candidate = slug;
     let counter = 0;
     while (true) {
@@ -189,7 +194,11 @@ export class BlogService {
     return this.categoryRepo.find({ order: { name: 'ASC' } });
   }
 
-  async createCategory(data: { name: string; slug?: string; description?: string }) {
+  async createCategory(data: {
+    name: string;
+    slug?: string;
+    description?: string;
+  }) {
     const slug = data.slug || slugify(data.name);
     const category = this.categoryRepo.create({ ...data, slug });
     return this.categoryRepo.save(category);
@@ -236,7 +245,9 @@ export class BlogService {
   // ============ Product linking ============
 
   async linkProducts(postId: string, productIds: string[]) {
-    const existing = await this.postProductRepo.find({ where: { blogPostId: postId } });
+    const existing = await this.postProductRepo.find({
+      where: { blogPostId: postId },
+    });
     const existingIds = new Set(existing.map((e) => e.productId));
     const newLinks = productIds
       .filter((pid) => !existingIds.has(pid))

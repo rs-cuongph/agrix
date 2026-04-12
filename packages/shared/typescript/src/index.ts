@@ -27,3 +27,5 @@ export enum DebtType {
   PAYMENT = 'PAYMENT',
   ADJUSTMENT = 'ADJUSTMENT',
 }
+
+export * from './reporting';

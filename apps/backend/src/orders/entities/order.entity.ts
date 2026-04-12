@@ -60,7 +60,12 @@ export class Order {
   @Column({ name: 'payment_method', type: 'enum', enum: PaymentMethod })
   paymentMethod: PaymentMethod;
 
-  @Column({ name: 'sync_status', type: 'enum', enum: SyncStatus, default: SyncStatus.SYNCED })
+  @Column({
+    name: 'sync_status',
+    type: 'enum',
+    enum: SyncStatus,
+    default: SyncStatus.SYNCED,
+  })
   syncStatus: SyncStatus;
 
   @Column({ name: 'idempotency_key', unique: true })
@@ -73,7 +78,10 @@ export class Order {
   @JoinColumn({ name: 'created_by' })
   creator: User;
 
-  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })
+  @OneToMany(() => OrderItem, (item) => item.order, {
+    cascade: true,
+    eager: true,
+  })
   items: OrderItem[];
 
   @CreateDateColumn({ name: 'created_at' })

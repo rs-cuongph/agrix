@@ -38,7 +38,11 @@ export class User {
   @Column({ name: 'pin_failed_attempts', type: 'int', default: 0 })
   pinFailedAttempts: number;
 
-  @Column({ name: 'pin_locked_until', type: 'timestamp with time zone', nullable: true })
+  @Column({
+    name: 'pin_locked_until',
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
   pinLockedUntil: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })

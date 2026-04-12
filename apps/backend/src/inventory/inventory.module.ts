@@ -28,8 +28,20 @@ import { StorageModule } from '../storage/storage.module';
     ]),
     StorageModule,
   ],
-  controllers: [ProductsController, PublicProductsController, CategoriesController, StockController, UnitConversionController, UnitsController],
+  controllers: [
+    ProductsController,
+    PublicProductsController,
+    CategoriesController,
+    StockController,
+    UnitConversionController,
+    UnitsController,
+  ],
   providers: [InventoryService, UnitConversionService, StockImportService],
-  exports: [TypeOrmModule, InventoryService, UnitConversionService, StockImportService],
+  exports: [
+    TypeOrmModule,
+    InventoryService,
+    UnitConversionService,
+    StockImportService,
+  ],
 })
 export class InventoryModule {}

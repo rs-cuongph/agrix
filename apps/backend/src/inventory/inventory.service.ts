@@ -13,7 +13,12 @@ export class InventoryService {
     private readonly stockEntryRepo: Repository<StockEntry>,
   ) {}
 
-  async findProducts(search?: string, categoryId?: string, page = 1, limit = 20) {
+  async findProducts(
+    search?: string,
+    categoryId?: string,
+    page = 1,
+    limit = 20,
+  ) {
     const where: any = { isActive: true };
     if (search) {
       where.name = ILike(`%${search}%`);
@@ -45,7 +50,8 @@ export class InventoryService {
       where: { barcodeEan13: barcode, isActive: true },
       relations: ['units'],
     });
-    if (!product) throw new NotFoundException(`No product with barcode ${barcode}`);
+    if (!product)
+      throw new NotFoundException(`No product with barcode ${barcode}`);
     return product;
   }
 
@@ -68,7 +74,11 @@ export class InventoryService {
     referenceId: string,
     userId: string,
   ): Promise<void> {
-    await this.productRepo.decrement({ id: productId }, 'currentStockBase', quantityBase);
+    await this.productRepo.decrement(
+      { id: productId },
+      'currentStockBase',
+      quantityBase,
+    );
 
     const entry = this.stockEntryRepo.create({
       productId,
@@ -90,7 +100,11 @@ export class InventoryService {
     referenceId: string,
     userId: string,
   ): Promise<void> {
-    await this.productRepo.increment({ id: productId }, 'currentStockBase', quantityBase);
+    await this.productRepo.increment(
+      { id: productId },
+      'currentStockBase',
+      quantityBase,
+    );
 
     const entry = this.stockEntryRepo.create({
       productId,

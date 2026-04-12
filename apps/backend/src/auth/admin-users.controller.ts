@@ -55,7 +55,16 @@ export class AdminUsersController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() body: { fullName?: string; role?: string; isActive?: boolean; password?: string }) {
+  async update(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      fullName?: string;
+      role?: string;
+      isActive?: boolean;
+      password?: string;
+    },
+  ) {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new Error(`User ${id} not found`);
     if (body.fullName !== undefined) user.fullName = body.fullName;
@@ -68,7 +77,10 @@ export class AdminUsersController {
   }
 
   @Put(':id/password')
-  async resetPassword(@Param('id') id: string, @Body() body: { password: string }) {
+  async resetPassword(
+    @Param('id') id: string,
+    @Body() body: { password: string },
+  ) {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new Error(`User ${id} not found`);
     user.passwordHash = await bcrypt.hash(body.password, 10);
@@ -110,7 +122,9 @@ export class AdminUsersController {
     let attempts = 0;
     while (!isUnique && attempts < 100) {
       newPin = Math.floor(1000 + Math.random() * 9000).toString(); // always 4 digits
-      const existing = await this.userRepo.findOne({ where: { posPin: newPin } });
+      const existing = await this.userRepo.findOne({
+        where: { posPin: newPin },
+      });
       if (!existing) {
         isUnique = true;
       }
@@ -126,7 +140,11 @@ export class AdminUsersController {
     user.pinLockedUntil = null;
     await this.userRepo.save(user);
 
-    return { success: true, pin: newPin, message: 'Đã cấp mã PIN ngẫu nhiên thành công' };
+    return {
+      success: true,
+      pin: newPin,
+      message: 'Đã cấp mã PIN ngẫu nhiên thành công',
+    };
   }
 
   @Delete(':id/pin')
@@ -150,12 +168,24 @@ export class AdminUsersController {
   @Put('permissions/:role')
   async updatePermission(
     @Param('role') role: string,
-    @Body() body: { module: string; canRead?: boolean; canCreate?: boolean; canEdit?: boolean; canDelete?: boolean },
+    @Body()
+    body: {
+      module: string;
+      canRead?: boolean;
+      canCreate?: boolean;
+      canEdit?: boolean;
+      canDelete?: boolean;
+    },
   ) {
     return this.permissionsService.updatePermissions(
       role as UserRole,
       body.module as AclModule,
-      { canRead: body.canRead, canCreate: body.canCreate, canEdit: body.canEdit, canDelete: body.canDelete },
+      {
+        canRead: body.canRead,
+        canCreate: body.canCreate,
+        canEdit: body.canEdit,
+        canDelete: body.canDelete,
+      },
     );
   }
 }

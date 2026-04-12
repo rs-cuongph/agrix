@@ -30,34 +30,48 @@ export class UnitConversionService {
     conversionFactor: number;
     sellPrice?: number | null;
   }) {
-    const product = await this.productRepo.findOne({ where: { id: data.productId } });
-    if (!product) throw new NotFoundException(`Product ${data.productId} not found`);
+    const product = await this.productRepo.findOne({
+      where: { id: data.productId },
+    });
+    if (!product)
+      throw new NotFoundException(`Product ${data.productId} not found`);
     const entity = this.unitRepo.create(data);
     return this.unitRepo.save(entity);
   }
 
-  async update(id: string, data: Partial<{
-    unitName: string;
-    conversionFactor: number;
-    sellPrice: number | null;
-  }>) {
+  async update(
+    id: string,
+    data: Partial<{
+      unitName: string;
+      conversionFactor: number;
+      sellPrice: number | null;
+    }>,
+  ) {
     const existing = await this.unitRepo.findOne({ where: { id } });
-    if (!existing) throw new NotFoundException(`UnitConversion ${id} not found`);
+    if (!existing)
+      throw new NotFoundException(`UnitConversion ${id} not found`);
     Object.assign(existing, data);
     return this.unitRepo.save(existing);
   }
 
   async remove(id: string) {
     const existing = await this.unitRepo.findOne({ where: { id } });
-    if (!existing) throw new NotFoundException(`UnitConversion ${id} not found`);
+    if (!existing)
+      throw new NotFoundException(`UnitConversion ${id} not found`);
     await this.unitRepo.remove(existing);
     return { deleted: true };
   }
 
   // ── Conversion logic ───────────────────────────────────
 
-  async toBaseUnits(productId: string, quantity: number, unitName: string): Promise<number> {
-    const product = await this.productRepo.findOne({ where: { id: productId } });
+  async toBaseUnits(
+    productId: string,
+    quantity: number,
+    unitName: string,
+  ): Promise<number> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
     if (unitName === product.baseUnit) return quantity;
@@ -66,7 +80,9 @@ export class UnitConversionService {
       where: { productId, unitName },
     });
     if (!conversion) {
-      throw new NotFoundException(`Unit "${unitName}" not defined for product ${productId}`);
+      throw new NotFoundException(
+        `Unit "${unitName}" not defined for product ${productId}`,
+      );
     }
 
     return quantity * conversion.conversionFactor;
@@ -76,7 +92,9 @@ export class UnitConversionService {
    * Use sellPrice if set, otherwise derive from baseSellPrice * conversionFactor.
    */
   async derivePrice(productId: string, unitName: string): Promise<number> {
-    const product = await this.productRepo.findOne({ where: { id: productId } });
+    const product = await this.productRepo.findOne({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
     if (unitName === product.baseUnit) return product.baseSellPrice;
@@ -85,15 +103,20 @@ export class UnitConversionService {
       where: { productId, unitName },
     });
     if (!conversion) {
-      throw new NotFoundException(`Unit "${unitName}" not defined for product ${productId}`);
+      throw new NotFoundException(
+        `Unit "${unitName}" not defined for product ${productId}`,
+      );
     }
 
-    return conversion.sellPrice ?? product.baseSellPrice * conversion.conversionFactor;
+    return (
+      conversion.sellPrice ??
+      product.baseSellPrice * conversion.conversionFactor
+    );
   }
 
-  async getAvailableUnits(productId: string): Promise<
-    { unitName: string; conversionFactor: number; price: number }[]
-  > {
+  async getAvailableUnits(
+    productId: string,
+  ): Promise<{ unitName: string; conversionFactor: number; price: number }[]> {
     const product = await this.productRepo.findOne({
       where: { id: productId },
       relations: ['units'],
@@ -112,7 +135,9 @@ export class UnitConversionService {
       units.push({
         unitName: conversion.unitName,
         conversionFactor: conversion.conversionFactor,
-        price: conversion.sellPrice ?? product.baseSellPrice * conversion.conversionFactor,
+        price:
+          conversion.sellPrice ??
+          product.baseSellPrice * conversion.conversionFactor,
       });
     }
 

@@ -34,7 +34,12 @@ export class PermissionsService {
   async updatePermissions(
     role: UserRole,
     module: AclModule,
-    permissions: { canRead?: boolean; canCreate?: boolean; canEdit?: boolean; canDelete?: boolean },
+    permissions: {
+      canRead?: boolean;
+      canCreate?: boolean;
+      canEdit?: boolean;
+      canDelete?: boolean;
+    },
   ): Promise<RolePermission> {
     let perm = await this.permRepo.findOne({ where: { role, module } });
     if (!perm) {

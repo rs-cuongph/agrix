@@ -27,7 +27,10 @@ export class SyncController {
    */
   @Post('orders')
   @Roles(UserRole.ADMIN, UserRole.CASHIER)
-  async syncOrders(@Body() dto: SyncOrdersDto, @Req() req: any): Promise<SyncResult> {
+  async syncOrders(
+    @Body() dto: SyncOrdersDto,
+    @Req() req: any,
+  ): Promise<SyncResult> {
     const result: SyncResult = { processed: 0, skipped: 0, errors: [] };
 
     for (const orderDto of dto.orders) {
@@ -44,7 +47,9 @@ export class SyncController {
             idempotencyKey: orderDto.idempotencyKey,
             error: error.message,
           });
-          this.logger.error(`Failed sync ${orderDto.idempotencyKey}: ${error.message}`);
+          this.logger.error(
+            `Failed sync ${orderDto.idempotencyKey}: ${error.message}`,
+          );
         }
       }
     }

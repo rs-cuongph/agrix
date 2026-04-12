@@ -1,7 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { KnowledgeDocument, DocumentStatus } from './entities/knowledge-document.entity';
+import {
+  KnowledgeDocument,
+  DocumentStatus,
+} from './entities/knowledge-document.entity';
 import { KnowledgeEmbedding } from './entities/knowledge-embedding.entity';
 import { ChatConfigService } from './chat-config.service';
 
@@ -40,7 +43,9 @@ export class KnowledgeService {
 
     // Process async (don't block the upload response)
     this.processDocument(saved.id, mimeType, fileBuffer).catch((err) => {
-      this.logger.error(`Failed to process document ${saved.id}: ${err.message}`);
+      this.logger.error(
+        `Failed to process document ${saved.id}: ${err.message}`,
+      );
     });
 
     return saved;
@@ -49,7 +54,11 @@ export class KnowledgeService {
   /**
    * Process document: extract text, chunk, embed.
    */
-  private async processDocument(documentId: string, mimeType: string, fileBuffer: Buffer): Promise<void> {
+  private async processDocument(
+    documentId: string,
+    mimeType: string,
+    fileBuffer: Buffer,
+  ): Promise<void> {
     try {
       // Extract text based on mime type
       let textContent: string;
@@ -58,7 +67,10 @@ export class KnowledgeService {
         const pdfParse = require('pdf-parse');
         const pdfData = await pdfParse(fileBuffer);
         textContent = pdfData.text;
-      } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      } else if (
+        mimeType ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
         const mammoth = await import('mammoth');
         const result = await mammoth.extractRawText({ buffer: fileBuffer });
         textContent = result.value;
@@ -76,7 +88,9 @@ export class KnowledgeService {
 
       // Chunk the text
       const chunks = this.chunkText(textContent, 500);
-      this.logger.log(`Document "${documentId}" split into ${chunks.length} chunks`);
+      this.logger.log(
+        `Document "${documentId}" split into ${chunks.length} chunks`,
+      );
 
       // Generate embeddings and save chunks
       for (let i = 0; i < chunks.length; i++) {
@@ -86,7 +100,9 @@ export class KnowledgeService {
           documentId,
           chunkIndex: i,
           content: chunks[i],
-          embedding: embeddingVector ? `[${embeddingVector.join(',')}]` : undefined,
+          embedding: embeddingVector
+            ? `[${embeddingVector.join(',')}]`
+            : undefined,
         });
         await this.embeddingRepo.save(embedding);
       }
@@ -99,7 +115,9 @@ export class KnowledgeService {
 
       this.logger.log(`Document "${documentId}" processed successfully`);
     } catch (error: any) {
-      this.logger.error(`Error processing document ${documentId}: ${error.message}`);
+      this.logger.error(
+        `Error processing document ${documentId}: ${error.message}`,
+      );
       await this.documentRepo.update(documentId, {
         status: DocumentStatus.ERROR,
         statusMessage: error.message,
@@ -129,7 +147,7 @@ export class KnowledgeService {
         });
 
         if (response.ok) {
-          const data = (await response.json()) as any;
+          const data = await response.json();
           return data.data?.[0]?.embedding || null;
         }
       } catch (error: any) {
@@ -144,7 +162,10 @@ export class KnowledgeService {
   /**
    * Search for relevant chunks using pgvector cosine similarity or keyword fallback.
    */
-  async searchRelevantChunks(query: string, limit = 5): Promise<KnowledgeEmbedding[]> {
+  async searchRelevantChunks(
+    query: string,
+    limit = 5,
+  ): Promise<KnowledgeEmbedding[]> {
     // Try vector search first
     const config = await this.configService.getConfig();
     if (config.primaryApiKey) {
@@ -164,7 +185,9 @@ export class KnowledgeService {
           );
           return results;
         } catch (error: any) {
-          this.logger.warn(`Vector search failed, falling back to keyword: ${error.message}`);
+          this.logger.warn(
+            `Vector search failed, falling back to keyword: ${error.message}`,
+          );
         }
       }
     }
@@ -172,7 +195,9 @@ export class KnowledgeService {
     // Fallback: simple keyword search
     return this.embeddingRepo
       .createQueryBuilder('embedding')
-      .where('LOWER(embedding.content) LIKE LOWER(:query)', { query: `%${query}%` })
+      .where('LOWER(embedding.content) LIKE LOWER(:query)', {
+        query: `%${query}%`,
+      })
       .orderBy('embedding.chunkIndex', 'ASC')
       .take(limit)
       .getMany();
@@ -202,9 +227,15 @@ export class KnowledgeService {
   /**
    * Sync all products into RAG knowledge base.
    */
-  async syncProducts(): Promise<{ message: string; productCount: number; chunkCount: number }> {
+  async syncProducts(): Promise<{
+    message: string;
+    productCount: number;
+    chunkCount: number;
+  }> {
     // Find or create a special "products" document
-    let productDoc = await this.documentRepo.findOne({ where: { filename: '__products_sync__' } });
+    let productDoc = await this.documentRepo.findOne({
+      where: { filename: '__products_sync__' },
+    });
     if (productDoc) {
       // Delete old embeddings
       await this.embeddingRepo.delete({ documentId: productDoc.id });
@@ -255,7 +286,9 @@ export class KnowledgeService {
       chunkCount,
     });
 
-    this.logger.log(`Synced ${products.length} products (${chunkCount} chunks)`);
+    this.logger.log(
+      `Synced ${products.length} products (${chunkCount} chunks)`,
+    );
 
     return {
       message: 'Đồng bộ thành công',
@@ -273,7 +306,10 @@ export class KnowledgeService {
     let currentChunk = '';
 
     for (const paragraph of paragraphs) {
-      if (currentChunk.length + paragraph.length > maxChars && currentChunk.length > 0) {
+      if (
+        currentChunk.length + paragraph.length > maxChars &&
+        currentChunk.length > 0
+      ) {
         chunks.push(currentChunk.trim());
         currentChunk = '';
       }

@@ -11,7 +11,12 @@ export class ChatbotConfig {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'system_prompt', type: 'text', default: 'Bạn là chuyên gia nông nghiệp của Agrix. Trả lời câu hỏi dựa trên tài liệu cung cấp. Nếu không tìm thấy thông tin liên quan, hãy nói rõ ràng và gợi ý liên hệ cửa hàng. Trả lời bằng tiếng Việt, ngắn gọn và dễ hiểu.' })
+  @Column({
+    name: 'system_prompt',
+    type: 'text',
+    default:
+      'Bạn là chuyên gia nông nghiệp của Agrix. Trả lời câu hỏi dựa trên tài liệu cung cấp. Nếu không tìm thấy thông tin liên quan, hãy nói rõ ràng và gợi ý liên hệ cửa hàng. Trả lời bằng tiếng Việt, ngắn gọn và dễ hiểu.',
+  })
   systemPrompt: string;
 
   @Column({ name: 'primary_provider', default: 'openai' })

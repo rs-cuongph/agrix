@@ -36,7 +36,10 @@ export class ChatConfigService implements OnModuleInit {
       }
 
       if (config.secondaryApiKey && !isEncrypted(config.secondaryApiKey)) {
-        config.secondaryApiKey = encrypt(config.secondaryApiKey, this.getAesKey());
+        config.secondaryApiKey = encrypt(
+          config.secondaryApiKey,
+          this.getAesKey(),
+        );
         needsSave = true;
         this.logger.log('Migrated secondary API key to encrypted format');
       }
@@ -46,7 +49,9 @@ export class ChatConfigService implements OnModuleInit {
         this.logger.log('API key encryption migration complete');
       }
     } catch (error) {
-      this.logger.warn('Could not migrate API keys to encrypted format. Set AES_ENCRYPTION_KEY env variable.');
+      this.logger.warn(
+        'Could not migrate API keys to encrypted format. Set AES_ENCRYPTION_KEY env variable.',
+      );
     }
   }
 
@@ -92,20 +97,30 @@ export class ChatConfigService implements OnModuleInit {
    * Update config. API keys are encrypted before saving.
    */
   async updateConfig(updates: Partial<ChatbotConfig>): Promise<ChatbotConfig> {
-    const config = await this.configRepo.findOne({ where: {} }) || this.configRepo.create({});
+    const config =
+      (await this.configRepo.findOne({ where: {} })) ||
+      this.configRepo.create({});
 
-    if (updates.systemPrompt !== undefined) config.systemPrompt = updates.systemPrompt;
-    if (updates.primaryProvider !== undefined) config.primaryProvider = updates.primaryProvider;
-    if (updates.secondaryProvider !== undefined) config.secondaryProvider = updates.secondaryProvider;
+    if (updates.systemPrompt !== undefined)
+      config.systemPrompt = updates.systemPrompt;
+    if (updates.primaryProvider !== undefined)
+      config.primaryProvider = updates.primaryProvider;
+    if (updates.secondaryProvider !== undefined)
+      config.secondaryProvider = updates.secondaryProvider;
     if (updates.enabled !== undefined) config.enabled = updates.enabled;
-    if (updates.maxMessagesPerSession !== undefined) config.maxMessagesPerSession = updates.maxMessagesPerSession;
+    if (updates.maxMessagesPerSession !== undefined)
+      config.maxMessagesPerSession = updates.maxMessagesPerSession;
 
     // Encrypt API keys before saving
     if (updates.primaryApiKey !== undefined) {
-      config.primaryApiKey = updates.primaryApiKey ? encrypt(updates.primaryApiKey, this.getAesKey()) : updates.primaryApiKey;
+      config.primaryApiKey = updates.primaryApiKey
+        ? encrypt(updates.primaryApiKey, this.getAesKey())
+        : updates.primaryApiKey;
     }
     if (updates.secondaryApiKey !== undefined) {
-      config.secondaryApiKey = updates.secondaryApiKey ? encrypt(updates.secondaryApiKey, this.getAesKey()) : updates.secondaryApiKey;
+      config.secondaryApiKey = updates.secondaryApiKey
+        ? encrypt(updates.secondaryApiKey, this.getAesKey())
+        : updates.secondaryApiKey;
     }
 
     const saved = await this.configRepo.save(config);
@@ -116,20 +131,31 @@ export class ChatConfigService implements OnModuleInit {
   /**
    * Validate an API key by making a test call.
    */
-  async validateApiKey(provider: string, apiKey: string): Promise<{ valid: boolean; error?: string }> {
+  async validateApiKey(
+    provider: string,
+    apiKey: string,
+  ): Promise<{ valid: boolean; error?: string }> {
     try {
       if (provider === 'openai') {
         const response = await fetch('https://api.openai.com/v1/models', {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
-        if (!response.ok) return { valid: false, error: `OpenAI: ${response.status} ${response.statusText}` };
+        if (!response.ok)
+          return {
+            valid: false,
+            error: `OpenAI: ${response.status} ${response.statusText}`,
+          };
         return { valid: true };
       } else if (provider === 'gemini') {
         // Use list models endpoint — lightweight, doesn't consume generation quota
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
         );
-        if (!res.ok) return { valid: false, error: `Gemini: ${res.status} ${res.statusText}` };
+        if (!res.ok)
+          return {
+            valid: false,
+            error: `Gemini: ${res.status} ${res.statusText}`,
+          };
         return { valid: true };
       }
       return { valid: false, error: 'Unknown provider' };
@@ -145,10 +171,16 @@ export class ChatConfigService implements OnModuleInit {
     const decrypted = { ...config } as ChatbotConfig;
     try {
       if (decrypted.primaryApiKey && isEncrypted(decrypted.primaryApiKey)) {
-        decrypted.primaryApiKey = decrypt(decrypted.primaryApiKey, this.getAesKey());
+        decrypted.primaryApiKey = decrypt(
+          decrypted.primaryApiKey,
+          this.getAesKey(),
+        );
       }
       if (decrypted.secondaryApiKey && isEncrypted(decrypted.secondaryApiKey)) {
-        decrypted.secondaryApiKey = decrypt(decrypted.secondaryApiKey, this.getAesKey());
+        decrypted.secondaryApiKey = decrypt(
+          decrypted.secondaryApiKey,
+          this.getAesKey(),
+        );
       }
     } catch (error) {
       this.logger.error('Failed to decrypt API keys', error);
