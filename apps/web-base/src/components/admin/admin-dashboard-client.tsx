@@ -146,7 +146,7 @@ export function AdminDashboardClient() {
       <RevenueSummaryCards summary={summary} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <RevenueSeriesChart points={revenueSeries.series} />
+        <RevenueSeriesChart points={revenueSeries.series} granularity={filter.granularity} />
         <Card className="border shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
