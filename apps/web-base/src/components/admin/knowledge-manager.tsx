@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Upload, Trash2, RefreshCw, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminActionButton, AdminIconButton } from '@/components/admin/admin-action-button';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
 interface Document {
@@ -160,26 +161,29 @@ export default function KnowledgeManager() {
     <div className="space-y-4">
       {/* Actions bar */}
       <div className="flex flex-wrap gap-3">
-        <label className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg cursor-pointer hover:bg-emerald-600 transition-colors">
-          <Upload size={16} />
-          {uploading ? 'Đang upload...' : 'Upload tài liệu'}
-          <input
-            type="file"
-            accept=".pdf,.docx,.txt"
-            onChange={handleUpload}
-            disabled={uploading}
-            className="hidden"
-          />
-        </label>
+        <AdminActionButton asChild disabled={uploading}>
+          <label className="cursor-pointer">
+            <Upload size={16} />
+            {uploading ? 'Đang upload...' : 'Upload tài liệu'}
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleUpload}
+              disabled={uploading}
+              className="hidden"
+            />
+          </label>
+        </AdminActionButton>
 
-        <button
+        <AdminActionButton
           onClick={handleSyncProducts}
           disabled={syncing}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
+          tone="secondary"
+          className="border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
         >
           <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
           {syncing ? 'Đang đồng bộ...' : 'Đồng bộ sản phẩm'}
-        </button>
+        </AdminActionButton>
       </div>
 
       {/* Documents table */}
@@ -222,13 +226,13 @@ export default function KnowledgeManager() {
                     {new Date(doc.createdAt).toLocaleDateString('vi-VN')}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
+                    <AdminIconButton
+                      tone="danger"
                       onClick={() => setDeleteTarget({ id: doc.id, filename: doc.filename })}
-                      className="text-red-500 hover:text-red-700 p-1"
                       title="Xóa"
                     >
                       <Trash2 size={16} />
-                    </button>
+                    </AdminIconButton>
                   </td>
                 </tr>
               ))}

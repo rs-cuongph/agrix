@@ -5,6 +5,7 @@ import {
   Warehouse, ArrowDownToLine, Wrench, History, ClipboardList,
   AlertTriangle, Clock, Package, Plus, Boxes, ShieldAlert,
 } from "lucide-react";
+import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ProductsClient } from "@/components/admin/products-client";
@@ -216,10 +217,9 @@ export function InventoryClient({
         <TabsContent value="import">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => setImportDialog(true)}
-                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+              <AdminActionButton onClick={() => setImportDialog(true)}>
                 <Plus className="w-4 h-4" /> Nhập kho
-              </button>
+              </AdminActionButton>
             </div>
             <AdminPanel
               title="Lịch sử nhập kho"
@@ -259,10 +259,13 @@ export function InventoryClient({
         <TabsContent value="adjust">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => setAdjustDialog(true)}
-                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+              <AdminActionButton
+                tone="secondary"
+                onClick={() => setAdjustDialog(true)}
+                className="border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+              >
                 <Plus className="w-4 h-4" /> Điều chỉnh kho
-              </button>
+              </AdminActionButton>
             </div>
             <AdminPanel
               title="Lịch sử điều chỉnh kho"

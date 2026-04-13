@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminActionButton, AdminIconButton } from '@/components/admin/admin-action-button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -119,6 +120,7 @@ export default function ChatbotConfigPanel() {
           <p className="text-sm text-gray-500">Bật/tắt chatbot trên Landing Page</p>
         </div>
         <button
+          type="button"
           onClick={() => setEnabled(!enabled)}
           className={`relative w-12 h-6 rounded-full transition-colors ${
             enabled ? 'bg-emerald-500' : 'bg-gray-300'
@@ -170,12 +172,13 @@ export default function ChatbotConfigPanel() {
                 placeholder={config.hasPrimaryKey ? '••••••• (đã cấu hình)' : 'Nhập API key...'}
                 className="pr-10"
               />
-              <button
+              <AdminIconButton
                 onClick={() => setShowPrimaryKey(!showPrimaryKey)}
-                className="absolute right-2 top-2 text-gray-400"
+                type="button"
+                className="absolute right-1.5 top-1.5"
               >
                 {showPrimaryKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              </AdminIconButton>
             </div>
           </div>
         </div>
@@ -203,12 +206,13 @@ export default function ChatbotConfigPanel() {
                 placeholder={config.hasSecondaryKey ? '••••••• (đã cấu hình)' : 'Nhập API key...'}
                 className="pr-10"
               />
-              <button
+              <AdminIconButton
                 onClick={() => setShowSecondaryKey(!showSecondaryKey)}
-                className="absolute right-2 top-2 text-gray-400"
+                type="button"
+                className="absolute right-1.5 top-1.5"
               >
                 {showSecondaryKey ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
+              </AdminIconButton>
             </div>
           </div>
         </div>
@@ -231,14 +235,14 @@ export default function ChatbotConfigPanel() {
       </div>
 
       {/* Save */}
-      <button
+      <AdminActionButton
         onClick={handleSave}
         disabled={saving}
-        className="flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+        className="w-fit px-6"
       >
         <Save size={16} />
         {saving ? 'Đang lưu...' : 'Lưu cấu hình'}
-      </button>
+      </AdminActionButton>
     </div>
   );
 }

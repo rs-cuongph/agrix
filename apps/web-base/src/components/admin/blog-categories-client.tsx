@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FolderTree, Plus, Pencil, Trash2 } from "lucide-react";
+import { AdminActionButton, AdminIconButton } from "@/components/admin/admin-action-button";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
@@ -42,10 +43,9 @@ export function BlogCategoriesClient({ categories }: { categories: BlogCategory[
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-bold flex items-center gap-2"><FolderTree className="w-5 h-5" /> Danh mục Blog</h2>
-        <button onClick={() => setDialog({ mode: "create" })}
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+        <AdminActionButton onClick={() => setDialog({ mode: "create" })}>
           <Plus className="w-4 h-4" /> Thêm
-        </button>
+        </AdminActionButton>
       </div>
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <table className="w-full text-sm">
@@ -57,8 +57,12 @@ export function BlogCategoriesClient({ categories }: { categories: BlogCategory[
                 <td className="px-4 py-3 text-muted-foreground">{c.slug}</td>
                 <td className="px-4 py-3 text-muted-foreground">{c.description || "—"}</td>
                 <td className="px-4 py-3 flex gap-1">
-                  <button onClick={() => setDialog({ mode: "edit", data: c })} className="p-1.5 rounded hover:bg-gray-100"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => setDeleteId(c.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <AdminIconButton onClick={() => setDialog({ mode: "edit", data: c })}>
+                    <Pencil className="w-4 h-4" />
+                  </AdminIconButton>
+                  <AdminIconButton tone="danger" onClick={() => setDeleteId(c.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </AdminIconButton>
                 </td>
               </tr>
             ))}

@@ -63,6 +63,24 @@ const STAGE_TONE: Record<string, string> = {
   harvest: "bg-amber-100 text-amber-700 border-amber-200",
 };
 
+const STAGE_STYLES: Record<string, {
+  gradient: string;
+  label: string;
+}> = {
+  planting: {
+    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+    label: "Gieo trồng",
+  },
+  care: {
+    gradient: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
+    label: "Chăm sóc",
+  },
+  harvest: {
+    gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    label: "Thu hoạch",
+  },
+};
+
 type SeasonCalendarGridProps = {
   items: SeasonCalendarItem[];
   loading: boolean;
@@ -298,10 +316,11 @@ export function SeasonCalendarGrid({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      {/* ── Filter bar ── */}
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
           <Select value={cropFilter} onValueChange={onCropFilterChange}>
-            <SelectTrigger className="w-full bg-white">
+            <SelectTrigger className="h-8 w-[200px] bg-white text-xs">
               <SelectValue placeholder="Lọc nhóm cây trồng" />
             </SelectTrigger>
             <SelectContent>
@@ -314,99 +333,153 @@ export function SeasonCalendarGrid({
             </SelectContent>
           </Select>
           <Select value={stageFilter} onValueChange={onStageFilterChange}>
-            <SelectTrigger className="w-full bg-white">
+            <SelectTrigger className="h-8 w-[200px] bg-white text-xs">
               <SelectValue placeholder="Lọc giai đoạn" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả giai đoạn</SelectItem>
-              <SelectItem value="planting">Gieo trồng</SelectItem>
-              <SelectItem value="care">Chăm sóc</SelectItem>
-              <SelectItem value="harvest">Thu hoạch</SelectItem>
+              <SelectItem value="planting">🌱 Gieo trồng</SelectItem>
+              <SelectItem value="care">☀️ Chăm sóc</SelectItem>
+              <SelectItem value="harvest">🌾 Thu hoạch</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-muted p-1">
-          <Button variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => onViewModeChange("grid")}>
-            Grid
+        <div className="flex items-center gap-1 rounded-[10px] bg-slate-100 p-0.5">
+          <Button
+            variant={viewMode === "grid" ? "default" : "ghost"}
+            size="sm"
+            className={`h-7 px-3 text-xs ${viewMode === "grid" ? "shadow-sm" : ""}`}
+            onClick={() => onViewModeChange("grid")}
+          >
+            Lưới
           </Button>
-          <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => onViewModeChange("table")}>
-            Table
+          <Button
+            variant={viewMode === "table" ? "default" : "ghost"}
+            size="sm"
+            className={`h-7 px-3 text-xs ${viewMode === "table" ? "shadow-sm" : ""}`}
+            onClick={() => onViewModeChange("table")}
+          >
+            Bảng
           </Button>
-          <Button variant={viewMode === "timeline" ? "default" : "ghost"} size="sm" onClick={() => onViewModeChange("timeline")}>
-            Timeline
+          <Button
+            variant={viewMode === "timeline" ? "default" : "ghost"}
+            size="sm"
+            className={`h-7 px-3 text-xs ${viewMode === "timeline" ? "shadow-sm" : ""}`}
+            onClick={() => onViewModeChange("timeline")}
+          >
+            Dòng thời gian
           </Button>
         </div>
       </div>
 
+      {/* ── Empty state ── */}
       {filteredItems.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="pt-6 text-sm text-muted-foreground">
-            {filterKeyword
-              ? "Không tìm thấy cây trồng phù hợp — thử từ khóa khác."
-              : "Chưa có dữ liệu mùa vụ cho vùng này."}
+        <Card className="border-2 border-dashed border-slate-200">
+          <CardContent className="flex flex-col items-center justify-center gap-3 py-12">
+            <CalendarDays className="h-10 w-10 text-slate-300" />
+            <p className="text-sm text-muted-foreground">
+              {filterKeyword
+                ? "Không tìm thấy cây trồng phù hợp — thử từ khóa khác."
+                : "Chưa có dữ liệu mùa vụ cho vùng này."}
+            </p>
           </CardContent>
         </Card>
       ) : null}
 
+      {/* ── Grid mode ── */}
       {viewMode === "grid" ? (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className={`grid gap-5 ${filteredItems.length > 1 ? "xl:grid-cols-2" : ""}`}>
           {filteredItems.map((item) => {
             const localNameMatch = getLocalNameMatch(item, filterKeyword);
             return (
-              <Card key={item.id} className="overflow-hidden">
-                <CardHeader className="border-b bg-[linear-gradient(135deg,rgba(5,150,105,0.08),rgba(14,165,233,0.04))]">
+              <Card key={item.id} className="overflow-hidden border-slate-200 shadow-sm transition-shadow hover:shadow-md">
+                {/* Card header with gradient */}
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Leaf className="h-4 w-4 text-emerald-600" />
-                        {item.crop.name}
+                    <div className="min-w-0">
+                      <CardTitle className="flex items-center gap-2 text-white">
+                        <Leaf className="h-4 w-4 shrink-0 text-emerald-400" />
+                        <span className="truncate">{item.crop.name}</span>
                       </CardTitle>
-                      <div className="mt-1 flex flex-wrap gap-2 text-sm text-muted-foreground">
-                        <span>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+                        <span className="text-slate-300">
                           {item.seasonName}
                           {item.year ? ` • ${item.year}` : " • Áp dụng hằng năm"}
                         </span>
-                        {localNameMatch ? <Badge variant="outline">{localNameMatch}</Badge> : null}
+                        {localNameMatch ? (
+                          <Badge variant="outline" className="border-slate-500 bg-slate-600/50 text-xs text-slate-200">
+                            {localNameMatch}
+                          </Badge>
+                        ) : null}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setEditCalendarItem(item)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Chỉnh sửa
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 border-slate-500 bg-transparent text-white hover:bg-slate-600 hover:text-white"
+                      onClick={() => setEditCalendarItem(item)}
+                    >
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                      Sửa
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3 pt-5">
+
+                <CardContent className="space-y-4 p-5">
+                  {/* Month grid */}
                   <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 xl:grid-cols-12">
                     {MONTHS.map((value) => {
                       const stage = stageForMonth(item.stages, value);
                       const active = value === month;
+                      const stageStyle = stage ? STAGE_STYLES[stage.stageType] : null;
+
                       return (
                         <button
                           key={value}
                           type="button"
                           disabled={!stage}
                           onClick={() => stage && onOpenStage({ calendar: item, stage })}
-                          className={`rounded-xl border px-2 py-3 text-left transition ${
+                          className={`group relative rounded-xl border px-2 py-3 text-left transition-all duration-200 ${
                             stage
-                              ? `${STAGE_TONE[stage.stageType]} hover:shadow-sm`
-                              : "border-dashed border-muted-foreground/20 bg-muted/30 text-muted-foreground"
-                          } ${active ? "ring-2 ring-emerald-500/40" : ""}`}
+                              ? `border-transparent text-white shadow-sm hover:scale-[1.04] hover:shadow-md`
+                              : "border-dashed border-slate-200 bg-slate-50 text-slate-400"
+                          } ${active ? "ring-2 ring-sky-400/60 ring-offset-1" : ""}`}
+                          style={stageStyle ? { background: stageStyle.gradient } : undefined}
                         >
-                          <div className="text-[11px] uppercase tracking-[0.18em]">{monthLabel(value)}</div>
-                          <div className="mt-1 line-clamp-2 text-xs font-medium">{stage?.name ?? "Trống"}</div>
+                          <div className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                            {monthLabel(value)}
+                          </div>
+                          <div className="mt-1 line-clamp-2 text-[11px] font-medium leading-tight">
+                            {stage?.name ?? ""}
+                          </div>
+                          {stage && (
+                            <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white/90 shadow-sm" />
+                          )}
                         </button>
                       );
                     })}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline">{item.crop.category ?? "Chưa phân loại"}</Badge>
+
+                  {/* Footer info */}
+                  <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-xs font-normal text-slate-600">
+                      {item.crop.category ?? "Chưa phân loại"}
+                    </Badge>
                     {item.currentStage ? (
-                      <Badge className={STAGE_TONE[item.currentStage.stageType]}>
-                        Hiện tại: {item.currentStage.name}
+                      <Badge
+                        className="text-xs font-medium shadow-sm"
+                        style={{ background: STAGE_STYLES[item.currentStage.stageType].gradient, color: "white", border: "none" }}
+                      >
+                        ⏳ Hiện tại: {item.currentStage.name}
                       </Badge>
                     ) : (
-                      <Badge variant="outline">Không có giai đoạn trong tháng {month}</Badge>
+                      <Badge variant="outline" className="border-slate-200 text-xs font-normal text-slate-500">
+                        Không có giai đoạn tháng {month}
+                      </Badge>
                     )}
+                    <span className="ml-auto text-xs text-slate-400">
+                      {item.stages.length} giai đoạn
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -414,44 +487,75 @@ export function SeasonCalendarGrid({
           })}
         </div>
       ) : (
-        <Card>
-          <CardContent className="pt-4">
+        /* ── Table mode ── */
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Cây trồng</TableHead>
-                  <TableHead>Vụ</TableHead>
-                  <TableHead>Giai đoạn hiện tại</TableHead>
+                <TableRow className="border-b-0 bg-slate-800 hover:bg-slate-800">
+                  <TableHead className="text-white font-semibold">Cây trồng</TableHead>
+                  <TableHead className="text-white font-semibold">Vụ</TableHead>
+                  <TableHead className="text-white font-semibold">Giai đoạn hiện tại</TableHead>
                   {MONTHS.map((value) => (
-                    <TableHead key={value}>{monthLabel(value)}</TableHead>
+                    <TableHead
+                      key={value}
+                      className={`text-center font-semibold ${
+                        value === month ? "bg-sky-600 text-white" : "text-slate-300"
+                      }`}
+                    >
+                      {monthLabel(value)}
+                    </TableHead>
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.map((item) => {
+                {filteredItems.map((item, rowIndex) => {
                   const localNameMatch = getLocalNameMatch(item, filterKeyword);
+                  const isEven = rowIndex % 2 === 0;
                   return (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className={isEven ? "bg-white" : "bg-slate-50/60"}>
                       <TableCell className="font-medium">
-                        <div>{item.crop.name}</div>
-                        {localNameMatch ? <Badge variant="outline">{localNameMatch}</Badge> : null}
+                        <div className="flex items-center gap-2">
+                          <Leaf className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                          <div>
+                            <div className="font-semibold text-slate-800">{item.crop.name}</div>
+                            {localNameMatch ? (
+                              <Badge variant="outline" className="mt-0.5 text-[10px]">{localNameMatch}</Badge>
+                            ) : null}
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell>{item.seasonName}</TableCell>
-                      <TableCell>{item.currentStage?.name ?? "Không có"}</TableCell>
+                      <TableCell className="text-slate-600">{item.seasonName}</TableCell>
+                      <TableCell>
+                        {item.currentStage ? (
+                          <Badge
+                            className="text-[11px] font-medium shadow-sm"
+                            style={{ background: STAGE_STYLES[item.currentStage.stageType].gradient, color: "white", border: "none" }}
+                          >
+                            {item.currentStage.name}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </TableCell>
                       {MONTHS.map((value) => {
                         const stage = stageForMonth(item.stages, value);
                         return (
-                          <TableCell key={value}>
+                          <TableCell
+                            key={value}
+                            className={`text-center ${value === month ? "bg-sky-50/60" : ""}`}
+                          >
                             {stage ? (
                               <button
                                 type="button"
                                 onClick={() => onOpenStage({ calendar: item, stage })}
-                                className={`rounded-full border px-2 py-1 text-xs ${STAGE_TONE[stage.stageType]}`}
+                                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-white shadow-sm transition-transform hover:scale-105"
+                                style={{ background: STAGE_STYLES[stage.stageType].gradient }}
                               >
-                                {stage.name}
+                                {stage.name.length > 8 ? stage.name.substring(0, 8) + "…" : stage.name}
                               </button>
                             ) : (
-                              <span className="text-muted-foreground">-</span>
+                              <span className="text-slate-300">·</span>
                             )}
                           </TableCell>
                         );
@@ -461,8 +565,8 @@ export function SeasonCalendarGrid({
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       <Dialog open={Boolean(editCalendarItem)} onOpenChange={(open) => !open && setEditCalendarItem(null)}>

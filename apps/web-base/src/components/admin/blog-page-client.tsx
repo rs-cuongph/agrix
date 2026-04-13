@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, FolderTree, Tag, Plus, Pencil, Trash2, Eye, EyeOff, BookOpenText } from "lucide-react";
+import { AdminActionButton, AdminIconButton } from "@/components/admin/admin-action-button";
 import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { BlogCategoriesClient } from "@/components/admin/blog-categories-client";
 import { BlogTagsClient } from "@/components/admin/blog-tags-client";
@@ -45,12 +46,11 @@ export function BlogPageClient({
         title="Quản lý blog"
         description="Đồng bộ khu vực nội dung với phần mùa vụ bằng hero rõ trọng tâm, số liệu nhanh và tabs có cùng nhịp tương tác."
         actions={
-          <button
+          <AdminActionButton
             onClick={() => router.push("/admin/blog/new")}
-            className="inline-flex items-center gap-1 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
           >
             <Plus className="w-4 h-4" /> Tạo bài viết
-          </button>
+          </AdminActionButton>
         }
       />
 
@@ -108,12 +108,12 @@ export function BlogPageClient({
                       {new Date(p.createdAt).toLocaleDateString("vi-VN")}
                     </td>
                     <td className="px-4 py-3 flex gap-1">
-                      <button onClick={() => router.push(`/admin/blog/edit/${p.id}`)} className="p-1.5 rounded hover:bg-gray-100">
+                      <AdminIconButton onClick={() => router.push(`/admin/blog/edit/${p.id}`)}>
                         <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setDeleteId(p.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500">
+                      </AdminIconButton>
+                      <AdminIconButton tone="danger" onClick={() => setDeleteId(p.id)}>
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </AdminIconButton>
                     </td>
                   </tr>
                 ))}

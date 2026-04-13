@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Tag, Plus, Pencil, Trash2 } from "lucide-react";
+import { AdminActionButton, AdminIconButton } from "@/components/admin/admin-action-button";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
@@ -41,10 +42,9 @@ export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-bold flex items-center gap-2"><Tag className="w-5 h-5" /> Tags</h2>
-        <button onClick={() => setDialog({ mode: "create" })}
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+        <AdminActionButton onClick={() => setDialog({ mode: "create" })}>
           <Plus className="w-4 h-4" /> Thêm
-        </button>
+        </AdminActionButton>
       </div>
       <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
         <table className="w-full text-sm">
@@ -55,8 +55,12 @@ export function BlogTagsClient({ tags }: { tags: BlogTag[] }) {
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3 text-muted-foreground">{t.slug}</td>
                 <td className="px-4 py-3 flex gap-1">
-                  <button onClick={() => setDialog({ mode: "edit", data: t })} className="p-1.5 rounded hover:bg-gray-100"><Pencil className="w-4 h-4" /></button>
-                  <button onClick={() => setDeleteId(t.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <AdminIconButton onClick={() => setDialog({ mode: "edit", data: t })}>
+                    <Pencil className="w-4 h-4" />
+                  </AdminIconButton>
+                  <AdminIconButton tone="danger" onClick={() => setDeleteId(t.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </AdminIconButton>
                 </td>
               </tr>
             ))}

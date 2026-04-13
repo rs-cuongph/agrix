@@ -205,17 +205,6 @@ export function AdminSidebar({
       </div>
       <div className="h-px bg-white/10" />
 
-      <div className="px-5 pb-2 pt-4">
-        <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
-          <p className="text-xs uppercase tracking-[0.22em] text-white/45">
-            Navigation
-          </p>
-          <p className="mt-1 text-sm text-white/70">
-            Đồng bộ quản trị bán hàng, nội dung và mùa vụ trong một hệ giao diện thống nhất.
-          </p>
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent">
         <div className="space-y-1">
         {navItems.map((group) => {

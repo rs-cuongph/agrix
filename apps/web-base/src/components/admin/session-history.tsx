@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { MessageCircle, Eye, ChevronLeft, ChevronRight, User, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import { AdminActionButton, AdminIconButton } from '@/components/admin/admin-action-button';
 
 interface Session {
   id: string;
@@ -69,12 +70,12 @@ export default function SessionHistory() {
       <div className="flex flex-col h-[calc(100vh-240px)] max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 pb-4 border-b mb-4">
-          <button
+          <AdminActionButton
             onClick={() => setSelectedSession(null)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors"
+            tone="ghost"
           >
             <ChevronLeft size={16} /> Quay lại
-          </button>
+          </AdminActionButton>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MessageCircle size={14} />
             <span>{messages.length} tin nhắn</span>
@@ -180,12 +181,9 @@ export default function SessionHistory() {
                       {new Date(s.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => viewSession(s.id)}
-                        className="text-emerald-500 hover:text-emerald-700 p-1"
-                      >
+                      <AdminIconButton onClick={() => viewSession(s.id)}>
                         <Eye size={16} />
-                      </button>
+                      </AdminIconButton>
                     </td>
                   </tr>
                 ))}
@@ -196,23 +194,21 @@ export default function SessionHistory() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2">
-              <button
+              <AdminIconButton
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="p-1 disabled:opacity-30"
               >
                 <ChevronLeft size={18} />
-              </button>
+              </AdminIconButton>
               <span className="text-sm text-gray-600">
                 {page} / {totalPages}
               </span>
-              <button
+              <AdminIconButton
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="p-1 disabled:opacity-30"
               >
                 <ChevronRight size={18} />
-              </button>
+              </AdminIconButton>
             </div>
           )}
         </>

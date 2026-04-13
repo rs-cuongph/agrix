@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Ruler, Plus, Pencil, Trash2, ArrowRightLeft } from "lucide-react";
+import { AdminActionButton, AdminIconButton } from "@/components/admin/admin-action-button";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
@@ -113,10 +114,9 @@ export function UnitsClient({
         <TabsContent value="base">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => setBaseDialog({ mode: "create" })}
-                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+              <AdminActionButton onClick={() => setBaseDialog({ mode: "create" })}>
                 <Plus className="w-4 h-4" /> Tạo đơn vị gốc
-              </button>
+              </AdminActionButton>
             </div>
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <table className="w-full text-sm">
@@ -140,8 +140,12 @@ export function UnitsClient({
                       <td className="px-4 py-3 text-muted-foreground text-xs">{u.description || "—"}</td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex justify-center gap-1">
-                          <button onClick={() => setBaseDialog({ mode: "edit", data: u })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => confirmDeleteBase(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                          <AdminIconButton onClick={() => setBaseDialog({ mode: "edit", data: u })} title="Sửa">
+                            <Pencil className="w-4 h-4" />
+                          </AdminIconButton>
+                          <AdminIconButton tone="danger" onClick={() => confirmDeleteBase(u.id)} title="Xóa">
+                            <Trash2 className="w-4 h-4" />
+                          </AdminIconButton>
                         </div>
                       </td>
                     </tr>
@@ -159,10 +163,9 @@ export function UnitsClient({
         <TabsContent value="conversion">
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={() => setConvDialog({ mode: "create" })}
-                className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+              <AdminActionButton onClick={() => setConvDialog({ mode: "create" })}>
                 <Plus className="w-4 h-4" /> Tạo quy đổi
-              </button>
+              </AdminActionButton>
             </div>
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <table className="w-full text-sm">
@@ -195,8 +198,12 @@ export function UnitsClient({
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex justify-center gap-1">
-                            <button onClick={() => setConvDialog({ mode: "edit", data: u })} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa"><Pencil className="w-4 h-4" /></button>
-                            <button onClick={() => confirmDeleteConv(u.id)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors" title="Xóa"><Trash2 className="w-4 h-4" /></button>
+                            <AdminIconButton onClick={() => setConvDialog({ mode: "edit", data: u })} title="Sửa">
+                              <Pencil className="w-4 h-4" />
+                            </AdminIconButton>
+                            <AdminIconButton tone="danger" onClick={() => confirmDeleteConv(u.id)} title="Xóa">
+                              <Trash2 className="w-4 h-4" />
+                            </AdminIconButton>
                           </div>
                         </td>
                       </tr>

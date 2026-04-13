@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Pencil, Power, RefreshCw, Package, ScanBarcode, CircleDollarSign } from "lucide-react";
+import { AdminActionButton, AdminIconButton } from "@/components/admin/admin-action-button";
 import { AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ExportBarcodeButton } from "./export-barcode-button";
@@ -73,15 +74,13 @@ export function ProductsClient({
       />
 
       <div className="flex justify-end gap-2">
-        <button onClick={() => setDialog({ mode: "create" })}
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
+        <AdminActionButton onClick={() => setDialog({ mode: "create" })}>
           <Plus className="w-4 h-4" /> Tạo sản phẩm
-        </button>
+        </AdminActionButton>
         <ExportBarcodeButton />
-        <button onClick={() => router.refresh()}
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 transition-colors">
+        <AdminActionButton tone="secondary" onClick={() => router.refresh()}>
           <RefreshCw className="w-4 h-4" /> Làm mới
-        </button>
+        </AdminActionButton>
       </div>
 
       <AdminPanel
@@ -117,15 +116,16 @@ export function ProductsClient({
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex justify-center gap-1">
-                    <button onClick={() => setDialog({ mode: "edit", data: p })}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-emerald-600 transition-colors" title="Sửa">
+                    <AdminIconButton onClick={() => setDialog({ mode: "edit", data: p })} title="Sửa">
                       <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleToggle(p.id)}
-                      className={`p-1.5 rounded-lg hover:bg-gray-100 transition-colors ${p.isActive ? "text-gray-500 hover:text-red-600" : "text-gray-500 hover:text-emerald-600"}`}
-                      title={p.isActive ? "Ngưng hoạt động" : "Kích hoạt"}>
+                    </AdminIconButton>
+                    <AdminIconButton
+                      tone={p.isActive ? "danger" : "default"}
+                      onClick={() => handleToggle(p.id)}
+                      title={p.isActive ? "Ngưng hoạt động" : "Kích hoạt"}
+                    >
                       <Power className="w-4 h-4" />
-                    </button>
+                    </AdminIconButton>
                   </div>
                 </td>
               </tr>
