@@ -187,18 +187,37 @@ export function AdminSidebar({
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-emerald-950 text-white flex flex-col transition-all duration-300 flex-shrink-0">
-      <div className="p-5 flex items-center gap-3">
-        <div className="shrink-0 w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center">
-          <Package className="w-5 h-5 text-white" />
+    <aside className="flex min-h-screen w-72 shrink-0 flex-col border-r border-emerald-900/20 bg-[linear-gradient(180deg,#052e2b_0%,#064e3b_18%,#062f4f_100%)] text-white shadow-[20px_0_60px_-35px_rgba(15,23,42,0.6)] transition-all duration-300">
+      <div className="p-5">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-400 shadow-lg shadow-emerald-500/20">
+            <Package className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-white/55">
+              Control Center
+            </p>
+            <span className="block truncate text-lg font-semibold tracking-tight text-white">
+              Agrix Admin
+            </span>
+          </div>
         </div>
-        <span className="text-lg font-bold tracking-tight truncate">
-          Agrix Admin
-        </span>
       </div>
       <div className="h-px bg-white/10" />
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent">
+      <div className="px-5 pb-2 pt-4">
+        <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
+          <p className="text-xs uppercase tracking-[0.22em] text-white/45">
+            Navigation
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            Đồng bộ quản trị bán hàng, nội dung và mùa vụ trong một hệ giao diện thống nhất.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent">
+        <div className="space-y-1">
         {navItems.map((group) => {
           if (!group.children && group.href) {
             // Standalone item
@@ -214,9 +233,9 @@ export function AdminSidebar({
                 key={group.label}
                 href={group.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg text-sm transition-colors outline-none",
+                  "mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors outline-none",
                   active
-                    ? "bg-white/15 text-white font-semibold"
+                    ? "bg-white/14 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]"
                     : "text-white/70 hover:bg-white/10 focus-visible:bg-white/10 hover:text-white focus-visible:text-white",
                 )}
               >
@@ -250,9 +269,9 @@ export function AdminSidebar({
                 <button
                   onClick={() => toggleGroup(group.label)}
                   className={cn(
-                    "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-all outline-none",
+                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm transition-all outline-none",
                     isAnyChildActive
-                      ? "text-white font-medium"
+                      ? "bg-white/8 text-white"
                       : "text-white/70 hover:bg-white/10 hover:text-white focus-visible:bg-white/10 focus-visible:text-white",
                   )}
                 >
@@ -295,9 +314,9 @@ export function AdminSidebar({
                             key={child.href}
                             href={child.href}
                             className={cn(
-                              "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors outline-none",
+                              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors outline-none",
                               active
-                                ? "bg-white/15 text-white font-semibold"
+                                ? "bg-white/14 text-white"
                                 : "text-white/60 hover:bg-white/10 focus-visible:bg-white/10 hover:text-white focus-visible:text-white",
                             )}
                           >
@@ -320,13 +339,14 @@ export function AdminSidebar({
           }
           return null;
         })}
+        </div>
       </div>
 
-      <div className="p-3 bg-emerald-950 mt-auto">
-        <div className="h-px bg-white/10 mb-3" />
+      <div className="mt-auto p-3">
+        <div className="mb-3 h-px bg-white/10" />
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/10 hover:text-white transition-colors w-full focus-visible:bg-white/10 outline-none"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/60 transition-colors outline-none hover:bg-white/10 hover:text-white focus-visible:bg-white/10"
         >
           <LogOut className="w-5 h-5 shrink-0" />
           <span className="truncate">Đăng xuất</span>

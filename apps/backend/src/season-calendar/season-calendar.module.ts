@@ -2,6 +2,7 @@ import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AIModule } from '../ai/ai.module';
 import { AuthModule } from '../auth/auth.module';
+import { CommonModule } from '../common/common.module';
 import { Product } from '../inventory/entities/product.entity';
 import {
   AgriculturalZone,
@@ -50,6 +51,7 @@ import { ZonesService } from './services/zones.service';
       Product,
     ]),
     AuthModule,
+    CommonModule,
     forwardRef(() => AIModule),
   ],
   controllers: [

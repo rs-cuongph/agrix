@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, FolderTree, Tag, Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import { FileText, FolderTree, Tag, Plus, Pencil, Trash2, Eye, EyeOff, BookOpenText } from "lucide-react";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { BlogCategoriesClient } from "@/components/admin/blog-categories-client";
 import { BlogTagsClient } from "@/components/admin/blog-tags-client";
 import { adminApiCall } from "@/components/admin/crud-dialog";
@@ -38,34 +39,48 @@ export function BlogPageClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Blog</h1>
-        <button
-          onClick={() => router.push("/admin/blog/new")}
-          className="inline-flex items-center gap-1 px-4 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium"
-        >
-          <Plus className="w-4 h-4" /> Tạo bài viết
-        </button>
-      </div>
+      <AdminPageHero
+        badge="Content Hub"
+        icon={BookOpenText}
+        title="Quản lý blog"
+        description="Đồng bộ khu vực nội dung với phần mùa vụ bằng hero rõ trọng tâm, số liệu nhanh và tabs có cùng nhịp tương tác."
+        actions={
+          <button
+            onClick={() => router.push("/admin/blog/new")}
+            className="inline-flex items-center gap-1 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+          >
+            <Plus className="w-4 h-4" /> Tạo bài viết
+          </button>
+        }
+      />
 
-      <Tabs defaultValue="posts">
-        <TabsList>
-          <TabsTrigger value="posts" className="flex items-center gap-1.5">
+      <AdminStatsGrid
+        items={[
+          { label: "Bài viết", value: posts.length.toLocaleString("vi-VN"), hint: "toàn bộ nội dung", icon: FileText },
+          { label: "Đã xuất bản", value: posts.filter((post) => post.status === "PUBLISHED").length.toLocaleString("vi-VN"), hint: "đang hiển thị ngoài website", icon: Eye, accentClassName: "border-emerald-100 bg-emerald-50 text-emerald-600" },
+          { label: "Danh mục", value: categories.length.toLocaleString("vi-VN"), hint: "nhóm nội dung", icon: FolderTree, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+          { label: "Tags", value: tags.length.toLocaleString("vi-VN"), hint: "hỗ trợ điều hướng nội dung", icon: Tag, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+        ]}
+      />
+
+      <Tabs defaultValue="posts" className="space-y-5">
+        <TabsList className="w-full justify-start rounded-2xl border border-slate-200/80 bg-white/85 p-1.5 shadow-sm">
+          <TabsTrigger value="posts" className="flex items-center gap-1.5 rounded-xl px-4 py-2.5">
             <FileText className="w-4 h-4" /> Bài viết
           </TabsTrigger>
-          <TabsTrigger value="categories" className="flex items-center gap-1.5">
+          <TabsTrigger value="categories" className="flex items-center gap-1.5 rounded-xl px-4 py-2.5">
             <FolderTree className="w-4 h-4" /> Danh mục
           </TabsTrigger>
-          <TabsTrigger value="tags" className="flex items-center gap-1.5">
+          <TabsTrigger value="tags" className="flex items-center gap-1.5 rounded-xl px-4 py-2.5">
             <Tag className="w-4 h-4" /> Tags
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts">
-          <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <AdminPanel title="Danh sách bài viết" description="Quản trị tiêu đề, trạng thái xuất bản và chỉnh sửa nhanh từ bảng.">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-muted/50 text-left">
+                <tr className="bg-slate-50/90 text-left">
                   <th className="px-4 py-3 font-semibold">Tiêu đề</th>
                   <th className="px-4 py-3 font-semibold">Danh mục</th>
                   <th className="px-4 py-3 font-semibold">Trạng thái</th>
@@ -107,7 +122,7 @@ export function BlogPageClient({
                 )}
               </tbody>
             </table>
-          </div>
+          </AdminPanel>
         </TabsContent>
 
         <TabsContent value="categories">

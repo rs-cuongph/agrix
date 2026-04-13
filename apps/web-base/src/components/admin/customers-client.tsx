@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Plus, Pencil, Trash2 } from "lucide-react";
+import { Users, Plus, Pencil, Trash2, Wallet, MapPin, Phone } from "lucide-react";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ConfirmDialog } from "@/components/admin/confirm-dialog";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,10 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: Customer } | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const router = useRouter();
+  const debtCustomers = customers.filter((customer) => customer.outstandingDebt > 0);
+  const totalDebt = debtCustomers.reduce((sum, customer) => sum + customer.outstandingDebt, 0);
+  const customersWithPhone = customers.filter((customer) => Boolean(customer.phone)).length;
+  const customersWithAddress = customers.filter((customer) => Boolean(customer.address)).length;
 
   const handleCreate = async (data: Record<string, any>) => {
     await adminApiCall("/customers", "POST", data);
@@ -41,21 +46,39 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <Users className="w-6 h-6" /> Khách hàng
-        </h1>
-        <button onClick={() => setDialog({ mode: "create" })}
-          className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
-          <Plus className="w-4 h-4" /> Thêm khách hàng
-        </button>
-      </div>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="Customer Hub"
+        icon={Users}
+        title="Quản lý khách hàng"
+        description="Chuẩn hoá dữ liệu khách mua, theo dõi công nợ và giữ nhịp hiển thị đồng nhất với các phân hệ admin mới."
+        actions={
+          <button
+            onClick={() => setDialog({ mode: "create" })}
+            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700"
+          >
+            <Plus className="h-4 w-4" />
+            Thêm khách hàng
+          </button>
+        }
+      />
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng khách", value: customers.length.toLocaleString("vi-VN"), hint: "hồ sơ hiện có", icon: Users },
+          { label: "Có công nợ", value: debtCustomers.length.toLocaleString("vi-VN"), hint: totalDebt > 0 ? `${totalDebt.toLocaleString("vi-VN")}đ cần theo dõi` : "không phát sinh nợ", icon: Wallet, accentClassName: "border-rose-100 bg-rose-50 text-rose-600" },
+          { label: "Có số điện thoại", value: customersWithPhone.toLocaleString("vi-VN"), hint: "dữ liệu liên hệ sẵn sàng", icon: Phone, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+          { label: "Có địa chỉ", value: customersWithAddress.toLocaleString("vi-VN"), hint: "phục vụ tư vấn khu vực", icon: MapPin, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+        ]}
+      />
+
+      <AdminPanel
+        title="Danh sách khách hàng"
+        description="Chỉnh sửa nhanh thông tin liên hệ, địa chỉ và công nợ trực tiếp từ bảng."
+      >
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b bg-slate-50/90">
               <th className="text-left px-4 py-3 font-semibold">Tên</th>
               <th className="text-left px-4 py-3 font-semibold">SĐT</th>
               <th className="text-left px-4 py-3 font-semibold">Địa chỉ</th>
@@ -87,7 +110,7 @@ export function CustomersClient({ customers }: { customers: Customer[] }) {
             )}
           </tbody>
         </table>
-      </div>
+      </AdminPanel>
 
       {dialog && (
         <CrudDialog title="khách hàng" fields={customerFields}

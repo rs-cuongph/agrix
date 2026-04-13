@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { AlertTriangle, BarChart3 } from "lucide-react";
+import { AdminPageHero } from "@/components/admin/admin-page-shell";
 import { GrossProfitCategoryTable } from "@/components/admin/gross-profit-category-table";
 import { ReportingExportActions } from "@/components/admin/reporting-export-actions";
 import { ReportingFilterToolbar } from "@/components/admin/reporting-filter-toolbar";
@@ -17,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   getAlerts,
   getGrossProfitByCategory,
@@ -26,7 +26,7 @@ import {
   getTopCustomers,
   getTopProducts,
 } from "@/lib/admin/reporting-api";
-import { getDefaultFilter, getFilterLabel } from "@/lib/admin/reporting-filters";
+import { getDefaultFilter } from "@/lib/admin/reporting-filters";
 import {
   AlertsResponse,
   GrossProfitByCategoryResponse,
@@ -110,22 +110,12 @@ export function AdminDashboardClient() {
 
   return (
     <div className="space-y-6">
-      <Card className="border shadow-sm">
-        <CardHeader className="gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-2xl font-extrabold text-gray-900">
-              <BarChart3 className="size-6 text-emerald-600" />
-              Báo cáo nâng cao
-            </CardTitle>
-            <CardDescription>
-              Theo dõi doanh thu, lợi nhuận gộp, sản phẩm bán chạy, khách hàng và báo cáo xuất ra.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Separator />
-        </CardContent>
-      </Card>
+      <AdminPageHero
+        badge="Reporting Hub"
+        icon={BarChart3}
+        title="Báo cáo nâng cao"
+        description="Theo dõi doanh thu, lợi nhuận gộp, khách hàng và cảnh báo tồn kho trong cùng phong cách hiển thị với phần quản lý mùa vụ."
+      />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
         <ReportingFilterToolbar

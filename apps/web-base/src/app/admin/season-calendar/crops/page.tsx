@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Leaf, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog } from "@/components/admin/crud-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCrops, type SeasonCrop } from "@/lib/admin/season-calendar-api";
 import {
@@ -71,30 +71,33 @@ export default function SeasonCalendarCropsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Quản lý cây trồng</h1>
-          <p className="text-sm text-muted-foreground">
-            Quản trị danh mục cây trồng dùng cho lịch mùa vụ và chatbot.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => void load()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Làm mới
-          </Button>
-          <Button onClick={() => setDialog({ mode: "create" })}>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm cây trồng
-          </Button>
-        </div>
-      </div>
+      <AdminPageHero
+        badge="Crop Catalog"
+        icon={Leaf}
+        title="Quản lý cây trồng"
+        description="Tập trung danh mục cây trồng cho lịch mùa vụ và chatbot trong cùng bộ khung hiển thị với các menu còn lại."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => void load()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Làm mới
+            </Button>
+            <Button onClick={() => setDialog({ mode: "create" })}>
+              <Plus className="mr-2 h-4 w-4" />
+              Thêm cây trồng
+            </Button>
+          </>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách cây trồng</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng cây trồng", value: crops.length.toLocaleString("vi-VN"), hint: "trong danh mục mùa vụ", icon: Leaf },
+          { label: "Nhóm cây", value: new Set(crops.map((crop) => crop.category ?? "Khác")).size.toLocaleString("vi-VN"), hint: "phân loại hiện có", icon: Plus, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+        ]}
+      />
+
+      <AdminPanel title="Danh sách cây trồng" description="Quản trị cây trồng, tên địa phương và nhóm phân loại dùng trong lịch mùa vụ.">
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-12 w-full" />
@@ -104,7 +107,7 @@ export default function SeasonCalendarCropsPage() {
           ) : (
             <div className="overflow-hidden rounded-xl border">
               <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+                <thead className="bg-slate-50/90">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium">Tên cây</th>
                     <th className="px-4 py-3 text-left font-medium">Nhóm</th>
@@ -172,8 +175,7 @@ export default function SeasonCalendarCropsPage() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </AdminPanel>
 
       {dialog ? (
         <CrudDialog

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog } from "@/components/admin/crud-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchZones, type SeasonZone } from "@/lib/admin/season-calendar-api";
 import {
@@ -50,30 +50,33 @@ export default function SeasonCalendarZonesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Quản lý vùng nông nghiệp</h1>
-          <p className="text-sm text-muted-foreground">
-            Thêm, cập nhật và vô hiệu hóa các vùng áp dụng lịch mùa vụ.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => void load()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Làm mới
-          </Button>
-          <Button onClick={() => setDialog({ mode: "create" })}>
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm vùng
-          </Button>
-        </div>
-      </div>
+      <AdminPageHero
+        badge="Season Regions"
+        icon={MapPin}
+        title="Quản lý vùng nông nghiệp"
+        description="Đồng bộ phần cấu hình vùng với phong cách giao diện trung tâm của lịch mùa vụ."
+        actions={
+          <>
+            <Button variant="outline" onClick={() => void load()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Làm mới
+            </Button>
+            <Button onClick={() => setDialog({ mode: "create" })}>
+              <Plus className="mr-2 h-4 w-4" />
+              Thêm vùng
+            </Button>
+          </>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách vùng</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng vùng", value: zones.length.toLocaleString("vi-VN"), hint: "đang áp dụng cho mùa vụ", icon: MapPin },
+          { label: "Tỉnh/thành", value: zones.reduce((sum, zone) => sum + (zone.provinces?.length ?? 0), 0).toLocaleString("vi-VN"), hint: "phạm vi đã cấu hình", icon: Plus, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+        ]}
+      />
+
+      <AdminPanel title="Danh sách vùng" description="Thêm, cập nhật và vô hiệu hóa các vùng áp dụng lịch mùa vụ.">
           {loading ? (
             <div className="space-y-3">
               <Skeleton className="h-12 w-full" />
@@ -83,7 +86,7 @@ export default function SeasonCalendarZonesPage() {
           ) : (
             <div className="overflow-hidden rounded-xl border">
               <table className="w-full text-sm">
-                <thead className="bg-muted/50">
+                <thead className="bg-slate-50/90">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium">
                       Tên vùng
@@ -145,8 +148,7 @@ export default function SeasonCalendarZonesPage() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </AdminPanel>
 
       {dialog ? (
         <CrudDialog

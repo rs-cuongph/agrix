@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Power, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Power, RefreshCw, Package, ScanBarcode, CircleDollarSign } from "lucide-react";
+import { AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ExportBarcodeButton } from "./export-barcode-button";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,12 @@ export function ProductsClient({
 }) {
   const [dialog, setDialog] = useState<{ mode: "create" | "edit"; data?: Product } | null>(null);
   const router = useRouter();
+  const activeProducts = products.filter((product) => product.isActive);
+  const barcodeProducts = products.filter((product) => Boolean(product.barcodeEan13));
+  const stockValue = products.reduce(
+    (sum, product) => sum + product.currentStockBase * product.baseSellPrice,
+    0,
+  );
 
   const productFields = [
     { name: "sku", label: "SKU", required: true, placeholder: "VD: PB-001" },
@@ -55,7 +62,16 @@ export function ProductsClient({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng sản phẩm", value: products.length.toLocaleString("vi-VN"), hint: `${categories.length} danh mục, ${units.length} đơn vị`, icon: Package },
+          { label: "Đang hoạt động", value: activeProducts.length.toLocaleString("vi-VN"), hint: "sẵn sàng bán ra", icon: Power, accentClassName: "border-emerald-100 bg-emerald-50 text-emerald-600" },
+          { label: "Có mã vạch", value: barcodeProducts.length.toLocaleString("vi-VN"), hint: "sẵn cho quét POS", icon: ScanBarcode, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+          { label: "Giá trị tồn", value: `${stockValue.toLocaleString("vi-VN")}đ`, hint: "ước tính theo giá bán lẻ", icon: CircleDollarSign, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+        ]}
+      />
+
       <div className="flex justify-end gap-2">
         <button onClick={() => setDialog({ mode: "create" })}
           className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors">
@@ -68,10 +84,13 @@ export function ProductsClient({
         </button>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <AdminPanel
+        title="Danh sách sản phẩm"
+        description="Giữ cấu trúc thao tác, bảng dữ liệu và nhịp khoảng trắng nhất quán với các màn quản trị mới."
+      >
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/50">
+            <tr className="border-b bg-slate-50/90">
               <th className="text-left px-4 py-3 font-semibold">SKU</th>
               <th className="text-left px-4 py-3 font-semibold">Tên sản phẩm</th>
               <th className="text-left px-4 py-3 font-semibold">Đơn vị</th>
@@ -116,7 +135,7 @@ export function ProductsClient({
             )}
           </tbody>
         </table>
-      </div>
+      </AdminPanel>
 
       {dialog && (
         <CrudDialog
@@ -131,4 +150,3 @@ export function ProductsClient({
     </div>
   );
 }
-

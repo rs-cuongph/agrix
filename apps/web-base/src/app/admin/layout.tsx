@@ -48,9 +48,13 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="admin-scope flex min-h-screen bg-muted/30">
+    <div className="admin-scope flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.10),transparent_26%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.10),transparent_24%),#f8fafc]">
       <AdminSidebar role={user.role} permissions={user.permissions} />
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <main className="flex-1 overflow-auto">
+        <div className="mx-auto flex min-h-screen w-full max-w-[1600px] flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6">
+          {children}
+        </div>
+      </main>
       <Toaster richColors position="top-right" />
     </div>
   );

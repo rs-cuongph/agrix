@@ -3,8 +3,9 @@
 import { useState } from "react";
 import {
   Warehouse, ArrowDownToLine, Wrench, History, ClipboardList,
-  AlertTriangle, Clock, Package, Plus,
+  AlertTriangle, Clock, Package, Plus, Boxes, ShieldAlert,
 } from "lucide-react";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
 import { ProductsClient } from "@/components/admin/products-client";
 import { useRouter } from "next/navigation";
@@ -108,15 +109,27 @@ export function InventoryClient({
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-        <Warehouse className="w-6 h-6" /> Quản lý Kho hàng
-      </h1>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="Inventory Control"
+        icon={Warehouse}
+        title="Quản lý kho hàng"
+        description="Đồng bộ phần tồn kho với ngôn ngữ hiển thị của mùa vụ: rõ lớp thông tin, nhấn vào số liệu và giữ thao tác chính luôn nổi bật."
+      />
 
-      <Tabs defaultValue="overview">
-        <TabsList>
+      <AdminStatsGrid
+        items={[
+          { label: "Sản phẩm trong kho", value: products.length.toLocaleString("vi-VN"), hint: "toàn bộ SKU đang theo dõi", icon: Boxes },
+          { label: "Sắp hết hàng", value: alerts.summary.lowStockCount.toLocaleString("vi-VN"), hint: "cần bổ sung sớm", icon: ShieldAlert, accentClassName: "border-rose-100 bg-rose-50 text-rose-600" },
+          { label: "Sắp hết hạn", value: alerts.summary.expiringCount.toLocaleString("vi-VN"), hint: "ưu tiên xử lý trong kho", icon: Clock, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+          { label: "Bút toán lịch sử", value: history.data.length.toLocaleString("vi-VN"), hint: "ghi nhận nhập và điều chỉnh", icon: ClipboardList, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+        ]}
+      />
+
+      <Tabs defaultValue="overview" className="space-y-5">
+        <TabsList className="w-full justify-start rounded-2xl border border-slate-200/80 bg-white/85 p-1.5 shadow-sm">
           {TABS.map((t) => (
-            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5">
+            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5 rounded-xl px-4 py-2.5">
               <t.icon className="w-4 h-4" /> {t.label}
             </TabsTrigger>
           ))}
@@ -130,23 +143,26 @@ export function InventoryClient({
         {/* TAB: Tổng quan */}
         <TabsContent value="overview">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="rounded-xl border bg-card shadow-sm p-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1"><Package className="w-4 h-4" /> Tổng sản phẩm</div>
                 <div className="text-2xl font-bold text-gray-900">{products.length}</div>
               </div>
-              <div className="rounded-xl border bg-card shadow-sm p-4">
+              <div className="rounded-3xl border border-rose-100 bg-rose-50/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-red-600 mb-1"><AlertTriangle className="w-4 h-4" /> Sắp hết hàng</div>
                 <div className="text-2xl font-bold text-red-600">{alerts.summary.lowStockCount}</div>
               </div>
-              <div className="rounded-xl border bg-card shadow-sm p-4">
+              <div className="rounded-3xl border border-amber-100 bg-amber-50/70 p-5 shadow-sm">
                 <div className="flex items-center gap-2 text-sm text-orange-600 mb-1"><Clock className="w-4 h-4" /> Sắp hết hạn</div>
                 <div className="text-2xl font-bold text-orange-600">{alerts.summary.expiringCount}</div>
               </div>
             </div>
 
             {alerts.lowStock.length > 0 && (
-              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+              <AdminPanel
+                title="Sản phẩm sắp hết hàng"
+                description="Danh sách ưu tiên bổ sung để tránh hụt hàng trong mùa vụ cao điểm."
+              >
                 <div className="px-4 py-3 bg-red-50 border-b font-semibold text-sm text-red-700 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" /> Sản phẩm sắp hết hàng
                 </div>
@@ -166,11 +182,14 @@ export function InventoryClient({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </AdminPanel>
             )}
 
             {alerts.expiring.length > 0 && (
-              <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+              <AdminPanel
+                title="Sản phẩm sắp hết hạn"
+                description="Theo dõi lô sắp quá hạn để điều phối bán hàng và tồn kho."
+              >
                 <div className="px-4 py-3 bg-orange-50 border-b font-semibold text-sm text-orange-700 flex items-center gap-2">
                   <Clock className="w-4 h-4" /> Sản phẩm sắp hết hạn
                 </div>
@@ -188,7 +207,7 @@ export function InventoryClient({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </AdminPanel>
             )}
           </div>
         </TabsContent>
@@ -202,7 +221,10 @@ export function InventoryClient({
                 <Plus className="w-4 h-4" /> Nhập kho
               </button>
             </div>
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            <AdminPanel
+              title="Lịch sử nhập kho"
+              description="Theo dõi các đợt nhập hàng và giá vốn gần nhất."
+            >
               <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><ArrowDownToLine className="w-4 h-4" /> Lịch sử nhập kho</div>
               <table className="w-full text-sm">
                 <thead><tr className="border-b bg-muted/30">
@@ -229,7 +251,7 @@ export function InventoryClient({
                   )}
                 </tbody>
               </table>
-            </div>
+            </AdminPanel>
           </div>
         </TabsContent>
 
@@ -242,7 +264,10 @@ export function InventoryClient({
                 <Plus className="w-4 h-4" /> Điều chỉnh kho
               </button>
             </div>
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+            <AdminPanel
+              title="Lịch sử điều chỉnh kho"
+              description="Ghi nhận hao hụt, trả hàng và cân chỉnh kiểm kê."
+            >
               <div className="px-4 py-3 bg-muted/50 border-b font-semibold text-sm flex items-center gap-1.5"><Wrench className="w-4 h-4" /> Lịch sử điều chỉnh kho</div>
               <table className="w-full text-sm">
                 <thead><tr className="border-b bg-muted/30">
@@ -275,7 +300,7 @@ export function InventoryClient({
                   )}
                 </tbody>
               </table>
-            </div>
+            </AdminPanel>
           </div>
         </TabsContent>
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   ClipboardList, ChevronDown, ChevronUp, User,
   Search, Trash2, Loader2, Banknote, QrCode, Clock, CheckCircle2, XCircle,
 } from "lucide-react";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { deleteOrderAction } from "@/app/admin/orders/actions";
@@ -93,6 +94,9 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState(initialSearch);
   const [isPending, startTransition] = useTransition();
+  const pendingCount = orders.filter((order) => order.status === "PENDING").length;
+  const debtCount = orders.filter((order) => order.totalAmount - order.paidAmount > 0).length;
+  const paidTotal = orders.reduce((sum, order) => sum + order.paidAmount, 0);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -113,34 +117,49 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
   };
 
   return (
-    <div className="p-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <ClipboardList className="w-6 h-6 text-emerald-600" /> Đơn hàng
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{orders.length} đơn hàng</p>
-        </div>
-        <form onSubmit={handleSearch} className="flex items-center relative w-72">
-          <Input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Mã đơn, khách hàng..."
-            className="pr-10 bg-white h-9"
-          />
-          <Button type="submit" variant="ghost" size="icon"
-            className="absolute right-1 w-7 h-7 opacity-60 hover:bg-transparent" disabled={isPending}>
-            {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          </Button>
-        </form>
-      </div>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="Order Desk"
+        icon={ClipboardList}
+        title="Quản lý đơn hàng"
+        description="Theo dõi trạng thái thanh toán, công nợ và chi tiết giao dịch bằng cùng hệ bố cục đang dùng ở quản lý mùa vụ."
+        actions={
+          <form onSubmit={handleSearch} className="relative w-full max-w-sm">
+            <Input
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Tìm theo mã đơn hoặc khách hàng..."
+              className="h-11 rounded-2xl border-white/70 bg-white/90 pr-11 shadow-sm"
+            />
+            <Button
+              type="submit"
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1 h-9 w-9 rounded-xl text-slate-500 hover:bg-slate-100"
+              disabled={isPending}
+            >
+              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            </Button>
+          </form>
+        }
+      />
 
-      {/* Table */}
-      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng đơn", value: orders.length.toLocaleString("vi-VN"), hint: "danh sách hiện tại", icon: ClipboardList },
+          { label: "Chờ thanh toán", value: pendingCount.toLocaleString("vi-VN"), hint: "đơn cần xử lý", icon: Clock, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+          { label: "Có công nợ", value: debtCount.toLocaleString("vi-VN"), hint: "đơn chưa thanh toán đủ", icon: XCircle, accentClassName: "border-rose-100 bg-rose-50 text-rose-600" },
+          { label: "Đã thu", value: fmt(paidTotal), hint: "tổng tiền đã ghi nhận", icon: CheckCircle2, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+        ]}
+      />
+
+      <AdminPanel
+        title="Danh sách đơn hàng"
+        description="Nhấn vào từng dòng để mở chi tiết mặt hàng và tác vụ quản trị."
+      >
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40 text-gray-600">
+            <tr className="border-b bg-slate-50/90 text-slate-600">
               <th className="w-8 px-3" />
               <th className="text-left px-4 py-3 font-semibold w-28">Mã đơn</th>
               <th className="text-left px-4 py-3 font-semibold">Khách hàng</th>
@@ -152,9 +171,8 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
           </thead>
           <tbody>
             {orders.map((o) => (
-              <>
+              <Fragment key={o.id}>
                 <tr
-                  key={o.id}
                   onClick={() => toggleExpand(o.id)}
                   className={`border-b transition-colors cursor-pointer ${
                     expandedId === o.id ? "bg-emerald-50/40" : "hover:bg-muted/25"
@@ -226,7 +244,7 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
 
                 {/* Expanded detail row */}
                 {expandedId === o.id && o.items && (
-                  <tr key={`${o.id}-detail`}>
+                  <tr>
                     <td colSpan={7} className="bg-emerald-50/30 border-b border-emerald-100/60 px-6 py-4">
                       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         {/* Detail header */}
@@ -324,7 +342,7 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
             {orders.length === 0 && (
               <tr>
@@ -336,7 +354,7 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
             )}
           </tbody>
         </table>
-      </div>
+      </AdminPanel>
     </div>
   );
 }

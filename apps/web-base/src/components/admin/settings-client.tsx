@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, FolderTree, Ruler, Shield, QrCode } from "lucide-react";
+import { Settings, FolderTree, Ruler, Shield, QrCode, SlidersHorizontal, UsersRound } from "lucide-react";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import { CategoriesClient } from "@/components/admin/categories-client";
 import { UnitsClient } from "@/components/admin/units-client";
 import { AccountsClient } from "@/components/admin/accounts-client";
@@ -221,15 +222,27 @@ export function SettingsClient({
   const visibleTabs = ALL_TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-        <Settings className="w-6 h-6" /> Cài đặt
-      </h1>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="System Settings"
+        icon={Settings}
+        title="Cài đặt hệ thống"
+        description="Chuẩn hoá danh mục, đơn vị, tài khoản và cấu hình thanh toán theo cùng ngôn ngữ thiết kế đang dùng ở các màn admin mới."
+      />
 
-      <Tabs defaultValue={visibleTabs[0]?.id || "categories"}>
-        <TabsList>
+      <AdminStatsGrid
+        items={[
+          { label: "Danh mục", value: categories.length.toLocaleString("vi-VN"), hint: "nhóm sản phẩm đang có", icon: FolderTree },
+          { label: "Đơn vị", value: baseUnits.length.toLocaleString("vi-VN"), hint: "đơn vị cơ bản và quy đổi", icon: Ruler, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+          { label: "Tài khoản", value: users.length.toLocaleString("vi-VN"), hint: isAdmin ? "đang quản lý truy cập" : "ẩn với nhân viên", icon: UsersRound, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+          { label: "Quyền hệ thống", value: permissions.length.toLocaleString("vi-VN"), hint: "ma trận phân quyền hiện tại", icon: SlidersHorizontal, accentClassName: "border-emerald-100 bg-emerald-50 text-emerald-600" },
+        ]}
+      />
+
+      <Tabs defaultValue={visibleTabs[0]?.id || "categories"} className="space-y-5">
+        <TabsList className="w-full justify-start rounded-2xl border border-slate-200/80 bg-white/85 p-1.5 shadow-sm">
           {visibleTabs.map((t) => (
-            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5">
+            <TabsTrigger key={t.id} value={t.id} className="flex items-center gap-1.5 rounded-xl px-4 py-2.5">
               <t.icon className="w-4 h-4" /> {t.label}
             </TabsTrigger>
           ))}
@@ -248,7 +261,13 @@ export function SettingsClient({
         )}
         {isAdmin && (
           <TabsContent value="payment">
-            <BankConfigSection initialSettings={storeSettings ?? {}} />
+            <AdminPanel
+              title="Cấu hình thanh toán"
+              description="Thông tin nhận tiền chuyển khoản được dùng trên POS và các luồng bán hàng."
+              contentClassName="p-6"
+            >
+              <BankConfigSection initialSettings={storeSettings ?? {}} />
+            </AdminPanel>
           </TabsContent>
         )}
       </Tabs>

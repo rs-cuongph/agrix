@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +14,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -65,23 +63,35 @@ export default function FaqManagement() {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-gray-900">Quản lý FAQ</h1>
-        <Button size="sm" onClick={() => setDialog({ mode: "create" })}>
-          <Plus className="w-4 h-4 mr-1" /> Thêm FAQ
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="FAQ Library"
+        icon={Plus}
+        title="Quản lý FAQ"
+        description="Đưa phần hỏi đáp về cùng cấu trúc hero, số liệu nhanh và bảng dữ liệu giống các màn quản trị hiện đại hơn."
+        actions={
+          <Button size="sm" onClick={() => setDialog({ mode: "create" })}>
+            <Plus className="w-4 h-4 mr-1" /> Thêm FAQ
+          </Button>
+        }
+      />
+
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng câu hỏi", value: items.length.toLocaleString("vi-VN"), hint: "mục FAQ đã tạo", icon: Plus },
+          { label: "Đang hiển thị", value: items.filter((item) => item.isActive).length.toLocaleString("vi-VN"), hint: "đang công khai trên web", icon: Pencil, accentClassName: "border-emerald-100 bg-emerald-50 text-emerald-600" },
+        ]}
+      />
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Đang tải...</p>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có FAQ nào.</p>
       ) : (
-        <div className="rounded-xl border bg-card overflow-hidden">
+        <AdminPanel title="Danh sách FAQ" description="Sắp xếp thứ tự, trạng thái hiển thị và chỉnh sửa nội dung câu hỏi.">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/50">
+              <tr className="border-b bg-slate-50/90">
                 <th className="text-left p-3">Thứ tự</th>
                 <th className="text-left p-3">Câu hỏi</th>
                 <th className="text-center p-3">Hiển thị</th>
@@ -110,7 +120,7 @@ export default function FaqManagement() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminPanel>
       )}
 
       {/* Create/Edit Dialog */}

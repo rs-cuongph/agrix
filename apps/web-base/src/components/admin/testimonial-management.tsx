@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { CrudDialog, adminApiCall } from "@/components/admin/crud-dialog";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,23 +71,35 @@ export default function TestimonialManagement() {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-gray-900">Quản lý Đánh giá</h1>
-        <Button size="sm" onClick={() => setDialog({ mode: "create" })}>
-          <Plus className="w-4 h-4 mr-1" /> Thêm đánh giá
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="Testimonials"
+        icon={Star}
+        title="Quản lý đánh giá"
+        description="Sắp xếp phản hồi khách hàng với cùng nhịp hero, card và bảng đang dùng ở các menu admin mới."
+        actions={
+          <Button size="sm" onClick={() => setDialog({ mode: "create" })}>
+            <Plus className="w-4 h-4 mr-1" /> Thêm đánh giá
+          </Button>
+        }
+      />
+
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng đánh giá", value: items.length.toLocaleString("vi-VN"), hint: "toàn bộ phản hồi", icon: Star },
+          { label: "Đang hiển thị", value: items.filter((item) => item.isActive).length.toLocaleString("vi-VN"), hint: "xuất hiện ngoài website", icon: Plus, accentClassName: "border-emerald-100 bg-emerald-50 text-emerald-600" },
+        ]}
+      />
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Đang tải...</p>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có đánh giá nào.</p>
       ) : (
-        <div className="rounded-xl border bg-card overflow-hidden">
+        <AdminPanel title="Danh sách đánh giá" description="Quản trị trạng thái hiển thị và nội dung phản hồi khách hàng.">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/50">
+              <tr className="border-b bg-slate-50/90">
                 <th className="text-left p-3">Khách hàng</th>
                 <th className="text-left p-3 hidden md:table-cell">Nội dung</th>
                 <th className="text-center p-3">Đánh giá</th>
@@ -125,7 +138,7 @@ export default function TestimonialManagement() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminPanel>
       )}
 
       {/* Create/Edit Dialog */}

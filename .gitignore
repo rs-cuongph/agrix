@@ -53,3 +53,6 @@ minio-data/
 *.tmp
 *.bak
 .gitnexus
+
+# Service logs
+logs/

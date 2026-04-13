@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatConfigService } from '../../ai/chat-config.service';
+import { ServiceLoggerService } from '../../common/service-logger.service';
 import { AiGenerateCalendarDto } from '../dto/ai-generate-calendar.dto';
 import {
   AgriculturalZone,
@@ -57,6 +58,7 @@ export class AiCalendarGeneratorService {
   constructor(
     private readonly chatConfigService: ChatConfigService,
     private readonly configService: ConfigService,
+    private readonly serviceLogger: ServiceLoggerService,
     @InjectRepository(AgriculturalZone)
     private readonly zoneRepo: Repository<AgriculturalZone>,
     @InjectRepository(Crop)
@@ -86,13 +88,52 @@ export class AiCalendarGeneratorService {
 
     const messages = this.buildMessages(zone, crop, dto.userNotes);
 
+    this.serviceLogger.logAiCall({
+      provider: 'multi',
+      action: 'calendar-generate',
+      status: 'request',
+      request: {
+        zoneId: dto.zoneId,
+        zoneName: zone.name,
+        cropId: dto.cropId,
+        cropName: crop.name,
+        userNotes: dto.userNotes,
+      },
+    });
+
+    const startTime = Date.now();
+
     for (const { provider, apiKey } of providers) {
       try {
-        return await this.generateWithProvider(provider, apiKey, messages);
+        const result = await this.generateWithProvider(provider, apiKey, messages);
+
+        this.serviceLogger.logAiCall({
+          provider,
+          action: 'calendar-generate',
+          status: 'success',
+          durationMs: Date.now() - startTime,
+          metadata: {
+            zoneName: zone.name,
+            cropName: crop.name,
+            seasonsCount: result.seasons.length,
+            totalStages: result.seasons.reduce((sum, s) => sum + s.stages.length, 0),
+          },
+        });
+
+        return result;
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unknown provider error';
         this.logger.warn(`AI provider ${provider} failed: ${message}`);
+
+        this.serviceLogger.logAiCall({
+          provider,
+          action: 'calendar-generate',
+          status: 'error',
+          durationMs: Date.now() - startTime,
+          error: message,
+          request: { zoneName: zone.name, cropName: crop.name },
+        });
       }
     }
 
@@ -108,51 +149,65 @@ export class AiCalendarGeneratorService {
   ): LLMMessage[] {
     const provinces =
       zone.provinces?.length ? zone.provinces.join(', ') : 'Không rõ tỉnh';
-    const notes = userNotes?.trim() || 'Không có ghi chú bổ sung.';
+    const notes = userNotes?.trim() || '';
 
     return [
       {
         role: 'system',
         content: [
-          'Bạn là chuyên gia nông nghiệp Việt Nam.',
-          `Hãy tạo lịch mùa vụ cho cây ${crop.name} tại vùng ${zone.name} (${zone.code}).`,
-          `Các tỉnh liên quan: ${provinces}.`,
-          `Ghi chú thêm từ admin: ${notes}`,
-          'Chỉ trả về JSON hợp lệ theo schema:',
+          `Bạn là chuyên gia nông nghiệp Việt Nam với kinh nghiệm thực tế trồng trọt tại các vùng miền.`,
+          `Hãy tạo lịch mùa vụ chi tiết cho cây ${crop.name} tại vùng ${zone.name} (${zone.code}), bao gồm các tỉnh: ${provinces}.`,
+          notes ? `Thông tin bổ sung từ người dùng: ${notes}` : '',
+          '',
+          'Trả về **chỉ JSON** theo cấu trúc sau (không giải thích gì thêm):',
           JSON.stringify({
             seasons: [
               {
-                seasonName: 'string',
-                notes: 'string',
+                seasonName: 'Tên mùa vụ (VD: Vụ Đông Xuân)',
+                notes: 'Mô tả ngắn về đặc điểm mùa vụ tại vùng này',
                 stages: [
                   {
-                    name: 'string',
-                    stageType: 'planting | care | harvest',
+                    name: 'Tên giai đoạn (VD: Gieo sạ, Đẻ nhánh, Thu hoạch...)',
+                    stageType: 'gieo trồng | chăm sóc | thu hoạch',
                     startMonth: 1,
                     endMonth: 12,
-                    description: 'string',
-                    keywords: ['string'],
-                    careActivities: ['string'],
+                    description:
+                      'Mô tả chi tiết hoạt động trong giai đoạn, kỹ thuật áp dụng, lưu ý thực tế',
+                    keywords: ['từ khóa liên quan'],
+                    careActivities: [
+                      'Hoạt động chăm sóc cụ thể (VD: Bón phân NPK 20-20-15 liều 25kg/ha)',
+                    ],
                     sortOrder: 1,
                     pestWarnings: [
                       {
-                        name: 'string',
-                        severity: 'low | medium | high',
-                        symptoms: 'string',
-                        preventionNote: 'string',
+                        name: 'Tên sâu bệnh phổ biến',
+                        severity: 'thấp | trung bình | cao',
+                        symptoms:
+                          'Mô tả triệu chứng nhận biết trên cây/lá/quả',
+                        preventionNote:
+                          'Biện pháp phòng ngừa và xử lý cụ thể',
                       },
                     ],
                   },
                 ],
               },
             ],
-          }),
-        ].join('\n'),
+          }, null, 0),
+          '',
+          'QUY TẮC:',
+          '- stageType dùng tiếng Việt: "gieo trồng", "chăm sóc", hoặc "thu hoạch"',
+          '- severity dùng tiếng Việt: "thấp", "trung bình", hoặc "cao"',
+          '- Mô tả (description) nên chi tiết, thực tế, phù hợp với điều kiện vùng miền',
+          '- careActivities nên cụ thể: ghi rõ loại phân, liều lượng, thời điểm nếu biết',
+          '- Mỗi giai đoạn nên có 1-3 cảnh báo sâu bệnh phổ biến nhất',
+          '- Đảm bảo JSON hoàn chỉnh, đóng đủ tất cả ngoặc',
+        ]
+          .filter((line) => line !== undefined)
+          .join('\n'),
       },
       {
         role: 'user',
-        content:
-          'Tạo 1-3 mùa vụ phổ biến, mỗi mùa vụ có 2-6 giai đoạn. Không thêm giải thích ngoài JSON.',
+        content: `Tạo lịch mùa vụ cho cây ${crop.name} tại ${zone.name}. Gồm 1-3 vụ chính trong năm, mỗi vụ có 3-6 giai đoạn sinh trưởng chi tiết. Đưa ra careActivities cụ thể và cảnh báo sâu bệnh phổ biến cho từng giai đoạn. Chỉ trả về JSON.`,
       },
     ];
   }
@@ -189,14 +244,39 @@ export class AiCalendarGeneratorService {
     const raw = await this.callProvider(provider, apiKey, messages);
 
     try {
-      return this.normalizeResult(JSON.parse(raw));
+      const cleaned = this.stripMarkdownFences(raw);
+      this.logger.debug(`AI raw response from ${provider} (${cleaned.length} chars): ${cleaned.substring(0, 200)}...`);
+
+      this.serviceLogger.logAiCall({
+        provider,
+        action: 'calendar-generate-raw',
+        status: 'success',
+        response: cleaned,
+      });
+
+      return this.normalizeResult(JSON.parse(cleaned));
     } catch (firstError) {
-      this.logger.warn(`Invalid AI JSON from ${provider}, retrying once`);
+      const firstMsg = firstError instanceof Error ? firstError.message : String(firstError);
+      this.logger.warn(`Invalid AI JSON from ${provider}: ${firstMsg}. Retrying once...`);
+      this.logger.debug(`Raw response was: ${raw.substring(0, 500)}`);
+
+      this.serviceLogger.logAiCall({
+        provider,
+        action: 'calendar-generate-parse',
+        status: 'retry',
+        error: firstMsg,
+        response: raw,
+      });
+
       const retryRaw = await this.callProvider(provider, apiKey, messages);
 
       try {
-        return this.normalizeResult(JSON.parse(retryRaw));
+        const retryCleaned = this.stripMarkdownFences(retryRaw);
+        return this.normalizeResult(JSON.parse(retryCleaned));
       } catch (secondError) {
+        const secondMsg = secondError instanceof Error ? secondError.message : String(secondError);
+        this.logger.error(`AI retry also failed from ${provider}: ${secondMsg}`);
+        this.logger.error(`Retry raw response: ${retryRaw.substring(0, 500)}`);
         throw secondError instanceof Error
           ? secondError
           : new Error(String(secondError));
@@ -234,11 +314,11 @@ export class AiCalendarGeneratorService {
         model:
           this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini',
         messages,
-        max_tokens: 4096,
+        max_tokens: 8192,
         temperature: 0.4,
         response_format: { type: 'json_object' },
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (!response.ok) {
@@ -262,7 +342,7 @@ export class AiCalendarGeneratorService {
         this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash',
       generationConfig: {
         responseMimeType: 'application/json',
-        maxOutputTokens: 4096,
+        maxOutputTokens: 16384,
         temperature: 0.4,
       },
     });
@@ -278,11 +358,17 @@ export class AiCalendarGeneratorService {
         contents: [{ role: 'user', parts: [{ text: userMessage }] }],
       },
       {
-        timeout: 30000,
+        timeout: 90_000,
       },
     );
 
-    return result.response.text() || '{}';
+    const text = result.response.text() || '{}';
+    // Check if Gemini flagged a finish reason other than STOP
+    const candidate = result.response.candidates?.[0];
+    if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+      this.logger.warn(`Gemini finish reason: ${candidate.finishReason}`);
+    }
+    return text;
   }
 
   private normalizeResult(payload: unknown): AiGenerateResult {
@@ -355,7 +441,7 @@ export class AiCalendarGeneratorService {
   }
 
   private normalizeStageType(input: unknown): GrowthStageType {
-    const value = String(input ?? '').toLowerCase();
+    const value = String(input ?? '').toLowerCase().trim();
     if (
       value === GrowthStageType.PLANTING ||
       value === GrowthStageType.CARE ||
@@ -363,11 +449,37 @@ export class AiCalendarGeneratorService {
     ) {
       return value as GrowthStageType;
     }
-    throw new Error(`Invalid stageType ${String(input)}`);
+    // Map Vietnamese / alternative names to enum
+    const mappings: Record<string, GrowthStageType> = {
+      'gieo trồng': GrowthStageType.PLANTING,
+      'gieo sạ': GrowthStageType.PLANTING,
+      'trồng': GrowthStageType.PLANTING,
+      'xuống giống': GrowthStageType.PLANTING,
+      'làm đất': GrowthStageType.PLANTING,
+      'chăm sóc': GrowthStageType.CARE,
+      'chăm bón': GrowthStageType.CARE,
+      'bón phân': GrowthStageType.CARE,
+      'tưới': GrowthStageType.CARE,
+      'thu hoạch': GrowthStageType.HARVEST,
+      'thu hái': GrowthStageType.HARVEST,
+      'harvesting': GrowthStageType.HARVEST,
+      'planting': GrowthStageType.PLANTING,
+      'caring': GrowthStageType.CARE,
+      'preparation': GrowthStageType.PLANTING,
+      'growth': GrowthStageType.CARE,
+      'flowering': GrowthStageType.CARE,
+      'fruiting': GrowthStageType.CARE,
+    };
+    const mapped = mappings[value];
+    if (mapped) {
+      return mapped;
+    }
+    this.logger.warn(`Unknown stageType "${String(input)}", defaulting to care`);
+    return GrowthStageType.CARE;
   }
 
   private normalizeSeverity(input: unknown): PestWarningSeverity {
-    const value = String(input ?? '').toLowerCase();
+    const value = String(input ?? '').toLowerCase().trim();
     if (
       value === PestWarningSeverity.LOW ||
       value === PestWarningSeverity.MEDIUM ||
@@ -375,7 +487,17 @@ export class AiCalendarGeneratorService {
     ) {
       return value as PestWarningSeverity;
     }
-    return PestWarningSeverity.MEDIUM;
+    // Map Vietnamese severity names
+    const mappings: Record<string, PestWarningSeverity> = {
+      'thấp': PestWarningSeverity.LOW,
+      'nhẹ': PestWarningSeverity.LOW,
+      'trung bình': PestWarningSeverity.MEDIUM,
+      'vừa': PestWarningSeverity.MEDIUM,
+      'cao': PestWarningSeverity.HIGH,
+      'nặng': PestWarningSeverity.HIGH,
+      'nghiêm trọng': PestWarningSeverity.HIGH,
+    };
+    return mappings[value] ?? PestWarningSeverity.MEDIUM;
   }
 
   private normalizeMonth(input: unknown): number {
@@ -420,5 +542,18 @@ export class AiCalendarGeneratorService {
 
   private asNonEmptyString(input: unknown) {
     return this.asOptionalString(input);
+  }
+
+  /**
+   * Strip markdown code fences that Gemini sometimes wraps around JSON.
+   * e.g. ```json\n{...}\n``` → {...}
+   */
+  private stripMarkdownFences(text: string): string {
+    let cleaned = text.trim();
+    // Remove opening fence: ```json or ``` at start
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '');
+    // Remove closing fence: ``` at end
+    cleaned = cleaned.replace(/\n?```\s*$/i, '');
+    return cleaned.trim();
   }
 }

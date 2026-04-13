@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { adminApiCall } from "@/components/admin/crud-dialog";
-import { Input } from "@/components/ui/input";
+import { AdminPageHero, AdminPanel, AdminStatsGrid } from "@/components/admin/admin-page-shell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Eye, Trash2, RefreshCw } from "lucide-react";
+import { Eye, Trash2, RefreshCw, MessageSquare, MailOpen, Clock3 } from "lucide-react";
 import { toast } from "sonner";
 
 type ContactSubmission = {
@@ -78,25 +78,36 @@ export default function ContactManagement() {
   };
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-gray-900">Quản lý Liên hệ</h1>
-        <Button variant="outline" size="sm" onClick={fetchData}>
-          <RefreshCw className="w-4 h-4 mr-1" /> Làm mới
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <AdminPageHero
+        badge="Contact Inbox"
+        icon={MessageSquare}
+        title="Quản lý liên hệ"
+        description="Theo dõi inbox khách hàng bằng bố cục rõ nhịp, cùng hệ card và bảng với các menu đang được đồng bộ."
+        actions={
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="w-4 h-4 mr-1" /> Làm mới
+          </Button>
+        }
+      />
 
-      <p className="text-sm text-muted-foreground">Tổng: {total} liên hệ</p>
+      <AdminStatsGrid
+        items={[
+          { label: "Tổng liên hệ", value: total.toLocaleString("vi-VN"), hint: "mọi yêu cầu đã gửi", icon: MessageSquare },
+          { label: "Mới", value: items.filter((item) => item.status === "NEW").length.toLocaleString("vi-VN"), hint: "cần đọc ngay", icon: Clock3, accentClassName: "border-sky-100 bg-sky-50 text-sky-600" },
+          { label: "Đã đọc", value: items.filter((item) => item.status === "READ").length.toLocaleString("vi-VN"), hint: "đã được tiếp nhận", icon: MailOpen, accentClassName: "border-amber-100 bg-amber-50 text-amber-600" },
+        ]}
+      />
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Đang tải...</p>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm">Chưa có liên hệ nào.</p>
       ) : (
-        <div className="rounded-xl border bg-card overflow-hidden">
+        <AdminPanel title="Danh sách liên hệ" description="Xem nhanh trạng thái, nội dung rút gọn và mở chi tiết từng yêu cầu.">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/50">
+              <tr className="border-b bg-slate-50/90">
                 <th className="text-left p-3">Họ tên</th>
                 <th className="text-left p-3">SĐT</th>
                 <th className="text-left p-3 hidden md:table-cell">Tin nhắn</th>
@@ -134,7 +145,7 @@ export default function ContactManagement() {
               ))}
             </tbody>
           </table>
-        </div>
+        </AdminPanel>
       )}
 
       {/* Detail Dialog */}
