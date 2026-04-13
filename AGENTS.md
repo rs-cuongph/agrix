@@ -107,6 +107,7 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 - PostgreSQL (bảng mới: `agricultural_zones`, `crops`, `season_calendars`, `growth_stages`, `product_recommendations`) (015-agricultural-season-calendar)
 - TypeScript 5.x (Node.js 20 backend, React 18 frontend) + NestJS 11, TypeORM 0.3, Next.js 14, React 18, shadcn/ui, lucide-reac (017-calendar-ux-enhance)
 - PostgreSQL 15 (existing) (017-calendar-ux-enhance)
+- TypeScript 5.x (Node.js 20 backend, React 18 frontend) + NestJS 11, TypeORM 0.3, Next.js 14, React 18, shadcn/ui, lucide-react, Sonner (018-ai-calendar-admin)
 
 ## Recent Changes
 - 014-advanced-reporting-dashboard: Added TypeScript 5.x trên Node.js cho backend NestJS và Next.js 14 cho web admin + NestJS 11, TypeORM 0.3, PostgreSQL, Next.js 14, React 18, shadcn/ui, Sonner, jsPDF

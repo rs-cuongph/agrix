@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AIModule } from '../ai/ai.module';
 import { AuthModule } from '../auth/auth.module';
 import { Product } from '../inventory/entities/product.entity';
 import {
@@ -25,6 +26,7 @@ import { SeasonSuggestionController } from './controllers/season-suggestion.cont
 import { WeatherController } from './controllers/weather.controller';
 import { ZonesController } from './controllers/zones.controller';
 import { ActivityLogService } from './services/activity-log.service';
+import { AiCalendarGeneratorService } from './services/ai-calendar-generator.service';
 import { CropsService } from './services/crops.service';
 import { PestWarningService } from './services/pest-warning.service';
 import { SeasonCalendarService } from './services/season-calendar.service';
@@ -48,6 +50,7 @@ import { ZonesService } from './services/zones.service';
       Product,
     ]),
     AuthModule,
+    forwardRef(() => AIModule),
   ],
   controllers: [
     ZonesController,
@@ -66,6 +69,7 @@ import { ZonesService } from './services/zones.service';
     ZonesService,
     CropsService,
     SeasonCalendarService,
+    AiCalendarGeneratorService,
     PestWarningService,
     WeatherBaselineService,
     ActivityLogService,
@@ -77,6 +81,7 @@ import { ZonesService } from './services/zones.service';
     ZonesService,
     CropsService,
     SeasonCalendarService,
+    AiCalendarGeneratorService,
     PestWarningService,
     WeatherBaselineService,
     ActivityLogService,

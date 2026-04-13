@@ -1,6 +1,13 @@
 "use client";
 
 import { adminApiCall } from "@/components/admin/crud-dialog";
+import type {
+  SeasonCrop,
+  SeasonPestWarning,
+  SeasonRecommendation,
+  SeasonStage,
+  SeasonZone,
+} from "@/lib/admin/season-calendar-api";
 
 export type ProductOption = {
   id: string;
@@ -9,6 +16,69 @@ export type ProductOption = {
   baseUnit: string;
   baseSellPrice: number;
   currentStockBase: number;
+};
+
+export type CalendarListItem = {
+  id: string;
+  seasonName: string;
+  year?: number | null;
+  notes?: string | null;
+  isActive: boolean;
+  zone: Pick<SeasonZone, "id" | "name" | "code"> | null;
+  crop: Pick<SeasonCrop, "id" | "name" | "category"> | null;
+  stageCount: number;
+  createdAt: string;
+};
+
+export type CalendarListResponse = {
+  items: CalendarListItem[];
+  total: number;
+};
+
+export type CalendarDetail = {
+  id: string;
+  seasonName: string;
+  year?: number | null;
+  notes?: string | null;
+  isActive: boolean;
+  zone: Pick<SeasonZone, "id" | "name" | "code"> | null;
+  crop: Pick<SeasonCrop, "id" | "name" | "category"> | null;
+  stages: Array<
+    Omit<SeasonStage, "pestWarnings" | "recommendations"> & {
+      recommendations: SeasonRecommendation[];
+      pestWarnings: SeasonPestWarning[];
+    }
+  >;
+  createdAt: string;
+};
+
+export type AiPreviewWarning = {
+  name: string;
+  severity: "low" | "medium" | "high";
+  symptoms?: string;
+  preventionNote?: string;
+};
+
+export type AiPreviewStage = {
+  name: string;
+  stageType: "planting" | "care" | "harvest";
+  startMonth: number;
+  endMonth: number;
+  description?: string;
+  keywords?: string[];
+  careActivities?: string[];
+  sortOrder?: number;
+  pestWarnings?: AiPreviewWarning[];
+};
+
+export type AiPreviewSeason = {
+  seasonName: string;
+  notes?: string;
+  stages: AiPreviewStage[];
+};
+
+export type AiGenerateResult = {
+  seasons: AiPreviewSeason[];
 };
 
 async function proxyGet<T>(path: string): Promise<T> {
@@ -30,6 +100,64 @@ export async function fetchAdminProducts() {
     "/products?limit=200",
   );
   return Array.isArray(response) ? response : (response.data ?? []);
+}
+
+export async function listCalendars(filters?: {
+  zoneId?: string;
+  cropId?: string;
+}) {
+  const params = new URLSearchParams();
+  if (filters?.zoneId && filters.zoneId !== "all") {
+    params.set("zoneId", filters.zoneId);
+  }
+  if (filters?.cropId && filters.cropId !== "all") {
+    params.set("cropId", filters.cropId);
+  }
+  const suffix = params.toString() ? `?${params.toString()}` : "";
+  return proxyGet<CalendarListResponse>(
+    `/admin/season-calendar/calendars${suffix}`,
+  );
+}
+
+export async function getCalendarDetail(id: string) {
+  return proxyGet<CalendarDetail>(`/admin/season-calendar/calendars/${id}`);
+}
+
+export async function aiGenerateCalendar(body: {
+  zoneId: string;
+  cropId: string;
+  userNotes?: string;
+}) {
+  return adminApiCall(
+    "/admin/season-calendar/ai-generate",
+    "POST",
+    body,
+  ) as Promise<AiGenerateResult>;
+}
+
+export async function bulkCreateCalendars(body: {
+  zoneId: string;
+  cropId: string;
+  replaceExisting?: boolean;
+  seasons: AiPreviewSeason[];
+}) {
+  return adminApiCall(
+    "/admin/season-calendar/bulk-create",
+    "POST",
+    body,
+  ) as Promise<{
+    calendarsCreated: number;
+    stagesCreated: number;
+    pestWarningsCreated: number;
+    message: string;
+  }>;
+}
+
+export async function checkExistingCalendars(zoneId: string, cropId: string) {
+  const params = new URLSearchParams({ zoneId, cropId });
+  return proxyGet<{ count: number }>(
+    `/admin/season-calendar/calendars/check-existing?${params.toString()}`,
+  );
 }
 
 export async function createZone(body: Record<string, unknown>) {

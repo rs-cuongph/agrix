@@ -52,6 +52,10 @@ export class UpdateSeasonCalendarDto {
   @IsString()
   @IsOptional()
   notes?: string | null;
+
+  @Type(() => Boolean)
+  @IsOptional()
+  isActive?: boolean;
 }
 
 export class CreateGrowthStageDto {

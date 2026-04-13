@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowRight, CalendarDays, Layers3, MapPin } from "lucide-react";
+import { Activity, ArrowRight, CalendarDays, Database, Layers3, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,6 +175,12 @@ export default function SeasonCalendarPage() {
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline">
               <Link href="/admin/season-calendar/zones">Quản lý vùng</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/season-calendar/manage">
+                <Database className="mr-2 h-4 w-4" />
+                Quản lý dữ liệu
+              </Link>
             </Button>
             <Button asChild variant="outline">
               <Link href="/admin/season-calendar/activity-log">

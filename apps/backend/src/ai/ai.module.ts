@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KnowledgeDocument } from './entities/knowledge-document.entity';
 import { KnowledgeEmbedding } from './entities/knowledge-embedding.entity';
@@ -23,7 +23,7 @@ import { SeasonCalendarModule } from '../season-calendar/season-calendar.module'
       ChatbotConfig,
     ]),
     AuthModule,
-    SeasonCalendarModule,
+    forwardRef(() => SeasonCalendarModule),
   ],
   controllers: [AIController],
   providers: [
