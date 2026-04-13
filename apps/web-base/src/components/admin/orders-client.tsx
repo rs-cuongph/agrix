@@ -124,7 +124,7 @@ export function OrdersClient({ orders, initialSearch = "" }: { orders: Order[], 
         title="Quản lý đơn hàng"
         description="Theo dõi trạng thái thanh toán, công nợ và chi tiết giao dịch bằng cùng hệ bố cục đang dùng ở quản lý mùa vụ."
         actions={
-          <form onSubmit={handleSearch} className="relative w-full max-w-sm">
+          <form onSubmit={handleSearch} className="relative w-full max-w-[27rem]">
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
