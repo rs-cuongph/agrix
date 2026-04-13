@@ -110,7 +110,7 @@ export class AdvancedReportingService {
   ) {}
 
   private async queryRows<T>(query: string, params: unknown[]): Promise<T[]> {
-    return this.dataSource.query<T>(query, params);
+    return this.dataSource.query(query, params) as Promise<T[]>;
   }
 
   async getRevenueSeries(filterDto?: ReportingFilterDto) {

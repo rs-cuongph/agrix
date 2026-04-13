@@ -11,6 +11,7 @@ import { ChatSessionService } from './chat-session.service';
 import { ChatConfigService } from './chat-config.service';
 import { AIController } from './ai.controller';
 import { AuthModule } from '../auth/auth.module';
+import { SeasonCalendarModule } from '../season-calendar/season-calendar.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from '../auth/auth.module';
       ChatbotConfig,
     ]),
     AuthModule,
+    SeasonCalendarModule,
   ],
   controllers: [AIController],
   providers: [

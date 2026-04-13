@@ -16,6 +16,7 @@ import { ContactModule } from './contact/contact.module';
 import { FaqModule } from './faq/faq.module';
 import { TestimonialModule } from './testimonial/testimonial.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { SeasonCalendarModule } from './season-calendar/season-calendar.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     ContactModule,
     FaqModule,
     TestimonialModule,
+    SeasonCalendarModule,
   ],
   providers: [
     {

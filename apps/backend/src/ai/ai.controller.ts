@@ -26,6 +26,7 @@ import { ChatSessionService } from './chat-session.service';
 import { ChatConfigService } from './chat-config.service';
 import { AskDto } from './dto/ask.dto';
 import { UpdateConfigDto } from './dto/config.dto';
+import { SeasonChatbotContextService } from '../season-calendar/services/season-chatbot-context.service';
 
 @Controller('ai')
 export class AIController {
@@ -35,6 +36,7 @@ export class AIController {
     private readonly sessionService: ChatSessionService,
     private readonly configService: ChatConfigService,
     private readonly jwtService: JwtService,
+    private readonly seasonChatbotContextService: SeasonChatbotContextService,
   ) {}
 
   // ===================== PUBLIC ENDPOINTS =====================
@@ -69,6 +71,10 @@ export class AIController {
       }
     }
 
+    const seasonalContext = await this.seasonChatbotContextService.buildContext(
+      body.question,
+    );
+
     // Get or create session
     const session = await this.sessionService.getOrCreateSession(
       body.sessionId,
@@ -98,7 +104,7 @@ export class AIController {
     try {
       for await (const chunk of this.chatbotService.streamAnswer(
         body.question,
-        session.productContext,
+        this.mergeContext(session.productContext, seasonalContext),
       )) {
         if (chunk.type === 'token') {
           fullAnswer += chunk.data;
@@ -141,7 +147,13 @@ export class AIController {
   @Post('ask')
   @UseGuards(AuthGuard('jwt'))
   async ask(@Body() body: AskDto) {
-    return this.chatbotService.ask(body.question, body.productId);
+    const seasonalContext = await this.seasonChatbotContextService.buildContext(
+      body.question,
+    );
+    return this.chatbotService.ask(
+      body.question,
+      this.mergeContext(body.productId, seasonalContext),
+    );
   }
 
   // --- Knowledge Management ---
@@ -264,5 +276,12 @@ export class AIController {
   @UseGuards(AuthGuard('jwt'))
   async getSession(@Param('id') id: string) {
     return this.sessionService.getSessionWithMessages(id);
+  }
+
+  private mergeContext(
+    baseContext?: string | null,
+    seasonalContext?: string | null,
+  ) {
+    return [seasonalContext, baseContext].filter(Boolean).join('\n\n');
   }
 }

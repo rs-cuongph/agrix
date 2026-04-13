@@ -7,7 +7,7 @@
 
 - Node.js 20+, npm/pnpm
 - PostgreSQL 15+ đang chạy
-- Backend NestJS đang chạy tại `http://localhost:3001`
+- Backend NestJS đang chạy tại `http://localhost:3000`
 - OpenAI hoặc Gemini API key đã cấu hình trong `.env`
 
 ## Không cần install dependency mới
@@ -50,13 +50,13 @@ npm run web:dev
 ### API Test
 ```bash
 # Lấy danh sách vùng
-curl http://localhost:3001/api/season-calendar/zones
+curl http://localhost:3000/api/v1/season-calendar/zones
 
 # Lịch mùa vụ tháng 4 vùng ĐBSCL
-curl "http://localhost:3001/api/season-calendar/calendar?zoneId={uuid}&month=4"
+curl "http://localhost:3000/api/v1/season-calendar/calendar?zoneId={uuid}&month=4"
 
 # AI gợi ý sản phẩm
-curl "http://localhost:3001/api/season-calendar/suggest?zoneId={uuid}&month=4&cropId={uuid}"
+curl "http://localhost:3000/api/v1/season-calendar/suggest?zoneId={uuid}&month=4&cropId={uuid}"
 ```
 
 ### Chatbot Test

@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **agrix** (2791 symbols, 5036 relationships, 66 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **agrix** (3821 symbols, 7044 relationships, 104 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -105,6 +105,8 @@ To check whether embeddings exist, inspect `.gitnexus/meta.json` — the `stats.
 - PostgreSQL cho dữ liệu nghiệp vụ; file xuất được tạo theo yêu cầu từ dữ liệu truy vấn thời gian thực (014-advanced-reporting-dashboard)
 - TypeScript 5.x / Node.js 20 (backend NestJS), TypeScript 5.x / React 18 (Next.js 14 frontend admin), Dart/Flutter (mobile — không implement trong phase này) + NestJS 11, TypeORM 0.3, PostgreSQL 15; Next.js 14 + shadcn/ui + Recharts (calendar view); OpenAI/Gemini API (AI gợi ý); ChatbotService (tích hợp ngữ cảnh mùa vụ) (015-agricultural-season-calendar)
 - PostgreSQL (bảng mới: `agricultural_zones`, `crops`, `season_calendars`, `growth_stages`, `product_recommendations`) (015-agricultural-season-calendar)
+- TypeScript 5.x (Node.js 20 backend, React 18 frontend) + NestJS 11, TypeORM 0.3, Next.js 14, React 18, shadcn/ui, lucide-reac (017-calendar-ux-enhance)
+- PostgreSQL 15 (existing) (017-calendar-ux-enhance)
 
 ## Recent Changes
 - 014-advanced-reporting-dashboard: Added TypeScript 5.x trên Node.js cho backend NestJS và Next.js 14 cho web admin + NestJS 11, TypeORM 0.3, PostgreSQL, Next.js 14, React 18, shadcn/ui, Sonner, jsPDF
